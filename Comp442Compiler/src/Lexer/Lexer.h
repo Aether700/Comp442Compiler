@@ -12,7 +12,8 @@ enum class TokenType
 {
 	None,
 	ID,
-	IntLiteral
+	IntLiteral,
+	Comment
 };
 
 enum class CharacterType
@@ -20,6 +21,9 @@ enum class CharacterType
 	Unknown,
 	Letter, 
 	Digit,
+	NewLine,
+	Space, // also includes the tab character as a single space
+	EndOfFile,
 	Count
 };
 
@@ -69,6 +73,11 @@ private:
 	Lexer();
 	~Lexer();
 
+	// returns the next state
+	static StateID TryToGenerateToken(std::ifstream& file, StateID currState, CharacterType charType, 
+		std::stringstream& charBuffer, Token& outToken);
+
+	static void BackTrack(std::ifstream& file, std::stringstream& charBuffer);
 	void InitializeLexicalTable();
 
 	static Lexer& GetInstance();

@@ -15,7 +15,7 @@ TokenType Token::GetTokenType() const { return m_type; }
 LexicalTableEntry::LexicalTableEntry(const std::initializer_list<int>& stateTransitions, bool isFinal, 
 	bool isBackTrack, TokenType type) : m_backTrack(isBackTrack), m_final(isFinal), m_tokenType(type)
 {
-	size_t currCharTypeCount = 1; // start at 1 to skip the CharacterType::Unknown
+	size_t currCharTypeCount = 0; // the CharacterType::Unknown is used to decide what to do in an "else" case
 	for (int stateID : stateTransitions)
 	{
 		if (currCharTypeCount >= (size_t)CharacterType::Count)
@@ -37,7 +37,12 @@ StateID LexicalTableEntry::GetTransition(CharacterType charType) const
 	auto it = m_charToStateTransition.find(charType);
 	if (it == m_charToStateTransition.end())
 	{
-		return NullState;
+		// check if an "else" transition has been specified
+		it = m_charToStateTransition.find(CharacterType::Unknown);
+		if (it == m_charToStateTransition.end())
+		{
+			return NullState;
+		}
 	}
 	return (*it).second;
 }
@@ -58,6 +63,11 @@ Token Lexer::GetNextToken(std::ifstream& file)
 	{
 		char lookup;
 		file.read(&lookup, 1);
+		if (file.eof())
+		{
+			TryToGenerateToken(file, currState, CharacterType::EndOfFile, charBuffer, t);
+			break;
+		}
 		CharacterType charType = GetCharacterType(lookup);
 		while (charType == CharacterType::Unknown)
 		{
@@ -65,18 +75,9 @@ Token Lexer::GetNextToken(std::ifstream& file)
 			charType = GetCharacterType(lookup);
 		}
 		charBuffer << lookup;
-		StateID nextState = l.m_lexicalTable[currState]->GetTransition(charType);
-		LexicalTableEntry* entry = l.m_lexicalTable[nextState];
-		if (entry->IsFinal())
-		{
-			t = Token(charBuffer.str(), entry->GetTokenType());
-			if (entry->IsBackTrack())
-			{
-				size_t currPos = file.tellg();
-				file.seekg(currPos - 1);
-			}
-		}
-
+		StateID nextState = TryToGenerateToken(file, currState, charType, charBuffer, t);
+		
+		currState = nextState;
 	}
 	return Token(t);
 }
@@ -90,6 +91,14 @@ CharacterType Lexer::GetCharacterType(char c)
 	else if (IsDigit(c))
 	{
 		return CharacterType::Digit;
+	}
+	else if (c == '\n')
+	{
+		return CharacterType::NewLine;
+	}
+	else if (c == '\t' || c == ' ')
+	{
+		return CharacterType::NewLine;
 	}
 	return CharacterType::Unknown;
 }
@@ -117,12 +126,52 @@ Lexer::~Lexer()
 	}
 }
 
+StateID Lexer::TryToGenerateToken(std::ifstream& file, StateID currState, CharacterType charType, 
+	std::stringstream& charBuffer, Token& outToken)
+{
+	Lexer& l = GetInstance();
+	StateID nextState = l.m_lexicalTable[currState]->GetTransition(charType);
+	if (nextState == NullState)
+	{
+		return currState;
+	}
+
+	LexicalTableEntry* entry = l.m_lexicalTable[nextState];
+
+	if (entry->IsFinal())
+	{
+		outToken = Token(charBuffer.str(), entry->GetTokenType());
+		if (entry->IsBackTrack())
+		{
+			BackTrack(file, charBuffer);
+		}
+	}
+	return nextState;
+}
+
+void Lexer::BackTrack(std::ifstream& file, std::stringstream& charBuffer)
+{
+	// bring back stream pos
+	size_t currPos = file.tellg();
+	file.seekg(currPos - 1);
+
+	std::string bufferCopy = charBuffer.str();
+	charBuffer.str(bufferCopy.substr(0, bufferCopy.length() - 1));
+}
+
 void Lexer::InitializeLexicalTable()
 {
-	m_lexicalTable[0] = new LexicalTableEntry({1, -1}, false, false);
-	m_lexicalTable[1] = new LexicalTableEntry({2,  3}, true,  false, TokenType::ID);
-	m_lexicalTable[2] = new LexicalTableEntry({2,  3}, true,  false, TokenType::ID);
-	m_lexicalTable[3] = new LexicalTableEntry({2,  3}, true,  false, TokenType::ID);
+	/*
+	Letter, 
+	Digit,
+	NewLine,
+	Space
+	*/
+	m_lexicalTable[0] = new LexicalTableEntry({-1, 1, -1}, false, false);
+	m_lexicalTable[1] = new LexicalTableEntry({ 2, 1,  1}, false,  false);
+	m_lexicalTable[2] = new LexicalTableEntry({}, true,  true, TokenType::ID);
+	m_lexicalTable[3] = new LexicalTableEntry({4, -1, -1, -1, 3}, false,  false);
+	m_lexicalTable[4] = new LexicalTableEntry({}, true,  true, TokenType::Comment); // temp token type
 }
 
 Lexer& Lexer::GetInstance()

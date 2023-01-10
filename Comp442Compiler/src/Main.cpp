@@ -21,5 +21,7 @@ int main(int argc, char* argv[])
 		}
 	}
 	Token t = Lexer::GetNextToken(file);
-	std::cout << "token lexeme: " << t.GetLexeme() << "\n";
+	Token t2 = Lexer::GetNextToken(file);
+	std::cout << "token lexeme: " << t.GetLexeme() << "token type: " << (int)t.GetTokenType() << "\n";
+	std::cout << "token lexeme: " << t2.GetLexeme() << "token type: " << (int)t2.GetTokenType() << "\n";
 }
