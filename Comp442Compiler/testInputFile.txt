@@ -1,1 +1,7 @@
-a8asdi 
+==	+	or	(	;	integer	while	localvar
+<>	-	and	)	,	float	if 	constructor
+<	*	not	{	.	void	then	attribute
+>	/		}	:	class	else	function
+<=	=		[	=>	self	read	public
+>=			]	::	isa	write	private
+						return
