@@ -56,6 +56,7 @@ public:
 	static char GetEOFChar();
 	static char GetElseChar();
 	static char GetFloatPowerChar();
+	static char GetNewLineChar();
 
 private:
 	static constexpr char s_letterChar = 'l';
@@ -64,10 +65,11 @@ private:
 	static constexpr char s_eofChar = '\0';
 	static constexpr char s_elseChar = 'o'; // else/other char
 	static constexpr char s_floatPowerChar = 'e';
+	static constexpr char s_newlineChar = '\n';
 	static constexpr char s_possibleCharInput[] = 
 	{
 		s_letterChar, s_nonzeroChar, s_whitespaceChar, s_eofChar, s_elseChar, s_floatPowerChar, '+', '-', '/', '*', 
-		'=', '0', '{', '}', '[', ']', '(', ')', ';', ':', '.', '<', '>', ',', '_', '\n'
+		'=', '0', '{', '}', '[', ']', '(', ')', ';', ':', '.', '<', '>', ',', '_', s_newlineChar
 	};
 	static constexpr size_t s_numCharInput = sizeof(s_possibleCharInput) / sizeof(char);
 	static constexpr const char* s_keywords[] = 
@@ -141,6 +143,10 @@ private:
 		char lookup, char representationChar);
 	static void DoCustomStateBehavior(StateID state, Token& outToken);
 	static bool IsTwoCharOperator(char firstChar, char secondChar);
+	static bool IsInComment();
+
+	//returns the last char added fully processed by the lexer
+	static char GetLastChar();
 	
 	void InitializeLexicalTable();
 	
@@ -149,4 +155,6 @@ private:
 	size_t m_lineCounter;
 	std::unordered_map<StateID, LexicalTableEntry*> m_lexicalTable;
 	std::ifstream m_inputFile;
+	size_t m_multiLineCommentsOpened;
+	char m_lastChar;
 };

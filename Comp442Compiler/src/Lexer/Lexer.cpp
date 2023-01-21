@@ -115,9 +115,10 @@ char CharData::GetRepresentationChar(char c)
 
 char CharData::GetPossibleChar(size_t index) { return s_possibleCharInput[index]; }
 size_t CharData::GetNumberOfPossibleChar() { return s_numCharInput; }
-bool CharData::IsLetter(char c) { return (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z'); }
+bool CharData::IsLetter(char c) { return (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'd') 
+	|| (c >= 'f' && c <= 'z'); }
 bool CharData::IsNonzero(char c) { return c >= '1' && c <= '9'; }
-bool CharData::IsWhitespace(char c) { return c == ' ' || c == '\t' || c == '\r' || c == '\n' || c == '\v' || c == '\f'; }
+bool CharData::IsWhitespace(char c) { return c == ' ' || c == '\t' || c == '\r' || c == '\v' || c == '\f'; }
 
 bool CharData::IsKeyword(const std::string& str)
 {
@@ -154,6 +155,7 @@ char CharData::GetWhitespaceChar() { return s_whitespaceChar; }
 char CharData::GetEOFChar() { return s_eofChar; }
 char CharData::GetElseChar() { return s_elseChar; }
 char CharData::GetFloatPowerChar() { return s_floatPowerChar; }
+char CharData::GetNewLineChar() { return s_newlineChar; }
 
 
 // Token ////////////////////////////////////////////////////////////////
@@ -210,6 +212,8 @@ void Lexer::SetInputFile(const std::string& filepath)
 	Lexer& l = GetInstance();
 	l.m_inputFile = std::ifstream(filepath);
 	l.m_lineCounter = 1;
+	l.m_multiLineCommentsOpened = 0;
+	l.m_lastChar = '\0';
 }
 
 Token Lexer::GetNextToken()
@@ -226,12 +230,13 @@ Token Lexer::GetNextToken()
 		{
 			lookup = CharData::GetEOFChar();
 		}
-		else if (lookup == '\n')
+		else if (lookup == CharData::GetNewLineChar())
 		{
 			l.m_lineCounter++;
 		}
 
-		if (currState != 0 || !CharData::IsWhitespace(lookup))
+		if (currState != 0 || !(CharData::IsWhitespace(lookup) 
+			|| lookup == CharData::GetNewLineChar()))
 		{
 			charBuffer << lookup;
 		}
@@ -239,6 +244,7 @@ Token Lexer::GetNextToken()
 
 		StateID nextState = TryToGenerateToken(currState, lookup, charBuffer, t);		
 		currState = nextState;
+		l.m_lastChar = lookup;
 	}
 	return Token(t);
 }
@@ -273,10 +279,24 @@ StateID Lexer::TryToGenerateToken(StateID currState, char lookup,
 		return currState;
 	}
 
+	if (GetLastChar() == '/' && lookup == '*')
+	{
+		l.m_multiLineCommentsOpened++;
+	}
+	else if (GetLastChar() == '*' && lookup == '/')
+	{
+		l.m_multiLineCommentsOpened--;
+	}
+
 	LexicalTableEntry* entry = l.m_lexicalTable[nextState];
 
 	if (entry->IsFinal())
 	{
+		if (IsInComment())
+		{
+			return 8;
+		}
+
 		if (entry->IsBackTrack())
 		{
 			BackTrack(lookup, charBuffer);
@@ -291,17 +311,17 @@ void Lexer::BackTrack(char lookup, std::stringstream& charBuffer)
 {
 	Lexer& l = GetInstance();
 	// bring back stream pos
-	size_t currPos = l.m_inputFile.tellg();
-	l.m_inputFile.seekg(currPos - 1);
+	l.m_inputFile.putback(lookup);
+	std::string bufferCopy = charBuffer.str();
+	l.m_lastChar = bufferCopy[bufferCopy.length() - 2];
 
 	// update line counter if needed
-	if (lookup == '\n')
+	if (lookup == CharData::GetNewLineChar())
 	{
 		l.m_lineCounter--;
 	}
 
 	// remove character from buffer
-	std::string bufferCopy = charBuffer.str();
 	charBuffer.str(bufferCopy.substr(0, bufferCopy.length() - 1));
 }
 
@@ -342,14 +362,10 @@ StateID Lexer::DoCustomStateChange(StateID currState, StateID nextState, std::st
 	switch(currState)
 	{
 	case 20:
-		std::string charBufferStr = charBuffer.str();
-		if (charBufferStr.length() >= 2)
+		char lastChar = GetLastChar();
+		if (IsTwoCharOperator(lastChar, lookup))
 		{
-			char lastChar = charBufferStr[charBufferStr.length() - 2];
-			if (IsTwoCharOperator(lastChar, lookup))
-			{
-				return 21;
-			}
+			return 21;
 		}
 		break;
 	}
@@ -385,16 +401,20 @@ bool Lexer::IsTwoCharOperator(char firstChar, char secondChar)
 	return false;
 }
 
+bool Lexer::IsInComment() { return GetInstance().m_multiLineCommentsOpened > 0; }
+
+char Lexer::GetLastChar() { return GetInstance().m_lastChar; }
+
 void Lexer::InitializeLexicalTable()
 {
 	m_lexicalTable[0] = new LexicalTableEntry({{CharData::GetLetterChar(), 1}, 
 		{CharData::GetNonzeroChar(), 2}, {CharData::GetWhitespaceChar(), 0}, {CharData::GetEOFChar(), 18}, 
-		{CharData::GetElseChar(), 26}, {'+', 14}, {'-', 14}, {'/', 4}, {'*', 14}, {'=', 20}, 
+		{CharData::GetElseChar(), 26}, {'e', 1}, {'+', 14}, {'-', 14}, {'/', 4}, {'*', 14}, {'=', 20}, 
 		{'0', 3}, {'{', 14}, {'}', 14}, {'[', 14}, {']', 14},  {'(', 14}, {')', 14}, {';', 14}, 
-		{':', 20}, {'.', 14}, {'<', 20}, {'>', 20}, {',', 14}, {'\n', 0}});
+		{':', 20}, {'.', 14}, {'<', 20}, {'>', 20}, {',', 14}, {CharData::GetNewLineChar(), 0}});
 
 	m_lexicalTable[1] = new LexicalTableEntry({{CharData::GetLetterChar(), 1}, 
-		{CharData::GetNonzeroChar(), 1}, {CharData::GetElseChar(), 22}, {'_', 1}});
+		{CharData::GetNonzeroChar(), 1}, {CharData::GetElseChar(), 22}, {'e', 1}, {'_', 1}});
 	
 	m_lexicalTable[2] = new LexicalTableEntry({{CharData::GetNonzeroChar(), 5}, 
 		{CharData::GetElseChar(), 23}, {'0', 5}, {'.', 6}});
@@ -408,7 +428,7 @@ void Lexer::InitializeLexicalTable()
 	
 	m_lexicalTable[6] = new LexicalTableEntry({{CharData::GetNonzeroChar(), 9}, {'0', 24}});
 	m_lexicalTable[7] = new LexicalTableEntry({{CharData::GetEOFChar(), 11}, 
-		{CharData::GetElseChar(), 7}, {'\n', 11}});
+		{CharData::GetElseChar(), 7}, {CharData::GetNewLineChar(), 11}});
 	
 	m_lexicalTable[8] = new LexicalTableEntry({{CharData::GetElseChar(), 8}, {'*', 12}});
 	m_lexicalTable[9] = new LexicalTableEntry({{CharData::GetNonzeroChar(), 9}, 
@@ -443,14 +463,14 @@ void Lexer::InitializeLexicalTable()
 	
 	m_lexicalTable[25] = new LexicalTableEntry({}, true, true, TokenType::Float);
 	m_lexicalTable[26] = new LexicalTableEntry({{CharData::GetLetterChar(), 26}, 
-		{CharData::GetNonzeroChar(), 26}, {CharData::GetElseChar(), 27}, {'0', 26}});
+		{CharData::GetNonzeroChar(), 26}, {CharData::GetElseChar(), 27}, {'e', 26}, {'0', 26}});
 	
 	m_lexicalTable[27] = new LexicalTableEntry({}, true, true, TokenType::InvalidIdentifier);
 	m_lexicalTable[28] = new LexicalTableEntry({}, true, true, TokenType::Operator);
 	m_lexicalTable[29] = new LexicalTableEntry({}, true, true, TokenType::InvalidNumber);
 	m_lexicalTable[30] = new LexicalTableEntry({{CharData::GetLetterChar(), 30}, 
 		{CharData::GetNonzeroChar(), 30}, {CharData::GetElseChar(), 29}, 
-		{CharData::GetEOFChar(), 29}, {'0', 30}});
+		{CharData::GetEOFChar(), 29}, {'e', 30}, {'0', 30}});
 }
 
 Lexer& Lexer::GetInstance()
