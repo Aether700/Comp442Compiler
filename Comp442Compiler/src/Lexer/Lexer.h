@@ -157,5 +157,6 @@ private:
 	std::unordered_map<StateID, LexicalTableEntry*> m_lexicalTable;
 	std::ifstream m_inputFile;
 	size_t m_multiLineCommentsOpened;
+	size_t m_startLineOfMultiLineComment;
 	char m_lastChar;
 };

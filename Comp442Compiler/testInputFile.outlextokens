@@ -1,11 +1,59 @@
-[InlineComment, "// the following code should all be", 1]
+[InlineComment, "// basic tests for section 5 (this line is the inline comment)", 1]
+[MultiLineComment, "/* block comment */", 2]
+[MultiLineComment, "/* nested /* block */ comments */", 3]
+[Integer, "14542", 4]
+[InvalidNumber, "01242", 5][InlineComment, "// should not be accepted", 5]
+[Float, "125.452", 6]
+[Float, "1420.458e355", 7]
+[Float, "1420.458e+355", 8]
+[InvalidNumber, "0125.4552e", 9][Operator, "-", 9][Integer, "4", 9][InlineComment, "// should not be accepted", 9]
+[InvalidNumber, "125.4552000e", 10][Operator, "-", 10][Integer, "4", 10][InlineComment, "// should not be accepted", 10]
+[InvalidNumber, "125.4552e-04", 11][InlineComment, "// should not be accepted", 11]
+[ID, "myIdentifier_578", 12]
+[ID, "m_myMemberVar5", 13]
+[ID, "a54", 14]
+[InlineComment, "// invalid characters:", 15]
+[InvalidIdentifier, "@", 16][InvalidIdentifier, "~", 16]
 
+[InlineComment, "//series of valid token with little to no spaces", 18]
+[ID, "a_sde21", 19][Operator, "=", 19][Integer, "503", 19][Punctuation, ";", 19][InvalidNumber, "33.45e+023", 19][Operator, "<>", 19][Operator, "==", 19][ID, "c_as0", 19][MultiLineComment, "/*test comment in the middle*/", 19][Integer, "56", 19][Operator, "/", 19]
 
+[InlineComment, "// operators, punctuation and keywords", 21]
+[Operator, "==", 22][Operator, "+", 22][Keyword, "or", 22][Punctuation, "(", 22][Punctuation, ";", 22][Keyword, "integer", 22][Keyword, "while", 22][Keyword, "localvar", 22]
+[Operator, "<>", 23][Operator, "-", 23][Keyword, "and", 23][Punctuation, ")", 23][Punctuation, ",", 23][Keyword, "float", 23][Keyword, "if", 23][Keyword, "constructor", 23]
+[Operator, "<", 24][Operator, "*", 24][Keyword, "not", 24][Punctuation, "{", 24][Punctuation, ".", 24][Keyword, "void", 24][Keyword, "then", 24][Keyword, "attribute", 24]
+[Operator, ">", 25][Operator, "/", 25][Punctuation, "}", 25][Punctuation, ":", 25][Keyword, "class", 25][Keyword, "else", 25][Keyword, "function", 25]
+[Operator, "<=", 26][Operator, "=", 26][Punctuation, "[", 26][Operator, "=>", 26][Keyword, "self", 26][Keyword, "read", 26][Keyword, "public", 26]
+[Operator, ">=", 27][Punctuation, "]", 27][Operator, "::", 27][Keyword, "isa", 27][Keyword, "write", 27][Keyword, "private", 27]
+[Keyword, "return", 28]
 
+[InlineComment, "//additional tests specific to the implementation", 30]
+[InlineComment, "// the following code should all be", 31]
 [MultiLineComment, "/* invalid numbers but they trigger /*
 */
     at different states of the DFA
-*/", 5][InlineComment, "// this line uses a tab and not multiple spaces for the seperation ", 9]
+*/", 32]
 
-[InlineComment, "//series of valid token with little to no spaces", 17]
-[ID, "a_sde21", 18][Operator, "=", 18][Integer, "503", 18][Punctuation, ";", 18][Operator, "<>", 18][Operator, "==", 18][ID, "c_as0", 18][MultiLineComment, "/*test comment in the middle*/", 18][Integer, "56", 18][Operator, "/", 18][EOF, "EOF", 24]
+
+
+
+[InvalidNumber, "12_e", 37]
+[InvalidNumber, "452_as", 38][InvalidNumber, "45._", 38]
+[InvalidNumber, "4523.e", 39][InvalidNumber, "486.dsa", 39][InlineComment, "// this line uses a tab and not multiple spaces for the seperation ", 39]
+[InvalidNumber, "453.0.", 40][InvalidNumber, "653.5.", 40]
+[InvalidNumber, "6.4e0.", 41][InvalidNumber, "6.4e0d", 41]
+[InvalidNumber, "6.4e-0_", 42][InvalidNumber, "6.4e+0d", 42]
+[InvalidNumber, "85.6e5s", 43][InvalidNumber, "54.4e3.", 43]
+[InvalidNumber, "85.6e+5e", 44][InvalidNumber, "54.4e-3.", 44]
+[InvalidNumber, "56.50s", 45][InvalidNumber, "45.010_", 45]
+
+[InlineComment, "// the below block comment will cause the unterminated block comment error", 47]
+[IncompleteMultipleLineComment, "/* here is a multiple line comment
+/* which is nested */
+but does not close all the multiple line comments
+This will generate an IncompleteMultipleLineComment token
+/*followed by an EOF token*/", 48]
+
+
+
+[EOF, "EOF", 52]

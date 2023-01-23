@@ -19,10 +19,6 @@ std::string ErrorTokenToStr(const Token& t)
 	std::stringstream ss;
 	ss << "Lexical error: " << t.GetTokenType() << ": \""
 		<< t.GetLexeme() << "\": line  " << t.GetLine() << ".\n";
-	// write to console
-	std::cout << "Lexical error: " << t.GetTokenType() << ": \""
-		<< t.GetLexeme() << "\": line  " << t.GetLine() << ".\n";
-	
 	return ss.str();
 }
 
@@ -52,14 +48,12 @@ size_t WriteTokenToFile(std::ofstream& tokenFile, std::ofstream& errorFile, Toke
 	{
 		errorFile << ErrorTokenToStr(t);
 	}
-	else
+
+	for (; lastLine < t.GetLine(); lastLine++)
 	{
-		for (; lastLine < t.GetLine(); lastLine++)
-		{
-			tokenFile << '\n';
-		}
-		tokenFile << TokenToStr(t);
+		tokenFile << '\n';
 	}
+	tokenFile << TokenToStr(t);
 	return t.GetLine();
 }
 

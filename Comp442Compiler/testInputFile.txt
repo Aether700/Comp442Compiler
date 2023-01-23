@@ -1,3 +1,33 @@
+// basic tests for section 5 (this line is the inline comment)
+/* block comment */
+/* nested /* block */ comments */
+14542
+01242 // should not be accepted
+125.452
+1420.458e355
+1420.458e+355
+0125.4552e-4 // should not be accepted
+125.4552000e-4 // should not be accepted
+125.4552e-04 // should not be accepted
+myIdentifier_578
+m_myMemberVar5
+a54
+// invalid characters:
+@~
+
+//series of valid token with little to no spaces
+a_sde21=503;33.45e+023<>==c_as0/*test comment in the middle*/56/
+
+// operators, punctuation and keywords
+==	+	or	(	;	integer	while	localvar
+<>	-	and	)	,	float	if 	constructor
+<	*	not	{	.	void	then	attribute
+>	/		}	:	class	else	function
+<=	=		[	=>	self	read	public
+>=			]	::	isa	write	private
+						return	
+
+//additional tests specific to the implementation
 // the following code should all be
 /* invalid numbers but they trigger /*
 */
@@ -14,9 +44,7 @@
 85.6e+5e  54.4e-3.
 56.50s  45.010_
 
-//series of valid token with little to no spaces
-a_sde21=503;33.45e+023<>==c_as0/*test comment in the middle*/56/
-
+// the below block comment will cause the unterminated block comment error
 /* here is a multiple line comment
 /* which is nested */
 but does not close all the multiple line comments

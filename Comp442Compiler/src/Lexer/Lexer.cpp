@@ -223,6 +223,7 @@ void Lexer::SetInputFile(const std::string& filepath)
 	l.m_inputFile = std::ifstream(filepath);
 	l.m_lineCounter = 1;
 	l.m_multiLineCommentsOpened = 0;
+	l.m_startLineOfMultiLineComment = 0;
 	l.m_lastChar = '\0';
 }
 
@@ -243,7 +244,8 @@ Token Lexer::GetNextToken()
 			{
 				l.m_inputFile.clear();
 				l.m_multiLineCommentsOpened = 0; // set to 0 now that error has been recorded
-				t = Token(charBuffer.str(), TokenType::IncompleteMultipleLineComment, l.m_lineCounter);
+				t = Token(charBuffer.str(), TokenType::IncompleteMultipleLineComment, 
+					l.m_startLineOfMultiLineComment);
 				continue;
 			}
 		}
@@ -299,6 +301,10 @@ StateID Lexer::TryToGenerateToken(StateID currState, char lookup,
 
 	if (GetLastChar() == '/' && lookup == '*')
 	{
+		if (!IsInBlockComment())
+		{
+			l.m_startLineOfMultiLineComment = l.m_lineCounter;
+		}
 		l.m_multiLineCommentsOpened++;
 	}
 	else if (GetLastChar() == '*' && lookup == '/')
@@ -376,6 +382,10 @@ void Lexer::DoCustomStateBehavior(StateID state, Token& outToken)
 		{
 			outToken.m_type = TokenType::Punctuation;
 		}
+		break;
+
+	case 13:
+		outToken.m_line = GetInstance().m_startLineOfMultiLineComment;
 		break;
 	}
 }
