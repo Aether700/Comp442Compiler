@@ -25,7 +25,8 @@ enum class TokenType
 
 	InvalidCharacter,
 	InvalidNumber,
-	InvalidIdentifier
+	InvalidIdentifier,
+	IncompleteMultipleLineComment
 };
 
 std::ostream& operator<<(std::ostream& stream, TokenType token);
@@ -49,6 +50,8 @@ public:
 
 	// takes a lookup character and verifies that the character is valid in the language
 	static bool IsValidChar(char c);
+
+	static bool IsPunctuation(const std::string& str);
 
 	static char GetLetterChar();
 	static char GetNonzeroChar();
@@ -135,8 +138,6 @@ private:
 		std::stringstream& charBuffer, Token& outToken);
 
 	static void BackTrack(char lookup, std::stringstream& charBuffer);
-
-	static Token GenerateErrorToken(StateID currState, char lookup, std::stringstream& charBuffer);
 
 	// returns the next state
 	static StateID DoCustomStateChange(StateID currState, StateID nextState, std::stringstream& charBuffer, 

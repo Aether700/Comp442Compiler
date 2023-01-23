@@ -1,1 +1,24 @@
-c_as0/*test comment in the middle*/56/
+// the following code should all be
+/* invalid numbers but they trigger /*
+*/
+    at different states of the DFA
+*/
+
+12_e
+452_as   45._
+4523.e  486.dsa // this line uses a tab and not multiple spaces for the seperation 
+453.0.  653.5.
+6.4e0.  6.4e0d
+6.4e-0_  6.4e+0d
+85.6e5s  54.4e3.
+85.6e+5e  54.4e-3.
+56.50s  45.010_
+
+//series of valid token with little to no spaces
+a_sde21=503;33.45e+023<>==c_as0/*test comment in the middle*/56/
+
+/* here is a multiple line comment
+/* which is nested */
+but does not close all the multiple line comments
+This will generate an IncompleteMultipleLineComment token
+/*followed by an EOF token*/

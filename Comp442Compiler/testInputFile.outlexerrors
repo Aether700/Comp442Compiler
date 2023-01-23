@@ -1,0 +1,23 @@
+Lexical error: InvalidNumber: "12_e": line  7.
+Lexical error: InvalidNumber: "452_as": line  8.
+Lexical error: InvalidNumber: "45._": line  8.
+Lexical error: InvalidNumber: "4523.e": line  9.
+Lexical error: InvalidNumber: "486.dsa": line  9.
+Lexical error: InvalidNumber: "453.0.": line  10.
+Lexical error: InvalidNumber: "653.5.": line  10.
+Lexical error: InvalidNumber: "6.4e0.": line  11.
+Lexical error: InvalidNumber: "6.4e0d": line  11.
+Lexical error: InvalidNumber: "6.4e-0_": line  12.
+Lexical error: InvalidNumber: "6.4e+0d": line  12.
+Lexical error: InvalidNumber: "85.6e5s": line  13.
+Lexical error: InvalidNumber: "54.4e3.": line  13.
+Lexical error: InvalidNumber: "85.6e+5e": line  14.
+Lexical error: InvalidNumber: "54.4e-3.": line  14.
+Lexical error: InvalidNumber: "56.50s": line  15.
+Lexical error: InvalidNumber: "45.010_": line  15.
+Lexical error: InvalidNumber: "33.45e+023": line  18.
+Lexical error: IncompleteMultipleLineComment: "/* here is a multiple line comment
+/* which is nested */
+but does not close all the multiple line comments
+This will generate an IncompleteMultipleLineComment token
+/*followed by an EOF token*/": line  24.

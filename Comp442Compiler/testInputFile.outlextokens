@@ -1,1 +1,11 @@
-[ID, "c_as0", 1][MultiLineComment, "/*test comment in the middle*/", 1][Integer, "56", 1][Operator, "/", 1][EOF, "EOF", 1]
+[InlineComment, "// the following code should all be", 1]
+
+
+
+[MultiLineComment, "/* invalid numbers but they trigger /*
+*/
+    at different states of the DFA
+*/", 5][InlineComment, "// this line uses a tab and not multiple spaces for the seperation ", 9]
+
+[InlineComment, "//series of valid token with little to no spaces", 17]
+[ID, "a_sde21", 18][Operator, "=", 18][Integer, "503", 18][Punctuation, ";", 18][Operator, "<>", 18][Operator, "==", 18][ID, "c_as0", 18][MultiLineComment, "/*test comment in the middle*/", 18][Integer, "56", 18][Operator, "/", 18][EOF, "EOF", 24]

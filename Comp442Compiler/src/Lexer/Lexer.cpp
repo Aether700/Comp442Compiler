@@ -78,6 +78,10 @@ std::ostream& operator<<(std::ostream& stream, TokenType token)
 		case TokenType::InvalidIdentifier:
 			stream << "InvalidIdentifier";
 			break;
+		
+		case TokenType::IncompleteMultipleLineComment:
+			stream << "IncompleteMultipleLineComment";
+			break;
 
 		default:
 			stream << "Unknown Token";
@@ -149,6 +153,12 @@ bool CharData::IsValidChar(char c)
 	return IsLetter(c) || IsNonzero(c) || IsWhitespace(c) || IsPossibleChar(c);
 }
 
+bool CharData::IsPunctuation(const std::string& str)
+{
+	return str == "(" || str == ")" || str == "[" || str == "]" || str == "{" 
+		|| str == "}" || str == ";" || str == ":" || str == "," || str == ".";
+}
+
 char CharData::GetLetterChar() { return s_letterChar; }
 char CharData::GetNonzeroChar() { return s_nonzeroChar; }
 char CharData::GetWhitespaceChar() { return s_whitespaceChar; }
@@ -172,7 +182,7 @@ size_t Token::GetLine() const { return m_line; }
 bool Token::IsError() const
 {
 	return m_type == TokenType::InvalidCharacter || m_type == TokenType::InvalidNumber 
-		|| m_type == TokenType::InvalidIdentifier;	
+		|| m_type == TokenType::InvalidIdentifier || m_type == TokenType::IncompleteMultipleLineComment;	
 }
 
 // LexicalTableEntry //////////////////////////////////////////////////////////////////////////
@@ -229,6 +239,13 @@ Token Lexer::GetNextToken()
 		if (l.m_inputFile.eof())
 		{
 			lookup = CharData::GetEOFChar();
+			if (IsInBlockComment())
+			{
+				l.m_inputFile.clear();
+				l.m_multiLineCommentsOpened = 0; // set to 0 now that error has been recorded
+				t = Token(charBuffer.str(), TokenType::IncompleteMultipleLineComment, l.m_lineCounter);
+				continue;
+			}
 		}
 		else if (lookup == CharData::GetNewLineChar())
 		{
@@ -273,9 +290,10 @@ StateID Lexer::TryToGenerateToken(StateID currState, char lookup,
 	nextState = DoCustomStateChange(currState, nextState, charBuffer, lookup, representationChar);
 	if (nextState == NullState)
 	{
+		// last fail safe error.
 		std::cout << "[Debug]: Error encountered at state " << currState 
 			<< " when receiving representation character " << representationChar << "\n";
-		outToken = GenerateErrorToken(currState, lookup, charBuffer);
+		outToken = Token(charBuffer.str(), TokenType::InvalidIdentifier, l.m_lineCounter);
 		return currState;
 	}
 
@@ -325,37 +343,6 @@ void Lexer::BackTrack(char lookup, std::stringstream& charBuffer)
 	charBuffer.str(bufferCopy.substr(0, bufferCopy.length() - 1));
 }
 
-Token Lexer::GenerateErrorToken(StateID currState, char lookup, std::stringstream& charBuffer)
-{
-	Lexer& l = GetInstance();
-	if (!CharData::IsValidChar(lookup))
-	{
-		return Token(charBuffer.str(), TokenType::InvalidCharacter, l.m_lineCounter);
-	}
-
-	char currChar = lookup;
-	charBuffer << currChar;
-	while (!CharData::IsWhitespace(currChar))
-	{
-		l.m_inputFile.read(&currChar, 1);
-		charBuffer << currChar;
-	}
-
-	BackTrack(currChar, charBuffer);
-	
-
-	switch(currState)
-	{
-	case 6:
-	case 10:
-	case 15:
-	case 16:
-		return Token(charBuffer.str(), TokenType::InvalidNumber, l.m_lineCounter);
-	}
-
-	return Token(charBuffer.str(), TokenType::InvalidIdentifier, l.m_lineCounter);
-}
-
 StateID Lexer::DoCustomStateChange(StateID currState, StateID nextState, std::stringstream& charBuffer,
 	 char lookup, char representationChar)
 {
@@ -380,6 +367,14 @@ void Lexer::DoCustomStateBehavior(StateID state, Token& outToken)
 		if (CharData::IsKeyword(outToken.GetLexeme()))
 		{
 			outToken.m_type = TokenType::Keyword;
+		}
+		break;
+
+	case 14:
+	case 28:
+		if (CharData::IsPunctuation(outToken.GetLexeme()))
+		{
+			outToken.m_type = TokenType::Punctuation;
 		}
 		break;
 	}

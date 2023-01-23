@@ -16,3 +16,9 @@
 
 //series of valid token with little to no spaces
 a_sde21=503;33.45e+023<>==c_as0/*test comment in the middle*/56/
+
+/* here is a multiple line comment
+/* which is nested */
+but does not close all the multiple line comments
+This will generate an IncompleteMultipleLineComment token
+/*followed by an EOF token*/
