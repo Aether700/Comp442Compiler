@@ -143,7 +143,7 @@ private:
 		char lookup, char representationChar);
 	static void DoCustomStateBehavior(StateID state, Token& outToken);
 	static bool IsTwoCharOperator(char firstChar, char secondChar);
-	static bool IsInComment();
+	static bool IsInBlockComment();
 
 	//returns the last char added fully processed by the lexer
 	static char GetLastChar();

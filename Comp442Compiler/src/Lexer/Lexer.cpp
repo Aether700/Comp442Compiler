@@ -292,7 +292,7 @@ StateID Lexer::TryToGenerateToken(StateID currState, char lookup,
 
 	if (entry->IsFinal())
 	{
-		if (IsInComment())
+		if (IsInBlockComment())
 		{
 			return 8;
 		}
@@ -401,7 +401,7 @@ bool Lexer::IsTwoCharOperator(char firstChar, char secondChar)
 	return false;
 }
 
-bool Lexer::IsInComment() { return GetInstance().m_multiLineCommentsOpened > 0; }
+bool Lexer::IsInBlockComment() { return GetInstance().m_multiLineCommentsOpened > 0; }
 
 char Lexer::GetLastChar() { return GetInstance().m_lastChar; }
 
@@ -414,23 +414,25 @@ void Lexer::InitializeLexicalTable()
 		{':', 20}, {'.', 14}, {'<', 20}, {'>', 20}, {',', 14}, {CharData::GetNewLineChar(), 0}});
 
 	m_lexicalTable[1] = new LexicalTableEntry({{CharData::GetLetterChar(), 1}, 
-		{CharData::GetNonzeroChar(), 1}, {CharData::GetElseChar(), 22}, {'e', 1}, {'_', 1}});
+		{CharData::GetNonzeroChar(), 1}, {CharData::GetElseChar(), 22}, {CharData::GetFloatPowerChar(), 1}, 
+		{'0', 1}, {'_', 1},});
 	
 	m_lexicalTable[2] = new LexicalTableEntry({{CharData::GetLetterChar(), 30}, 
 		{CharData::GetNonzeroChar(), 5}, {CharData::GetElseChar(), 23}, 
-		{CharData::GetFloatPowerChar(), 30}, {'0', 5}, {'.', 6}});
+		{CharData::GetFloatPowerChar(), 30}, {'0', 5}, {'.', 6}, {'_', 30}});
 	
 	m_lexicalTable[3] = new LexicalTableEntry({{CharData::GetLetterChar(), 30}, 
 		{CharData::GetNonzeroChar(), 30}, {CharData::GetElseChar(), 23}, 
-		{CharData::GetFloatPowerChar(), 30}, {'0', 30}, {'.', 6}});
+		{CharData::GetFloatPowerChar(), 30}, {'0', 30}, {'.', 6}, {'_', 30}});
 
 	m_lexicalTable[4] = new LexicalTableEntry({{CharData::GetElseChar(), 28}, {'/', 7}, {'*', 8}});
 	m_lexicalTable[5] = new LexicalTableEntry({{CharData::GetLetterChar(), 30}, 
 		{CharData::GetNonzeroChar(), 5}, {CharData::GetElseChar(), 23}, 
-		{CharData::GetFloatPowerChar(), 30}, {'0', 5}, {'.', 6}});
+		{CharData::GetFloatPowerChar(), 30}, {'0', 5}, {'.', 6}, {'_', 30}});
 	
 	m_lexicalTable[6] = new LexicalTableEntry({{CharData::GetLetterChar(), 30},
-		{CharData::GetNonzeroChar(), 9}, {CharData::GetFloatPowerChar(), 30}, {'0', 24}, {'.', 30}});
+		{CharData::GetNonzeroChar(), 9}, {CharData::GetFloatPowerChar(), 30}, {'0', 24}, 
+		{'.', 30}, {'_', 30}});
 
 	m_lexicalTable[7] = new LexicalTableEntry({{CharData::GetEOFChar(), 11}, 
 		{CharData::GetElseChar(), 7}, {CharData::GetNewLineChar(), 11}});
@@ -438,10 +440,10 @@ void Lexer::InitializeLexicalTable()
 	m_lexicalTable[8] = new LexicalTableEntry({{CharData::GetElseChar(), 8}, {'*', 12}});
 	m_lexicalTable[9] = new LexicalTableEntry({{CharData::GetLetterChar(), 30}, 
 		{CharData::GetNonzeroChar(), 9}, {CharData::GetElseChar(), 25}, 
-		{CharData::GetFloatPowerChar(), 15}, {'0', 10}});
+		{CharData::GetFloatPowerChar(), 15}, {'0', 10}, {'.', 30}, {'_', 30}});
 	
 	m_lexicalTable[10] = new LexicalTableEntry({{CharData::GetNonzeroChar(), 9}, 
-		{CharData::GetElseChar(), 29}, {'0', 10}});
+		{CharData::GetElseChar(), 30}, {'0', 10}});
 
 	m_lexicalTable[11] = new LexicalTableEntry({}, true, true, TokenType::InlineComment);
 	m_lexicalTable[12] = new LexicalTableEntry({{CharData::GetElseChar(), 8}, {'/', 13}});
@@ -452,15 +454,15 @@ void Lexer::InitializeLexicalTable()
 		{'+', 16}, {'-', 16}, {'0', 19}});
 
 	m_lexicalTable[16] = new LexicalTableEntry({{CharData::GetLetterChar(), 30}, 
-		{CharData::GetNonzeroChar(), 17}, {'0', 19}});
+		{CharData::GetNonzeroChar(), 17}, {'0', 19}, {'.', 30}, {'_', 30}});
 	m_lexicalTable[17] = new LexicalTableEntry({{CharData::GetLetterChar(), 30},
 		{CharData::GetNonzeroChar(), 17}, {CharData::GetElseChar(), 25}, 
-		{CharData::GetFloatPowerChar(), 30}, {'0', 17}});
+		{CharData::GetFloatPowerChar(), 30}, {'0', 17}, {'.', 30}, {'_', 30}});
 
 	m_lexicalTable[18] = new LexicalTableEntry({}, true, false, TokenType::EndOfFile);
 	m_lexicalTable[19] = new LexicalTableEntry({{CharData::GetLetterChar(), 30}, 
 		{CharData::GetNonzeroChar(), 30}, {CharData::GetElseChar(), 25}, 
-		{CharData::GetFloatPowerChar(), 30}, {'0', 30}});
+		{CharData::GetFloatPowerChar(), 30}, {'0', 30}, {'.', 30}, {'_', 30}});
 	
 	// needs additional steps to sort which operator the token is on this state
 	m_lexicalTable[20] = new LexicalTableEntry({{CharData::GetElseChar(), 28}}); 
@@ -472,7 +474,7 @@ void Lexer::InitializeLexicalTable()
 	m_lexicalTable[23] = new LexicalTableEntry({}, true, true, TokenType::Integer);
 	m_lexicalTable[24] = new LexicalTableEntry({{CharData::GetLetterChar(), 30},
 		{CharData::GetNonzeroChar(), 9}, {CharData::GetElseChar(), 25}, 
-		{CharData::GetFloatPowerChar(), 15}, {'.', 30}});
+		{CharData::GetFloatPowerChar(), 15}, {'.', 30}, {'_', 30}});
 	
 	m_lexicalTable[25] = new LexicalTableEntry({}, true, true, TokenType::Float);
 	m_lexicalTable[26] = new LexicalTableEntry({{CharData::GetLetterChar(), 26}, 
@@ -483,7 +485,7 @@ void Lexer::InitializeLexicalTable()
 	m_lexicalTable[29] = new LexicalTableEntry({}, true, true, TokenType::InvalidNumber);
 	m_lexicalTable[30] = new LexicalTableEntry({{CharData::GetLetterChar(), 30}, 
 		{CharData::GetNonzeroChar(), 30}, {CharData::GetElseChar(), 29}, 
-		{CharData::GetEOFChar(), 29}, {'e', 30}, {'0', 30}, {'.', 30}});
+		{CharData::GetEOFChar(), 29}, {'e', 30}, {'0', 30}, {'.', 30}, {'_', 30}});
 }
 
 Lexer& Lexer::GetInstance()
