@@ -281,7 +281,7 @@ char CharData::GetRepresentationChar(char c)
 	{
 		return s_whitespaceChar;
 	}
-	else if (IsPossibleChar(c))
+	else if (IsValidRepresentationChar(c))
 	{
 		return c;
 	}
@@ -307,7 +307,7 @@ bool CharData::IsKeyword(const std::string& str)
 	return false;
 }
 
-bool CharData::IsPossibleChar(char c)
+bool CharData::IsValidRepresentationChar(char c)
 {
 	for (size_t i = 0; i < s_numCharInput; i++)
 	{
@@ -321,7 +321,7 @@ bool CharData::IsPossibleChar(char c)
 
 bool CharData::IsValidChar(char c)
 {
-	return IsLetter(c) || IsNonzero(c) || IsWhitespace(c) || IsPossibleChar(c);
+	return IsLetter(c) || IsNonzero(c) || IsWhitespace(c) || IsValidRepresentationChar(c);
 }
 
 TokenType CharData::GetKeywordType(const std::string& str)
@@ -505,6 +505,7 @@ void Lexer::SetInputFile(const std::string& filepath)
 Token Lexer::GetNextToken()
 {
 	Lexer& l = GetInstance();
+	l.m_justOpenedOrClosedMultiLineComment = false;
 	StateID currState = 0;
 	Token t = Token();
 	std::stringstream charBuffer;
@@ -569,22 +570,31 @@ StateID Lexer::TryToGenerateToken(StateID currState, char lookup,
 	{
 		// last fail safe error.
 		std::cout << "[Debug]: Error encountered at state " << currState 
-			<< " when receiving representation character " << representationChar << "\n";
+			<< " when receiving representation character " << representationChar 
+			<< " | lookup char: " << lookup << "\n";
 		outToken = Token(charBuffer.str(), TokenType::InvalidIdentifier, l.m_lineCounter);
 		return currState;
 	}
 
-	if (GetLastChar() == '/' && lookup == '*')
+	// handle muliple line comment logic
+	if (GetLastChar() == '/' && lookup == '*' && !l.m_justOpenedOrClosedMultiLineComment)
 	{
 		if (!IsInBlockComment())
 		{
 			l.m_startLineOfMultiLineComment = l.m_lineCounter;
 		}
 		l.m_multiLineCommentsOpened++;
+		l.m_justOpenedOrClosedMultiLineComment = true;
 	}
-	else if (GetLastChar() == '*' && lookup == '/')
+	else if (IsInBlockComment() && GetLastChar() == '*' 
+		&& lookup == '/' && !l.m_justOpenedOrClosedMultiLineComment)
 	{
 		l.m_multiLineCommentsOpened--;
+		l.m_justOpenedOrClosedMultiLineComment = true;
+	}
+	else
+	{
+		l.m_justOpenedOrClosedMultiLineComment = false;
 	}
 
 	LexicalTableEntry* entry = l.m_lexicalTable[nextState];
@@ -629,6 +639,12 @@ StateID Lexer::DoCustomStateChange(StateID currState, StateID nextState, std::st
 {
 	switch(currState)
 	{
+	case 0:
+		if (!CharData::IsValidChar(lookup))
+		{
+			return 31;
+		}
+		break;
 	case 20:
 		char lastChar = GetLastChar();
 		if (IsTwoCharOperator(lastChar, lookup))
@@ -730,16 +746,16 @@ void Lexer::InitializeLexicalTable()
 		{CharData::GetElseChar(), 30}, {CharData::GetFloatPowerChar(), 30},
 		{'+', 16}, {'-', 16}, {'0', 19}});
 
-	m_lexicalTable[16] = new LexicalTableEntry({{CharData::GetLetterChar(), 30}, 
-		{CharData::GetNonzeroChar(), 17}, {'0', 19}, {'.', 30}, {'_', 30}});
+	m_lexicalTable[16] = new LexicalTableEntry({{CharData::GetNonzeroChar(), 17}, 
+		{CharData::GetElseChar(), 30}, {'0', 19}});
 	m_lexicalTable[17] = new LexicalTableEntry({{CharData::GetLetterChar(), 30},
 		{CharData::GetNonzeroChar(), 17}, {CharData::GetElseChar(), 25}, 
-		{CharData::GetFloatPowerChar(), 30}, {'0', 17}, {'.', 30}, {'_', 30}});
+		{CharData::GetFloatPowerChar(), 30}, {'0', 17}, {'_', 30}});
 
 	m_lexicalTable[18] = new LexicalTableEntry({}, true, false, TokenType::EndOfFile);
 	m_lexicalTable[19] = new LexicalTableEntry({{CharData::GetLetterChar(), 30}, 
 		{CharData::GetNonzeroChar(), 30}, {CharData::GetElseChar(), 25}, 
-		{CharData::GetFloatPowerChar(), 30}, {'0', 30}, {'.', 30}, {'_', 30}});
+		{CharData::GetFloatPowerChar(), 30}, {'0', 30}, {'_', 30}});
 	
 	// needs additional steps to sort which operator the token is on this state
 	m_lexicalTable[20] = new LexicalTableEntry({{CharData::GetElseChar(), 28}}); 
@@ -763,6 +779,8 @@ void Lexer::InitializeLexicalTable()
 	m_lexicalTable[30] = new LexicalTableEntry({{CharData::GetLetterChar(), 30}, 
 		{CharData::GetNonzeroChar(), 30}, {CharData::GetElseChar(), 29}, 
 		{CharData::GetEOFChar(), 29}, {'e', 30}, {'0', 30}, {'.', 30}, {'_', 30}});
+
+	m_lexicalTable[31] = new LexicalTableEntry({}, true, false, TokenType::InvalidCharacter);
 }
 
 Lexer& Lexer::GetInstance()

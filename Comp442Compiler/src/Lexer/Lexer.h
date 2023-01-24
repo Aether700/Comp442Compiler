@@ -94,7 +94,7 @@ public:
 
 	// assumes the provided character is a representation char therefore 
 	// chars like 'x' which is a valid input character would return false
-	static bool IsPossibleChar(char c);
+	static bool IsValidRepresentationChar(char c);
 
 	// takes a lookup character and verifies that the character is valid in the language
 	static bool IsValidChar(char c);
@@ -213,4 +213,5 @@ private:
 	size_t m_multiLineCommentsOpened;
 	size_t m_startLineOfMultiLineComment;
 	char m_lastChar;
+	bool m_justOpenedOrClosedMultiLineComment;
 };

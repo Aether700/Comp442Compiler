@@ -105,11 +105,11 @@ int main(int argc, char* argv[])
 
 	Lexer::SetInputFile(path);
 	Token t = Lexer::GetNextToken();
-	std::cout << t.GetLexeme() << ": " <<t.GetTokenType() << "\n";
+	std::cout << "[" << t.GetLexeme() << ": " << t.GetTokenType() << "]\n";
 	while(t.GetTokenType() != TokenType::EndOfFile)
 	{
 		t = Lexer::GetNextToken();
-		std::cout << t.GetLexeme() << ": " <<t.GetTokenType() << "\n";
+		std::cout << "[" << t.GetLexeme() << ": " << t.GetTokenType() << "]\n";
 	}
 #else
 	std::string directoryPath = "TestFiles";
