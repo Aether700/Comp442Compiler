@@ -324,12 +324,6 @@ bool CharData::IsValidChar(char c)
 	return IsLetter(c) || IsNonzero(c) || IsWhitespace(c) || IsPossibleChar(c);
 }
 
-bool CharData::IsPunctuation(const std::string& str)
-{
-	return str == "(" || str == ")" || str == "[" || str == "]" || str == "{" 
-		|| str == "}" || str == ";" || str == ":" || str == "," || str == ".";
-}
-
 TokenType CharData::GetKeywordType(const std::string& str)
 {
 	for (size_t i = 0; i < s_numKeywords; i++)
@@ -714,9 +708,8 @@ void Lexer::InitializeLexicalTable()
 		{CharData::GetNonzeroChar(), 5}, {CharData::GetElseChar(), 23}, 
 		{CharData::GetFloatPowerChar(), 30}, {'0', 5}, {'.', 6}, {'_', 30}});
 	
-	m_lexicalTable[6] = new LexicalTableEntry({{CharData::GetLetterChar(), 30},
-		{CharData::GetNonzeroChar(), 9}, {CharData::GetFloatPowerChar(), 30}, {'0', 24}, 
-		{'.', 30}, {'_', 30}});
+	m_lexicalTable[6] = new LexicalTableEntry({{CharData::GetNonzeroChar(), 9}, 
+		{CharData::GetElseChar(), 30}, {'0', 24}});
 
 	m_lexicalTable[7] = new LexicalTableEntry({{CharData::GetEOFChar(), 11}, 
 		{CharData::GetElseChar(), 7}, {CharData::GetNewLineChar(), 11}});

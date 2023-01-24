@@ -1,12 +1,11 @@
 #include <iostream>
+#include <sstream>
+#include <filesystem>
+
 #include "Lexer/Lexer.h"
 #include "Core/Core.h"
-#include <sstream>
 
-/*notes
-need to support nested comments
-in tools section note programming language used and why use that one
-*/
+//check to add invalid character token error
 
 std::string SimplifyFilename(const std::string& filepath)
 {
@@ -35,10 +34,6 @@ std::string TokenToStr(const Token& t)
 		ss << t.GetLexeme();
 	}
 	ss << "\", " << t.GetLine() << "]";
-
-	// write to console
-	std::cout << ss.str() << "\n";
-	
 	return ss.str();
 }
 
@@ -77,31 +72,68 @@ void Driver(const std::string& filepath)
 	}
 }
 
+void ExitPrompt()
+{
+	std::cout << "\nPress enter to exit\n";
+	std::cin.get();
+}
+
 int main(int argc, char* argv[])
 {
-	std::string fileName = "testInputFile.txt";
-	if (argc > 1)
+#ifdef DEBUG_MODE
+	std::string file = "testInputFile.txt";
+	std::string currDir = std::string(argv[0]);
+	std::string path = currDir.substr(0, currDir.find_last_of("/\\"));
+	path = path.substr(0, path.find_last_of("/\\"));
+	path += "/Comp442Compiler/Comp442Compiler/" + file;
+	if (false)
 	{
-		fileName = argv[1];
-		std::cout << "provided with file: " << fileName << "\n\n";
-	}
+		std::ifstream f = std::ifstream(path);
 
-	std::ifstream file = std::ifstream(fileName);
-	if (!file)
-	{
-		// extract path for vscode
-		std::string currDir = std::string(argv[0]);
-		std::string path = currDir.substr(0, currDir.find_last_of("/\\"));
-		path = path.substr(0, path.find_last_of("/\\"));
-		path += "/Comp442Compiler/Comp442Compiler/" + fileName;
-		
-		file = std::ifstream(path);
-		if (!file)
+		if (!f)
 		{
-			std::cout << "cannot find file\n";
 			return 1;
 		}
-		fileName = path;
+
+		while (!f.eof())
+		{
+			char c;
+			f.read(&c, 1);
+			std::cout << c;
+		}
 	}
-	Driver(fileName);
+
+	Lexer::SetInputFile(path);
+	Token t = Lexer::GetNextToken();
+	std::cout << t.GetLexeme() << ": " <<t.GetTokenType() << "\n";
+	while(t.GetTokenType() != TokenType::EndOfFile)
+	{
+		t = Lexer::GetNextToken();
+		std::cout << t.GetLexeme() << ": " <<t.GetTokenType() << "\n";
+	}
+#else
+	std::string directoryPath = "TestFiles";
+	if (!std::filesystem::exists(directoryPath))
+	{
+		std::cout << "Directory \"" << directoryPath 
+			<< "\" could not be found. Please put all the test files in the relative directory \"" 
+			<< directoryPath << "\"\n";
+
+		ExitPrompt();
+		return 1;
+	}
+
+	for (auto& file : std::filesystem::directory_iterator(directoryPath))
+	{
+		std::string filename = directoryPath + "/" + file.path().filename().generic_string();
+		std::string fileExtention = filename.substr(filename.length() - 4);
+		if (fileExtention == ".src")
+		{
+			std::cout << "Processing file \"" << filename << "\"\n"; 
+			Driver(filename);
+		}
+	}
+	std::cout << "Directory processing completed\n";
+	ExitPrompt();
+#endif
 }

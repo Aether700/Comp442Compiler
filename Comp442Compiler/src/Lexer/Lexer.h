@@ -99,8 +99,6 @@ public:
 	// takes a lookup character and verifies that the character is valid in the language
 	static bool IsValidChar(char c);
 
-	static bool IsPunctuation(const std::string& str);
-
 	// returns the TokenType of the provided string if the string is a keyword or TokenType::None if it is not
 	static TokenType GetKeywordType(const std::string& str);
 
@@ -163,8 +161,8 @@ private:
 class LexicalTableEntry
 {
 public:
-	LexicalTableEntry(const std::initializer_list<std::pair<char, StateID>>& stateTransitions, bool isFinal = false, 
-		bool isBackTrack = false, TokenType type = TokenType::None);
+	LexicalTableEntry(const std::initializer_list<std::pair<char, StateID>>& stateTransitions, 
+		bool isFinal = false, bool isBackTrack = false, TokenType type = TokenType::None);
 
 	// assumes that the provided character is a representation character
 	StateID GetTransition(char c) const;
