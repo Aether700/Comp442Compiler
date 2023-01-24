@@ -13,14 +13,62 @@ enum class TokenType
 	None,
 	
 	ID,
-	Integer,
-	Float,
+	IntegerLiteral,
+	FloatLiteral,
 	WhiteSpace,
 	InlineComment,
 	MultiLineComment,
-	Keyword,
-	Operator,
-	Punctuation,
+
+	//keywords
+	Or,
+	And,
+	Not,
+	IntegerKeyword,
+	FloatKeyword,
+	Void,
+	Class,
+	Self,
+	IsA,
+	While,
+	If,
+	Then,
+	Else,
+	Read,
+	Write,
+	Return,
+	LocalVar,
+	Constructor,
+	Attribute,
+	Function,
+	Public,
+	Private,
+
+	// Operators and punctuations
+	Equal,
+	NotEqual,
+	LessThan,
+	GreaterThan,
+	LessOrEqual,
+	GreaterOrEqual,
+	Plus,
+	Minus,
+	Multiply,
+	Divide,
+	Assign,
+	OpenParanthese,
+	CloseParanthese,
+	OpenSquareBracket,
+	CloseSquareBracket,
+	OpenCurlyBracket,
+	CloseCurlyBracket,
+	SemiColon,
+	Comma,
+	Dot,
+	Colon,
+	Arrow,
+	Scope,
+
+
 	EndOfFile,
 
 	InvalidCharacter,
@@ -53,6 +101,13 @@ public:
 
 	static bool IsPunctuation(const std::string& str);
 
+	// returns the TokenType of the provided string if the string is a keyword or TokenType::None if it is not
+	static TokenType GetKeywordType(const std::string& str);
+
+	// returns the TokenType of the provided string if the string is an operator of a punctuation 
+	// or TokenType::None if it is not
+	static TokenType GetOperatorPunctuationType(const std::string& str);
+
 	static char GetLetterChar();
 	static char GetNonzeroChar();
 	static char GetWhitespaceChar();
@@ -81,6 +136,7 @@ private:
 		"if", "then", "else", "read", "write", "return", "localvar", "constructor", "attribute", 
 		"function", "public", "private"
 	};
+	static constexpr size_t s_keywordToTokenOffset = 7;
 	static constexpr size_t s_numKeywords = sizeof(s_keywords) / sizeof(const char*);
 
 };

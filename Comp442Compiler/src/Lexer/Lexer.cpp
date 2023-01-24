@@ -31,12 +31,12 @@ std::ostream& operator<<(std::ostream& stream, TokenType token)
 			stream << "ID";
 			break;
 
-		case TokenType::Integer:
-			stream << "Integer";
+		case TokenType::IntegerLiteral:
+			stream << "IntegerLiteral";
 			break;
 
-		case TokenType::Float:
-			stream << "Float";
+		case TokenType::FloatLiteral:
+			stream << "FloatLiteral";
 			break;
 
 		case TokenType::WhiteSpace:
@@ -51,16 +51,187 @@ std::ostream& operator<<(std::ostream& stream, TokenType token)
 			stream << "MultiLineComment";
 			break;
 
-		case TokenType::Keyword:
-			stream << "Keyword";
+		//keywords
+		case TokenType::Or:
+			stream << "Or";
 			break;
 
-		case TokenType::Operator:
-			stream << "Operator";
+		case TokenType::And:
+			stream << "And";
 			break;
 
-		case TokenType::Punctuation:
-			stream << "Punctuation";
+		case TokenType::Not:
+			stream << "Not";
+			break;
+
+		case TokenType::IntegerKeyword:
+			stream << "IntegerKeyword";
+			break;
+
+		case TokenType::FloatKeyword:
+			stream << "FloatKeyword";
+			break;
+
+		case TokenType::Void:
+			stream << "Void";
+			break;
+
+		case TokenType::Class:
+			stream << "Class";
+			break;
+
+		case TokenType::Self:
+			stream << "Self";
+			break;
+
+		case TokenType::IsA:
+			stream << "IsA";
+			break;
+
+		case TokenType::While:
+			stream << "While";
+			break;
+
+		case TokenType::If:
+			stream << "If";
+			break;
+
+		case TokenType::Then:
+			stream << "Then";
+			break;
+
+		case TokenType::Else:
+			stream << "Else";
+			break;
+
+		case TokenType::Read:
+			stream << "Read";
+			break;
+
+		case TokenType::Write:
+			stream << "Write";
+			break;
+
+		case TokenType::Return:
+			stream << "Return";
+			break;
+
+		case TokenType::LocalVar:
+			stream << "LocalVar";
+			break;
+
+		case TokenType::Constructor:
+			stream << "Constructor";
+			break;
+
+		case TokenType::Attribute:
+			stream << "Attribute";
+			break;
+
+		case TokenType::Function:
+			stream << "Function";
+			break;
+
+		case TokenType::Public:
+			stream << "Public";
+			break;
+
+		case TokenType::Private:
+			stream << "Private";
+			break;
+
+
+		// Operators and punctuations
+		case TokenType::Equal:
+			stream << "Equal";
+			break;
+
+		case TokenType::NotEqual:
+			stream << "NotEqual";
+			break;
+
+		case TokenType::LessThan:
+			stream << "LessThan";
+			break;
+
+		case TokenType::GreaterThan:
+			stream << "GreaterThan";
+			break;
+
+		case TokenType::LessOrEqual:
+			stream << "LessOrEqual";
+			break;
+
+		case TokenType::GreaterOrEqual:
+			stream << "GreaterOrEqual";
+			break;
+
+		case TokenType::Plus:
+			stream << "Plus";
+			break;
+
+		case TokenType::Minus:
+			stream << "Minus";
+			break;
+
+		case TokenType::Multiply:
+			stream << "Multiply";
+			break;
+
+		case TokenType::Divide:
+			stream << "Divide";
+			break;
+
+		case TokenType::Assign:
+			stream << "Assign";
+			break;
+
+		case TokenType::OpenParanthese:
+			stream << "OpenParanthese";
+			break;
+
+		case TokenType::CloseParanthese:
+			stream << "CloseParanthese";
+			break;
+
+		case TokenType::OpenSquareBracket:
+			stream << "OpenSquareBracket";
+			break;
+
+		case TokenType::CloseSquareBracket:
+			stream << "CloseSquareBracket";
+			break;
+
+		case TokenType::OpenCurlyBracket:
+			stream << "OpenCurlyBracket";
+			break;
+
+		case TokenType::CloseCurlyBracket:
+			stream << "CloseCurlyBracket";
+			break;
+
+		case TokenType::SemiColon:
+			stream << "SemiColon";
+			break;
+
+		case TokenType::Comma:
+			stream << "Comma";
+			break;
+
+		case TokenType::Dot:
+			stream << "Dot";
+			break;
+
+		case TokenType::Colon:
+			stream << "Colon";
+			break;
+
+		case TokenType::Arrow:
+			stream << "Arrow";
+			break;
+	
+		case TokenType::Scope:
+			stream << "Scope";
 			break;
 
 		case TokenType::EndOfFile:
@@ -157,6 +328,116 @@ bool CharData::IsPunctuation(const std::string& str)
 {
 	return str == "(" || str == ")" || str == "[" || str == "]" || str == "{" 
 		|| str == "}" || str == ";" || str == ":" || str == "," || str == ".";
+}
+
+TokenType CharData::GetKeywordType(const std::string& str)
+{
+	for (size_t i = 0; i < s_numKeywords; i++)
+	{
+		if (str == s_keywords[i])
+		{
+			return  (TokenType)(i + s_keywordToTokenOffset);
+		}
+	}
+	return TokenType::None;
+}
+
+TokenType CharData::GetOperatorPunctuationType(const std::string& str)
+{
+	if (str == "==")
+	{
+		return TokenType::Equal;
+	}
+	else if (str == "<>")
+	{
+		return TokenType::NotEqual;
+	}
+	else if (str == "<")
+	{
+		return TokenType::LessThan;
+	}
+	else if (str == ">")
+	{
+		return TokenType::GreaterThan;
+	}
+	else if (str == "<=")
+	{
+		return TokenType::LessOrEqual;
+	}
+	else if (str == ">=")
+	{
+		return TokenType::GreaterOrEqual;
+	}
+	else if (str == "+")
+	{
+		return TokenType::Plus;
+	}
+	else if (str == "-")
+	{
+		return TokenType::Minus;
+	}
+	else if (str == "*")
+	{
+		return TokenType::Multiply;
+	}
+	else if (str == "/")
+	{
+		return TokenType::Divide;
+	}
+	else if (str == "=")
+	{
+		return TokenType::Assign;
+	}
+	else if (str == "(")
+	{
+		return TokenType::OpenParanthese;
+	}
+	else if (str == ")")
+	{
+		return TokenType::CloseParanthese;
+	}
+	else if (str == "[")
+	{
+		return TokenType::OpenSquareBracket;
+	}
+	else if (str == "]")
+	{
+		return TokenType::CloseSquareBracket;
+	}
+	else if (str == "{")
+	{
+		return TokenType::OpenCurlyBracket;
+	}
+	else if (str == "}")
+	{
+		return TokenType::CloseCurlyBracket;
+	}
+	else if (str == ";")
+	{
+		return TokenType::SemiColon;
+	}
+	else if (str == ",")
+	{
+		return TokenType::Comma;
+	}
+	else if (str == ".")
+	{
+		return TokenType::Dot;
+	}
+	else if (str == ":")
+	{
+		return TokenType::Colon;
+	}
+	else if (str == "=>")
+	{
+		return TokenType::Arrow;
+	}
+	else if (str == "::")
+	{
+		return TokenType::Scope;
+	}
+
+	return TokenType::None;
 }
 
 char CharData::GetLetterChar() { return s_letterChar; }
@@ -372,16 +653,14 @@ void Lexer::DoCustomStateBehavior(StateID state, Token& outToken)
 	case 22:
 		if (CharData::IsKeyword(outToken.GetLexeme()))
 		{
-			outToken.m_type = TokenType::Keyword;
+			outToken.m_type = CharData::GetKeywordType(outToken.GetLexeme());
 		}
 		break;
 
 	case 14:
+	case 21:
 	case 28:
-		if (CharData::IsPunctuation(outToken.GetLexeme()))
-		{
-			outToken.m_type = TokenType::Punctuation;
-		}
+		outToken.m_type = CharData::GetOperatorPunctuationType(outToken.GetLexeme());
 		break;
 
 	case 13:
@@ -453,7 +732,7 @@ void Lexer::InitializeLexicalTable()
 	m_lexicalTable[11] = new LexicalTableEntry({}, true, true, TokenType::InlineComment);
 	m_lexicalTable[12] = new LexicalTableEntry({{CharData::GetElseChar(), 8}, {'/', 13}});
 	m_lexicalTable[13] = new LexicalTableEntry({}, true, false, TokenType::MultiLineComment);
-	m_lexicalTable[14] = new LexicalTableEntry({}, true, false, TokenType::Operator);
+	m_lexicalTable[14] = new LexicalTableEntry({}, true, false, TokenType::None);
 	m_lexicalTable[15] = new LexicalTableEntry({{CharData::GetNonzeroChar(), 17}, 
 		{CharData::GetElseChar(), 30}, {CharData::GetFloatPowerChar(), 30},
 		{'+', 16}, {'-', 16}, {'0', 19}});
@@ -472,21 +751,21 @@ void Lexer::InitializeLexicalTable()
 	// needs additional steps to sort which operator the token is on this state
 	m_lexicalTable[20] = new LexicalTableEntry({{CharData::GetElseChar(), 28}}); 
 	
-	m_lexicalTable[21] = new LexicalTableEntry({}, true, false, TokenType::Operator);
+	m_lexicalTable[21] = new LexicalTableEntry({}, true, false, TokenType::None);
 
 	// need to double check that id is not a keyword
 	m_lexicalTable[22] = new LexicalTableEntry({}, true, true, TokenType::ID);
-	m_lexicalTable[23] = new LexicalTableEntry({}, true, true, TokenType::Integer);
+	m_lexicalTable[23] = new LexicalTableEntry({}, true, true, TokenType::IntegerLiteral);
 	m_lexicalTable[24] = new LexicalTableEntry({{CharData::GetLetterChar(), 30},
 		{CharData::GetNonzeroChar(), 9}, {CharData::GetElseChar(), 25}, 
 		{CharData::GetFloatPowerChar(), 15}, {'.', 30}, {'_', 30}});
 	
-	m_lexicalTable[25] = new LexicalTableEntry({}, true, true, TokenType::Float);
+	m_lexicalTable[25] = new LexicalTableEntry({}, true, true, TokenType::FloatLiteral);
 	m_lexicalTable[26] = new LexicalTableEntry({{CharData::GetLetterChar(), 26}, 
 		{CharData::GetNonzeroChar(), 26}, {CharData::GetElseChar(), 27}, {'e', 26}, {'0', 26}, {'.', 26}});
 	
 	m_lexicalTable[27] = new LexicalTableEntry({}, true, true, TokenType::InvalidIdentifier);
-	m_lexicalTable[28] = new LexicalTableEntry({}, true, true, TokenType::Operator);
+	m_lexicalTable[28] = new LexicalTableEntry({}, true, true, TokenType::None);
 	m_lexicalTable[29] = new LexicalTableEntry({}, true, true, TokenType::InvalidNumber);
 	m_lexicalTable[30] = new LexicalTableEntry({{CharData::GetLetterChar(), 30}, 
 		{CharData::GetNonzeroChar(), 30}, {CharData::GetElseChar(), 29}, 

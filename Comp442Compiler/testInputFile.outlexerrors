@@ -3,6 +3,10 @@ Lexical error: InvalidNumber: "0125.4552e": line  9.
 Lexical error: InvalidNumber: "125.4552000e": line  10.
 Lexical error: InvalidNumber: "125.4552e-04": line  11.
 Lexical error: InvalidIdentifier: "@": line  16.
+Lexical error: InvalidIdentifier: "#": line  16.
+Lexical error: InvalidIdentifier: "$": line  16.
+Lexical error: InvalidIdentifier: "'": line  16.
+Lexical error: InvalidIdentifier: "\": line  16.
 Lexical error: InvalidIdentifier: "~": line  16.
 Lexical error: InvalidNumber: "33.45e+023": line  19.
 Lexical error: InvalidNumber: "12_e": line  37.

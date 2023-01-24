@@ -13,7 +13,7 @@ myIdentifier_578
 m_myMemberVar5
 a54
 // invalid characters:
-@~
+@#$'\~
 
 //series of valid token with little to no spaces
 a_sde21=503;33.45e+023<>==c_as0/*test comment in the middle*/56/
