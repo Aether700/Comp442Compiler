@@ -500,12 +500,12 @@ void Lexer::SetInputFile(const std::string& filepath)
 	l.m_multiLineCommentsOpened = 0;
 	l.m_startLineOfMultiLineComment = 0;
 	l.m_lastChar = '\0';
+	l.m_justOpenedOrClosedMultiLineComment = false;
 }
 
 Token Lexer::GetNextToken()
 {
 	Lexer& l = GetInstance();
-	l.m_justOpenedOrClosedMultiLineComment = false;
 	StateID currState = 0;
 	Token t = Token();
 	std::stringstream charBuffer;
@@ -577,25 +577,7 @@ StateID Lexer::TryToGenerateToken(StateID currState, char lookup,
 	}
 
 	// handle muliple line comment logic
-	if (GetLastChar() == '/' && lookup == '*' && !l.m_justOpenedOrClosedMultiLineComment)
-	{
-		if (!IsInBlockComment())
-		{
-			l.m_startLineOfMultiLineComment = l.m_lineCounter;
-		}
-		l.m_multiLineCommentsOpened++;
-		l.m_justOpenedOrClosedMultiLineComment = true;
-	}
-	else if (IsInBlockComment() && GetLastChar() == '*' 
-		&& lookup == '/' && !l.m_justOpenedOrClosedMultiLineComment)
-	{
-		l.m_multiLineCommentsOpened--;
-		l.m_justOpenedOrClosedMultiLineComment = true;
-	}
-	else
-	{
-		l.m_justOpenedOrClosedMultiLineComment = false;
-	}
+	HandleMultilineCommentLogic(currState, lookup);
 
 	LexicalTableEntry* entry = l.m_lexicalTable[nextState];
 
@@ -634,6 +616,37 @@ void Lexer::BackTrack(char lookup, std::stringstream& charBuffer)
 	charBuffer.str(bufferCopy.substr(0, bufferCopy.length() - 1));
 }
 
+void Lexer::HandleMultilineCommentLogic(StateID currState, char lookup)
+{
+	Lexer& l = GetInstance();
+	if (currState == 7) // if in an inline comment
+	{
+		l.m_justOpenedOrClosedMultiLineComment = false;
+		return;
+	}
+
+	if (GetLastChar() == '/' && lookup == '*' && !l.m_justOpenedOrClosedMultiLineComment)
+	{
+		if (!IsInBlockComment())
+		{
+			l.m_startLineOfMultiLineComment = l.m_lineCounter;
+		}
+		l.m_multiLineCommentsOpened++;
+		l.m_justOpenedOrClosedMultiLineComment = true;
+	}
+	else if (IsInBlockComment() && GetLastChar() == '*' 
+		&& lookup == '/' && !l.m_justOpenedOrClosedMultiLineComment)
+	{
+		l.m_multiLineCommentsOpened--;
+		l.m_justOpenedOrClosedMultiLineComment = true;
+	}
+	else
+	{
+		l.m_justOpenedOrClosedMultiLineComment = false;
+	}
+}
+
+
 StateID Lexer::DoCustomStateChange(StateID currState, StateID nextState, std::stringstream& charBuffer,
 	 char lookup, char representationChar)
 {
@@ -645,11 +658,18 @@ StateID Lexer::DoCustomStateChange(StateID currState, StateID nextState, std::st
 			return 31;
 		}
 		break;
+
 	case 20:
-		char lastChar = GetLastChar();
-		if (IsTwoCharOperator(lastChar, lookup))
+		if (IsTwoCharOperator(GetLastChar(), lookup))
 		{
 			return 21;
+		}
+		break;
+
+	case 30:
+		if (representationChar == CharData::GetEOFChar())
+		{
+			BackTrack(lookup, charBuffer);
 		}
 		break;
 	}
@@ -696,6 +716,7 @@ bool Lexer::IsTwoCharOperator(char firstChar, char secondChar)
 }
 
 bool Lexer::IsInBlockComment() { return GetInstance().m_multiLineCommentsOpened > 0; }
+
 
 char Lexer::GetLastChar() { return GetInstance().m_lastChar; }
 

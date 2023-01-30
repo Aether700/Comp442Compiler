@@ -192,6 +192,7 @@ private:
 		std::stringstream& charBuffer, Token& outToken);
 
 	static void BackTrack(char lookup, std::stringstream& charBuffer);
+	static void HandleMultilineCommentLogic(StateID currState, char lookup);
 
 	// returns the next state
 	static StateID DoCustomStateChange(StateID currState, StateID nextState, std::stringstream& charBuffer, 
@@ -199,6 +200,7 @@ private:
 	static void DoCustomStateBehavior(StateID state, Token& outToken);
 	static bool IsTwoCharOperator(char firstChar, char secondChar);
 	static bool IsInBlockComment();
+
 
 	//returns the last char added fully processed by the lexer
 	static char GetLastChar();
