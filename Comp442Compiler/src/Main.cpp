@@ -4,6 +4,7 @@
 
 #include "Lexer/Lexer.h"
 #include "Core/Core.h"
+#include "Parser/Parser.h"
 
 //check to add invalid character token error
 

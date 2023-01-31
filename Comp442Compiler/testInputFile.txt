@@ -1,3 +1,7 @@
+someValidInt=453;
+someValid_Float=>42.0000000000005
+42.5e-00000
+
 // dsiofds/*/*/*
 /**/
 
