@@ -4,41 +4,40 @@
 #include "../Core/Core.h"
 
 // StackableItem //////////////////////////////////////
-StackableItem::StackableItem(TokenType t) : m_isTerminal(true), m_item(t) { }
+StackableItem::StackableItem(TokenType t) 
+    : m_type(StackableType::TerminalItem), m_item(t) { }
 StackableItem::StackableItem(NonTerminal nonTerminal) 
-    : m_isTerminal(false), m_item(nonTerminal) { }
+    : m_type(StackableType::NonTerminalItem), m_item(nonTerminal) { }
 
 StackableItem::~StackableItem()
 {
-    if (IsTerminal())
+    switch(m_type)
     {
+    case StackableType::TerminalItem:
         m_item.m_terminal.~TokenType();
-    }
-    else
-    {
+        break;
+
+    case StackableType::NonTerminalItem:
         m_item.m_nonTerminal.~NonTerminal();
+        break;
+
+    default:
+        DEBUG_BREAK();
+        break;
     }
 }
     
-bool StackableItem::IsTerminal() const { return m_isTerminal; }
+StackableType StackableItem::GetType() const { return m_type; }
 
 TokenType StackableItem::GetTerminal() const 
 {
-    if (!IsTerminal())
-    {
-        DEBUG_BREAK();
-        return TokenType::None;
-    }
+    ASSERT(m_type == StackableType::TerminalItem);
     return m_item.m_terminal;
 }
 
 NonTerminal StackableItem::GetNonTerminal() const
 {
-    if (IsTerminal())
-    {
-        DEBUG_BREAK();
-        return NonTerminal::None;
-    }
+    ASSERT(m_type == StackableType::NonTerminalItem);
     return m_item.m_nonTerminal;
 }
 

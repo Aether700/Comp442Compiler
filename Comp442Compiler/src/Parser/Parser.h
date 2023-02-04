@@ -15,6 +15,13 @@ enum class NonTerminal
     Start
 };
 
+enum class StackableType
+{
+    TerminalItem,
+    NonTerminalItem,
+    SemanticAction
+};
+
 class StackableItem
 {
 public:
@@ -22,7 +29,7 @@ public:
     StackableItem(NonTerminal nonTerminal);
     ~StackableItem();
     
-    bool IsTerminal() const;
+    StackableType GetType() const;
     TokenType GetTerminal() const;
     NonTerminal GetNonTerminal() const;
 
@@ -36,7 +43,7 @@ private:
         TokenType m_terminal;
         NonTerminal m_nonTerminal;
     } m_item;
-    bool m_isTerminal;
+    StackableType m_type;
 };
 
 class Rule
