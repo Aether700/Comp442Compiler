@@ -642,4 +642,139 @@ void Parser::InitializeParsingTable()
         {TokenType::Read, 50}, {TokenType::While, 50}, {TokenType::Else, 51}, 
         {TokenType::If, 50}});
 
+    m_parsingTable[NonTerminal::Expr] 
+        = new ParsingTableEntry({{TokenType::Minus, 52}, {TokenType::Plus, 52}, 
+        {TokenType::ID, 52}, {TokenType::IntegerLiteral, 52}, {TokenType::OpenParanthese, 52}, 
+        {TokenType::Not, 52}, {TokenType::FloatLiteral, 52}});
+
+    m_parsingTable[NonTerminal::Expr2] 
+        = new ParsingTableEntry({{TokenType::GreaterOrEqual, 53}, {TokenType::LessOrEqual, 53}, 
+        {TokenType::GreaterThan, 53}, {TokenType::LessThan, 53}, {TokenType::NotEqual, 53}, 
+        {TokenType::Equal, 53}, {TokenType::Comma, 54}, {TokenType::CloseParanthese, 54}, 
+        {TokenType::SemiColon, 54}});
+
+    m_parsingTable[NonTerminal::RelExpr] 
+        = new ParsingTableEntry({{TokenType::Minus, 55}, {TokenType::Plus, 55}, 
+        {TokenType::ID, 55}, {TokenType::IntegerLiteral, 55}, {TokenType::OpenParanthese, 55}, 
+        {TokenType::Not, 55}, {TokenType::FloatLiteral, 55}});
+
+    m_parsingTable[NonTerminal::ArithExpr] 
+        = new ParsingTableEntry({{TokenType::Minus, 56}, {TokenType::Plus, 56}, 
+        {TokenType::ID, 56}, {TokenType::IntegerLiteral, 56}, {TokenType::OpenParanthese, 56}, 
+        {TokenType::Not, 56}, {TokenType::FloatLiteral, 56}});
+
+    m_parsingTable[NonTerminal::ArithExpr2] 
+        = new ParsingTableEntry({{TokenType::Or, 57}, {TokenType::Minus, 57}, 
+        {TokenType::Plus, 57}, {TokenType::GreaterOrEqual, 58}, {TokenType::LessOrEqual, 58}, 
+        {TokenType::GreaterThan, 58}, {TokenType::LessThan, 58}, {TokenType::NotEqual, 58}, 
+        {TokenType::Equal, 58}, {TokenType::Comma, 58}, {TokenType::CloseSquareBracket, 58}, 
+        {TokenType::CloseParanthese, 58}, {TokenType::SemiColon, 58}});   
+
+    m_parsingTable[NonTerminal::Sign] 
+        = new ParsingTableEntry({{TokenType::Minus, 60}, {TokenType::Plus, 59}});
+
+    m_parsingTable[NonTerminal::Term] 
+        = new ParsingTableEntry({{TokenType::Minus, 61}, {TokenType::Plus, 61}, 
+        {TokenType::ID, 61}, {TokenType::IntegerLiteral, 61}, {TokenType::OpenParanthese, 61}, 
+        {TokenType::Not, 61}, {TokenType::FloatLiteral, 61}}); 
+
+    m_parsingTable[NonTerminal::Term2] 
+        = new ParsingTableEntry({{TokenType::And, 62}, {TokenType::Divide, 62}, 
+        {TokenType::Multiply, 62}, {TokenType::Or, 63}, {TokenType::Minus, 63}, 
+        {TokenType::Plus, 63}, {TokenType::GreaterOrEqual, 63}, {TokenType::LessOrEqual, 63}, 
+        {TokenType::GreaterThan, 63}, {TokenType::LessThan, 63}, {TokenType::NotEqual, 63}, 
+        {TokenType::Equal, 63}, {TokenType::Comma, 63}, {TokenType::CloseSquareBracket, 63}, 
+        {TokenType::CloseParanthese, 63}, {TokenType::SemiColon, 63}});
+
+    m_parsingTable[NonTerminal::Factor] 
+        = new ParsingTableEntry({{TokenType::Minus, 69}, {TokenType::Plus, 69}, 
+        {TokenType::ID, 64}, {TokenType::IntegerLiteral, 65}, {TokenType::OpenParanthese, 67}, 
+        {TokenType::Not, 68}, {TokenType::FloatLiteral, 66}});
+
+    m_parsingTable[NonTerminal::VarOrFuncCall] 
+        = new ParsingTableEntry({{TokenType::ID, 70}});
+
+    m_parsingTable[NonTerminal::VarOrFuncCall2] 
+        = new ParsingTableEntry({{TokenType::And, 71}, {TokenType::Divide, 71}, 
+        {TokenType::Multiply, 71}, {TokenType::Or, 71}, {TokenType::Minus, 71}, 
+        {TokenType::Plus, 71}, {TokenType::GreaterOrEqual, 71}, {TokenType::LessOrEqual, 71}, 
+        {TokenType::GreaterThan, 71}, {TokenType::LessThan, 71}, {TokenType::NotEqual, 71}, 
+        {TokenType::Equal, 71}, {TokenType::Comma, 71}, {TokenType::CloseSquareBracket, 71}, 
+        {TokenType::OpenSquareBracket, 71}, {TokenType::Dot, 71}, 
+        {TokenType::CloseParanthese, 71}, {TokenType::OpenParanthese, 72}, 
+        {TokenType::SemiColon, 71}});
+
+    m_parsingTable[NonTerminal::VarOrFuncCall3] 
+        = new ParsingTableEntry({{TokenType::And, 74}, {TokenType::Divide, 74}, 
+        {TokenType::Multiply, 74}, {TokenType::Or, 74}, {TokenType::Minus, 74}, 
+        {TokenType::Plus, 74}, {TokenType::GreaterOrEqual, 74}, {TokenType::LessOrEqual, 74}, 
+        {TokenType::GreaterThan, 74}, {TokenType::LessThan, 74}, {TokenType::NotEqual, 74}, 
+        {TokenType::Equal, 74}, {TokenType::Comma, 74}, {TokenType::CloseSquareBracket, 74}, 
+        {TokenType::Dot, 73}, {TokenType::CloseParanthese, 74}, {TokenType::SemiColon, 74}});
+
+    m_parsingTable[NonTerminal::Variable] 
+        = new ParsingTableEntry({{TokenType::ID, 75}});
+
+    m_parsingTable[NonTerminal::Variable2] 
+        = new ParsingTableEntry({{TokenType::OpenSquareBracket, 76}, {TokenType::Dot, 76}, 
+        {TokenType::CloseParanthese, 76}, {TokenType::OpenParanthese, 77}});
+
+    m_parsingTable[NonTerminal::Variable3] 
+        = new ParsingTableEntry({{TokenType::Dot, 78}, {TokenType::CloseParanthese, 79}});
+
+    m_parsingTable[NonTerminal::Indice] 
+        = new ParsingTableEntry({{TokenType::And, 81}, {TokenType::Divide, 81}, 
+        {TokenType::Multiply, 81}, {TokenType::Or, 81}, {TokenType::Minus, 81}, 
+        {TokenType::Plus, 81}, {TokenType::GreaterOrEqual, 81}, {TokenType::LessOrEqual, 81}, 
+        {TokenType::GreaterThan, 81}, {TokenType::LessThan, 81}, {TokenType::NotEqual, 81}, 
+        {TokenType::Equal, 81}, {TokenType::Comma, 81}, {TokenType::CloseSquareBracket, 81}, 
+        {TokenType::OpenSquareBracket, 80}, {TokenType::Dot, 81}, 
+        {TokenType::CloseParanthese, 81}, {TokenType::Assign, 81}, 
+        {TokenType::SemiColon, 81}});
+
+    m_parsingTable[NonTerminal::ArraySize] 
+        = new ParsingTableEntry({{TokenType::OpenSquareBracket, 82}});
+
+    m_parsingTable[NonTerminal::ArraySize2] 
+        = new ParsingTableEntry({{TokenType::CloseSquareBracket, 84}, 
+        {TokenType::IntegerLiteral, 83}});
+
+    m_parsingTable[NonTerminal::ArraySizeRepetition] 
+        = new ParsingTableEntry({{TokenType::Comma, 86}, {TokenType::OpenSquareBracket, 85}, 
+        {TokenType::CloseParanthese, 86}, {TokenType::SemiColon, 86}});
+
+    m_parsingTable[NonTerminal::Type] 
+        = new ParsingTableEntry({{TokenType::ID, 89}, {TokenType::FloatKeyword, 88}, 
+        {TokenType::IntegerKeyword, 87}});
+
+    m_parsingTable[NonTerminal::ReturnType] 
+        = new ParsingTableEntry({{TokenType::ID, 90}, {TokenType::Void, 91}, 
+        {TokenType::FloatKeyword, 90}, {TokenType::IntegerKeyword, 90}});
+
+    m_parsingTable[NonTerminal::FParams] 
+        = new ParsingTableEntry({{TokenType::ID, 92}, {TokenType::CloseParanthese, 93}});
+
+    m_parsingTable[NonTerminal::AParams] 
+        = new ParsingTableEntry({{TokenType::Minus, 94}, {TokenType::Plus, 94}, 
+        {TokenType::ID, 94}, {TokenType::IntegerLiteral, 94}, {TokenType::CloseParanthese, 95}, 
+        {TokenType::OpenParanthese, 94}, {TokenType::Not, 94}, {TokenType::FloatLiteral, 94}});
+
+    m_parsingTable[NonTerminal::FParamsTail] 
+        = new ParsingTableEntry({{TokenType::Comma, 96}, {TokenType::CloseParanthese, 97}});
+    
+    m_parsingTable[NonTerminal::AParamsTail] 
+        = new ParsingTableEntry({{TokenType::Comma, 98}, {TokenType::CloseParanthese, 99}});
+
+    m_parsingTable[NonTerminal::RelOp] 
+        = new ParsingTableEntry({{TokenType::GreaterOrEqual, 105}, 
+        {TokenType::LessOrEqual, 104}, {TokenType::GreaterThan, 103},
+        {TokenType::LessThan, 102}, {TokenType::NotEqual, 101}, {TokenType::Equal, 100}});
+
+    m_parsingTable[NonTerminal::AddOp] 
+        = new ParsingTableEntry({{TokenType::Or, 108}, {TokenType::Minus, 107}, 
+        {TokenType::Plus, 106}});
+
+    m_parsingTable[NonTerminal::MultOp] 
+        = new ParsingTableEntry({{TokenType::And, 111}, {TokenType::Divide, 110}, 
+        {TokenType::Multiply, 109}});
 }
