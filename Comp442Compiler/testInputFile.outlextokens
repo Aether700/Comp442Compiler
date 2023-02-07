@@ -1,8 +1,0 @@
-[ID, "someValidInt", 1][Assign, "=", 1][IntegerLiteral, "453", 1][SemiColon, ";", 1]
-[ID, "someValid_Float", 2][Arrow, "=>", 2][FloatLiteral, "42.0000000000005", 2]
-[InvalidNumber, "42.5e-00000", 3]
-
-[InlineComment, "// dsiofds/*/*/*", 5]
-[MultiLineComment, "/**/", 6]
-
-[InvalidNumber, "12.05e", 8][EOF, "EOF", 8]

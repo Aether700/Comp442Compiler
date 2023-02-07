@@ -2,8 +2,248 @@
 #include "../Core/Token.h"
 #include "../Lexer/Lexer.h"
 #include "../Core/Core.h"
+#include "../Core/Util.h"
+
+std::ostream& operator<<(std::ostream& stream, NonTerminal n)
+{
+    switch(n)
+    {
+    case NonTerminal::None:
+        stream << "<None>";
+        break;
+    
+    case NonTerminal::Start:
+        stream << "<Start>";
+        break;
+
+    case NonTerminal::ClassDeclOrFuncDefRepetition:
+        stream << "<ClassDeclOrFuncDefRepetition>";
+        break;
+
+    case NonTerminal::ClassDeclOrFuncDef:
+        stream << "<ClassDeclOrFuncDef>";
+        break;
+
+    case NonTerminal::ClassDecl:
+        stream << "<ClassDecl>";
+        break;
+
+    case NonTerminal::ClassDeclMembDeclRepetition:
+        stream << "<ClassDeclMembDeclRepetition>";
+        break;
+
+    case NonTerminal::ClassDeclInheritance:
+        stream << "<ClassDeclInheritance>";
+        break;
+
+    case NonTerminal::ClassDeclInheritanceTail:
+        stream << "<ClassDeclInheritanceTail>";
+        break;
+
+    case NonTerminal::Visibility:
+        stream << "<Visibility>";
+        break;
+
+    case NonTerminal::MemberDecl:
+        stream << "<MemberDecl>";
+        break;
+
+    case NonTerminal::MemberFuncDecl:
+        stream << "<MemberFuncDecl>";
+        break;
+
+    case NonTerminal::MemberVarDecl:
+        stream << "<MemberVarDecl>";
+        break;
+
+    case NonTerminal::FuncDef:
+        stream << "<FuncDef>";
+        break;
+
+    case NonTerminal::FuncHead:
+        stream << "<FuncHead>";
+        break;
+
+    case NonTerminal::FuncHead2:
+        stream << "<FuncHead2>";
+        break;
+
+    case NonTerminal::FuncHead3:
+        stream << "<FuncHead3>";
+        break;
+
+    case NonTerminal::FuncBody:
+        stream << "<FuncBody>";
+        break;
+
+    case NonTerminal::LocalVarDeclOrStmtRepetition:
+        stream << "<LocalVarDeclOrStmtRepetition>";
+        break;
+
+    case NonTerminal::LocalVarDeclOrStmt:
+        stream << "<LocalVarDeclOrStmt>";
+        break;
+
+    case NonTerminal::LocalVarDecl:
+        stream << "<LocalVarDecl>";
+        break;
+
+    case NonTerminal::LocalVarDecl2:
+        stream << "<LocalVarDecl2>";
+        break;
+
+    case NonTerminal::Statement:
+        stream << "<Statement>";
+        break;
+
+    case NonTerminal::SimpleStatement:
+        stream << "<SimpleStatement>";
+        break;
+
+    case NonTerminal::SimpleStatement2:
+        stream << "<SimpleStatement2>";
+        break;
+
+    case NonTerminal::SimpleStatement3:
+        stream << "<SimpleStatement3>";
+        break;
+
+    case NonTerminal::SimpleStatement4:
+        stream << "<SimpleStatement4>";
+        break;
+
+    case NonTerminal::StatementRepetition:
+        stream << "<StatementRepetition>";
+        break;
+
+    case NonTerminal::StatBlock:
+        stream << "<StatBlock>";
+        break;
+
+    case NonTerminal::Expr:
+        stream << "<Expr>";
+        break;
+
+    case NonTerminal::Expr2:
+        stream << "<Expr2>";
+        break;
+
+    case NonTerminal::RelExpr:
+        stream << "<RelExpr>";
+        break;
+
+    case NonTerminal::ArithExpr:
+        stream << "<ArithExpr>";
+        break;
+
+    case NonTerminal::ArithExpr2:
+        stream << "<ArithExpr2>";
+        break;
+
+    case NonTerminal::Sign:
+        stream << "<Sign>";
+        break;
+
+    case NonTerminal::Term:
+        stream << "<Term>";
+        break;
+
+    case NonTerminal::Term2:
+        stream << "<Term2>";
+        break;
+
+    case NonTerminal::Factor:
+        stream << "<Factor>";
+        break;
+
+    case NonTerminal::VarOrFuncCall:
+        stream << "<VarOrFuncCall>";
+        break;
+
+    case NonTerminal::VarOrFuncCall2:
+        stream << "<VarOrFuncCall2>";
+        break;
+
+    case NonTerminal::VarOrFuncCall3:
+        stream << "<VarOrFuncCall3>";
+        break;
+
+    case NonTerminal::Variable:
+        stream << "<Variable>";
+        break;
+
+    case NonTerminal::Variable2:
+        stream << "<Variable2>";
+        break;
+
+    case NonTerminal::Variable3:
+        stream << "<Variable3>";
+        break;
+
+    case NonTerminal::Indice:
+        stream << "<Indice>";
+        break;
+
+    case NonTerminal::ArraySize:
+        stream << "<ArraySize>";
+        break;
+
+    case NonTerminal::ArraySize2:
+        stream << "<ArraySize2>";
+        break;
+
+    case NonTerminal::ArraySizeRepetition:
+        stream << "<ArraySizeRepetition>";
+        break;
+
+    case NonTerminal::Type:
+        stream << "<Type>";
+        break;
+
+    case NonTerminal::ReturnType:
+        stream << "<ReturnType>";
+        break;
+
+    case NonTerminal::FParams:
+        stream << "<FParams>";
+        break;
+
+    case NonTerminal::AParams:
+        stream << "<AParams>";
+        break;
+
+    case NonTerminal::FParamsTail:
+        stream << "<FParamsTail>";
+        break;
+
+    case NonTerminal::AParamsTail:
+        stream << "<AParamsTail>";
+        break;
+
+    case NonTerminal::RelOp:
+        stream << "<RelOp>";
+        break;
+
+    case NonTerminal::AddOp:
+        stream << "<AddOp>";
+        break;
+
+    case NonTerminal::MultOp:
+        stream << "<MultOp>";
+        break;
+
+    default:
+        stream << "Unknown Non Terminal";
+        DEBUG_BREAK();
+        break;
+    }
+
+    return stream;
+}
 
 // StackableItem //////////////////////////////////////
+StackableItem::StackableItem() 
+    : m_type(StackableType::NonTerminalItem), m_item(NonTerminal::None) { }
 StackableItem::StackableItem(TokenType t) 
     : m_type(StackableType::TerminalItem), m_item(t) { }
 StackableItem::StackableItem(NonTerminal nonTerminal) 
@@ -44,6 +284,27 @@ NonTerminal StackableItem::GetNonTerminal() const
 StackableItem::Item::Item(TokenType t) : m_terminal(t) { }
 StackableItem::Item::Item(NonTerminal nonTerminal) : m_nonTerminal(nonTerminal) { }
 StackableItem::Item::~Item() { }
+
+std::ostream& operator<<(std::ostream& stream, const StackableItem& item)
+{
+    switch(item.GetType())
+    {
+    case StackableType::NonTerminalItem:
+        stream << item.GetNonTerminal();
+        break;
+
+    case StackableType::TerminalItem:
+        stream << '\'' <<item.GetTerminal() << '\'';
+        break;
+
+    default:
+        stream << "Unknown StackableItem";
+        DEBUG_BREAK();
+        break;
+    }
+
+    return stream;
+}
 
 // Rule //////////////////////////////////////////////
 
@@ -87,7 +348,7 @@ void RuleManager::InitializeRules()
     
     // 1
     m_rules.push_back(new Rule(NonTerminal::ClassDeclOrFuncDefRepetition, 
-        { NonTerminal::ClassDeclOrFuncDef, NonTerminal::ClassDeclOrFuncDef }));
+        { NonTerminal::ClassDeclOrFuncDef, NonTerminal::ClassDeclOrFuncDefRepetition }));
 
     // 2
     m_rules.push_back(new Rule(NonTerminal::ClassDeclOrFuncDefRepetition, { })); 
@@ -516,11 +777,59 @@ RuleID ParsingTableEntry::GetRule(const Token& t) const
 }
 
 // Parser ////////////////////////////////////////////
-void Parser::Parse(const std::string& filepath)
+bool Parser::Parse(const std::string& filepath)
 {
-    Lexer::SetInputFile(filepath);
+    Reset(filepath);
 
-    // Begin parsing here
+    Parser& p = GetInstance();
+    p.m_parsingStack.push_front(TokenType::EndOfFile);
+    p.m_parsingStack.push_front(NonTerminal::Start);
+
+    Token currToken = GetNextToken();
+    
+    while (!(p.m_parsingStack.front().GetType() == StackableType::TerminalItem 
+        && p.m_parsingStack.front().GetTerminal() == TokenType::EndOfFile))
+    {
+        const StackableItem& top = p.m_parsingStack.front();
+        if (top.GetType() == StackableType::TerminalItem)
+        {
+            if (currToken.GetTokenType() == top.GetTerminal())
+            {
+                p.m_parsingStack.pop_front();
+                currToken = GetNextToken();
+                p.m_derivationFile << "\n"; // skip line since we read a terminal
+            }
+            else
+            {
+                p.m_errorFound = true;
+                p.SkipError();
+            }
+        }
+        else if (top.GetType() == StackableType::NonTerminalItem)
+        {
+            RuleID rule = p.m_parsingTable[top.GetNonTerminal()]->GetRule(currToken);
+            if (rule != NullRule)
+            {
+                p.m_parsingStack.pop_front();
+                p.m_derivation.erase(p.m_derivation.begin() + p.m_nextNonTerminalIndex);
+                
+                p.PushToStack(RuleManager::GetRule(rule));
+                p.WriteDerivationToFile();
+            }
+            else
+            {
+                p.m_errorFound = true;
+                p.SkipError();
+            }
+        }
+
+    }
+
+    if (currToken.GetTokenType() != TokenType::EndOfFile || p.m_errorFound)
+    {
+        return false;
+    }
+    return true;
 }
 
 Parser::Parser() { InitializeParsingTable(); }
@@ -537,6 +846,43 @@ Parser& Parser::GetInstance()
 {
     static Parser p;
     return p;
+}
+
+void Parser::Reset(const std::string& filepath)
+{
+    Lexer::SetInputFile(filepath);
+
+    Parser& p = GetInstance();
+    p.m_parsingStack.clear();
+    p.m_errorFound = false;
+
+    p.m_derivationFile = std::ofstream(SimplifyFilename(filepath) + ".outderivation");
+    p.m_derivationFile << NonTerminal::Start << "\n";
+
+    p.m_derivation.clear();
+    p.m_derivation.emplace_back(NonTerminal::Start);
+    p.m_derivation.emplace_back(TokenType::EndOfFile);
+    p.m_nextNonTerminalIndex = 0;
+}
+
+Token Parser::GetNextToken()
+{
+    Token nextToken = Lexer::GetNextToken();
+    while (TokenIsIgnored(nextToken.GetTokenType()) || nextToken.IsError())
+    {
+        if (nextToken.IsError())
+        {
+            GetInstance().m_errorFound = true;
+        }
+        nextToken = Lexer::GetNextToken();
+    }
+    return nextToken;
+}
+
+bool Parser::TokenIsIgnored(TokenType type)
+{
+    return type == TokenType::InlineComment 
+        || type == TokenType::MultiLineComment;
 }
 
 void Parser::InitializeParsingTable()
@@ -777,4 +1123,58 @@ void Parser::InitializeParsingTable()
     m_parsingTable[NonTerminal::MultOp] 
         = new ParsingTableEntry({{TokenType::And, 111}, {TokenType::Divide, 110}, 
         {TokenType::Multiply, 109}});
+}
+
+void Parser::PushToStack(const Rule* r)
+{
+    const std::list<StackableItem>& rightSide = r->GetRightSide();
+    for (auto it = rightSide.rbegin(); it != rightSide.rend(); it++)
+    {
+        m_parsingStack.push_front(*it);    
+    }
+
+    size_t shift = 0;
+    for (const StackableItem& item : rightSide)
+    {
+        m_derivation.insert(m_derivation.begin() + m_nextNonTerminalIndex + shift, item);
+        shift++;
+    }
+
+    if (m_nextNonTerminalIndex >= shift)
+    {
+        m_nextNonTerminalIndex -= shift;
+    }
+    else
+    {
+        m_nextNonTerminalIndex = 0;
+    }
+    UpdateNextNonTerminalIndex();
+}
+
+void Parser::WriteDerivationToFile()
+{
+    m_derivationFile << "-> ";
+    for (StackableItem& item : m_derivation)
+    {
+        m_derivationFile << item << " ";
+    }
+    m_derivationFile << "\n";
+}
+
+void Parser::SkipError()
+{
+    //temp not implemented yet
+    DEBUG_BREAK();
+}
+
+void Parser::UpdateNextNonTerminalIndex()
+{
+    for (size_t i = m_nextNonTerminalIndex; i < m_derivation.size(); i++)
+    {
+        if (m_derivation[i].GetType() == StackableType::NonTerminalItem)
+        {
+            m_nextNonTerminalIndex = i;
+            break;
+        }
+    }
 }

@@ -3,6 +3,9 @@
 #include <unordered_map>
 #include <vector>
 #include <list>
+#include <iostream>
+#include <fstream>
+#include <vector>
 
 #include "../Core/Token.h"
 
@@ -66,8 +69,10 @@ enum class NonTerminal
     AParamsTail,
     RelOp,
     AddOp,
-    MultOp,
+    MultOp
 };
+
+std::ostream& operator<<(std::ostream& stream, NonTerminal n);
 
 enum class StackableType
 {
@@ -79,6 +84,7 @@ enum class StackableType
 class StackableItem
 {
 public:
+    StackableItem();
     StackableItem(TokenType t);
     StackableItem(NonTerminal nonTerminal);
     ~StackableItem();
@@ -99,6 +105,8 @@ private:
     } m_item;
     StackableType m_type;
 };
+
+std::ostream& operator<<(std::ostream& stream, const StackableItem& item);
 
 class Rule
 {
@@ -142,13 +150,27 @@ private:
 class Parser
 {
 public:
-    static void Parse(const std::string& filepath);
+    static bool Parse(const std::string& filepath);
 private:
     Parser();
     ~Parser();
     static Parser& GetInstance();
+    static void Reset(const std::string& filepath);
+    static Token GetNextToken();
+    static bool TokenIsIgnored(TokenType type);
 
     void InitializeParsingTable();
+    void PushToStack(const Rule* r);
+    void WriteDerivationToFile();
+    void SkipError();
+    
+    // returns index of first nonterminal or -1 if none was found
+    void UpdateNextNonTerminalIndex();
 
     std::unordered_map<NonTerminal, ParsingTableEntry*> m_parsingTable;
+    std::list<StackableItem> m_parsingStack; // front is top of stack
+    bool m_errorFound;
+    std::ofstream m_derivationFile;
+    std::vector<StackableItem> m_derivation;
+    size_t m_nextNonTerminalIndex;
 };

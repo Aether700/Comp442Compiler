@@ -5,14 +5,8 @@
 #include "Lexer/Lexer.h"
 #include "Core/Core.h"
 #include "Parser/Parser.h"
+#include "Core/Util.h"
 
-//check to add invalid character token error
-
-std::string SimplifyFilename(const std::string& filepath)
-{
-	size_t lastExtention = filepath.find_last_of(".");
-	return filepath.substr(0, lastExtention);
-}
 
 std::string ErrorTokenToStr(const Token& t)
 {
@@ -104,7 +98,8 @@ int main(int argc, char* argv[])
 		}
 	}
 
-	Driver(path);
+	//Driver(path);
+	std::cout << Parser::Parse(path) << "\n";
 #else
 	std::string directoryPath = "TestFiles";
 	if (!std::filesystem::exists(directoryPath))
