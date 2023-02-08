@@ -108,6 +108,32 @@ private:
 
 std::ostream& operator<<(std::ostream& stream, const StackableItem& item);
 
+// Uses the TokenType::None as the epsilon token
+class SetManager
+{
+public:
+    // returns true if the provided terminal is in the first set of the provided non terminal
+    static bool IsInFirstSet(NonTerminal n, TokenType t);
+    static bool IsInFirstSet(const StackableItem& n, TokenType t);
+    static bool IsInFirstSet(TokenType n, TokenType t);
+    
+
+    // returns true if the provided terminal is in the follow set of the provided non terminal
+    static bool IsInFollowSet(NonTerminal n, TokenType t);
+    static bool IsInFollowSet(const StackableItem& n, TokenType t);
+
+private:
+    SetManager();
+    static SetManager& GetInstance();
+
+    void InitializeSets();
+    void InitializeFirstSets();
+    void InitializeFollowSets();
+
+    std::unordered_map<NonTerminal, std::list<TokenType>> m_firstSets;
+    std::unordered_map<NonTerminal, std::list<TokenType>> m_followSets;
+};
+
 class Rule
 {
 public:
@@ -162,8 +188,9 @@ private:
     void InitializeParsingTable();
     void PushToStack(const Rule* r);
     void WriteDerivationToFile();
-    void SkipError();
-    
+    Token SkipError(const Token& currToken, const StackableItem& top);
+    void PopNonTerminal();
+
     // returns index of first nonterminal or -1 if none was found
     void UpdateNextNonTerminalIndex();
 

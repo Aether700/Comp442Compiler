@@ -306,6 +306,350 @@ std::ostream& operator<<(std::ostream& stream, const StackableItem& item)
     return stream;
 }
 
+// SetManager /////////////////////////////////////////////////////////////////
+bool SetManager::IsInFirstSet(NonTerminal n, TokenType t)
+{
+    auto& set = GetInstance().m_firstSets[n];
+    for (TokenType curr : set)
+    {
+        if (curr == t)
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool SetManager::IsInFirstSet(const StackableItem& n, TokenType t) 
+{
+    if (n.GetType() == StackableType::NonTerminalItem)
+    {
+        return IsInFirstSet(n.GetNonTerminal(), t);
+    }
+    else if (n.GetType() == StackableType::TerminalItem)
+    {
+        return IsInFirstSet(n.GetTerminal(), t);
+    }
+    return false;
+}
+
+bool SetManager::IsInFirstSet(TokenType n, TokenType t) { return n == t; }
+
+bool SetManager::IsInFollowSet(NonTerminal n, TokenType t)
+{
+    auto& set = GetInstance().m_followSets[n];
+    for (TokenType curr : set)
+    {
+        if (curr == t)
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+
+bool SetManager::IsInFollowSet(const StackableItem& n, TokenType t)
+{
+    if (n.GetType() == StackableType::NonTerminalItem)
+    {
+        return IsInFollowSet(n.GetNonTerminal(), t);
+    }
+    return false;
+}
+
+SetManager::SetManager() { InitializeSets(); }
+SetManager& SetManager::GetInstance()
+{
+    static SetManager manager;
+    return manager;
+}
+
+void SetManager::InitializeSets()
+{
+    InitializeFirstSets();
+    InitializeFollowSets();
+}
+
+void SetManager::InitializeFirstSets()
+{
+    m_firstSets[NonTerminal::Start] = {TokenType::Class, TokenType::Function, 
+        TokenType::None};
+
+    m_firstSets[NonTerminal::ClassDeclOrFuncDefRepetition] 
+        = {TokenType::Class, TokenType::Function, TokenType::None};
+    
+    m_firstSets[NonTerminal::ClassDeclOrFuncDef] = {TokenType::Class, TokenType::Function};
+    m_firstSets[NonTerminal::ClassDecl] = {TokenType::Class};
+    m_firstSets[NonTerminal::ClassDeclMembDeclRepetition] = 
+        {TokenType::Public, TokenType::Private, TokenType::Function, 
+        TokenType::Constructor, TokenType::Attribute, TokenType::None};
+    
+    m_firstSets[NonTerminal::ClassDeclInheritance] = {TokenType::IsA, TokenType::None};
+    m_firstSets[NonTerminal::ClassDeclInheritanceTail] = {TokenType::Comma, TokenType::None};
+    m_firstSets[NonTerminal::Visibility] = {TokenType::Public, TokenType::Private, 
+        TokenType::None};
+    
+    m_firstSets[NonTerminal::MemberDecl] = {TokenType::Function, 
+        TokenType::Constructor, TokenType::Attribute};
+    
+    m_firstSets[NonTerminal::MemberFuncDecl] = {TokenType::Function, TokenType::Constructor};
+    m_firstSets[NonTerminal::MemberVarDecl] = {TokenType::Attribute};
+    m_firstSets[NonTerminal::Start] = {TokenType::Class, TokenType::Function};
+    m_firstSets[NonTerminal::FuncDef] = {TokenType::Function};
+    m_firstSets[NonTerminal::FuncHead] = {TokenType::Function};
+    m_firstSets[NonTerminal::FuncHead2] = {TokenType::Scope, TokenType::CloseParanthese};
+    m_firstSets[NonTerminal::FuncHead3] = {TokenType::ID, TokenType::Constructor};
+    m_firstSets[NonTerminal::FuncBody] = {TokenType::OpenCurlyBracket};
+    m_firstSets[NonTerminal::LocalVarDeclOrStmtRepetition] = {TokenType::LocalVar, 
+        TokenType::If, TokenType::While, TokenType::Read, TokenType::Write, 
+        TokenType::Return, TokenType::ID, TokenType::None};
+
+    m_firstSets[NonTerminal::LocalVarDeclOrStmt] = {TokenType::LocalVar, 
+        TokenType::If, TokenType::While, TokenType::Read, TokenType::Write, 
+        TokenType::Return, TokenType::ID};
+
+    m_firstSets[NonTerminal::LocalVarDecl] = {TokenType::LocalVar};
+    m_firstSets[NonTerminal::LocalVarDecl2] = {TokenType::OpenParanthese, 
+        TokenType::OpenSquareBracket, TokenType::None};
+
+    m_firstSets[NonTerminal::Statement] = {TokenType::If, TokenType::While, TokenType::Read, 
+        TokenType::Write, TokenType::Return, TokenType::ID};
+
+    m_firstSets[NonTerminal::SimpleStatement] = {TokenType::ID};
+    m_firstSets[NonTerminal::SimpleStatement2] = {TokenType::OpenParanthese, 
+        TokenType::OpenSquareBracket, TokenType::Dot, TokenType::Assign};
+
+    m_firstSets[NonTerminal::SimpleStatement3] = {TokenType::Dot, TokenType::Assign};
+    m_firstSets[NonTerminal::SimpleStatement4] = {TokenType::Dot, TokenType::None};
+
+    m_firstSets[NonTerminal::StatementRepetition] = {TokenType::If, TokenType::While, 
+        TokenType::Read, TokenType::Write, TokenType::Return, TokenType::ID, TokenType::None};
+
+    m_firstSets[NonTerminal::StatBlock] = {TokenType::OpenCurlyBracket, TokenType::If, 
+        TokenType::While, TokenType::Read, TokenType::Write, TokenType::Return, 
+        TokenType::ID, TokenType::None};
+
+    m_firstSets[NonTerminal::Expr] = {TokenType::IntegerLiteral, TokenType::FloatLiteral, 
+        TokenType::OpenParanthese, TokenType::Not, TokenType::ID, TokenType::Plus, 
+        TokenType::Minus};
+
+    m_firstSets[NonTerminal::Expr2] = {TokenType::Equal, TokenType::NotEqual, 
+        TokenType::LessThan, TokenType::GreaterThan, TokenType::LessOrEqual, 
+        TokenType::GreaterOrEqual, TokenType::None};
+
+    m_firstSets[NonTerminal::RelExpr] = {TokenType::IntegerLiteral, TokenType::FloatLiteral, 
+        TokenType::OpenParanthese, TokenType::Not, TokenType::ID, TokenType::Plus, 
+        TokenType::Minus};
+
+    m_firstSets[NonTerminal::ArithExpr] = {TokenType::IntegerLiteral, TokenType::FloatLiteral, 
+        TokenType::OpenParanthese, TokenType::Not, TokenType::ID, TokenType::Plus, 
+        TokenType::Minus};
+
+    m_firstSets[NonTerminal::ArithExpr2] = {TokenType::Plus, 
+        TokenType::Minus, TokenType::Or, TokenType::None};
+
+    m_firstSets[NonTerminal::Sign] = {TokenType::Plus, TokenType::Minus};
+    m_firstSets[NonTerminal::Term] = {TokenType::IntegerLiteral, TokenType::FloatLiteral, 
+        TokenType::OpenParanthese, TokenType::Not, TokenType::ID, TokenType::Plus, 
+        TokenType::Minus};
+
+    m_firstSets[NonTerminal::Term2] = {TokenType::Multiply, 
+        TokenType::Divide, TokenType::And};
+    
+    m_firstSets[NonTerminal::Factor] = {TokenType::IntegerLiteral, TokenType::FloatLiteral, 
+        TokenType::OpenParanthese, TokenType::Not, TokenType::ID, TokenType::Plus, 
+        TokenType::Minus};
+
+    m_firstSets[NonTerminal::VarOrFuncCall] = {TokenType::ID};
+    m_firstSets[NonTerminal::VarOrFuncCall2] = {TokenType::OpenParanthese, 
+        TokenType::OpenSquareBracket, TokenType::Dot, TokenType::None};
+
+    m_firstSets[NonTerminal::VarOrFuncCall3] = {TokenType::Dot, TokenType::None};
+    m_firstSets[NonTerminal::Variable] = {TokenType::ID};
+    m_firstSets[NonTerminal::Variable2] = {TokenType::OpenParanthese, 
+        TokenType::OpenSquareBracket, TokenType::Dot, TokenType::None};
+
+    m_firstSets[NonTerminal::Variable3] = {TokenType::Dot, TokenType::None};
+    m_firstSets[NonTerminal::Indice] = {TokenType::OpenSquareBracket, TokenType::None};
+    m_firstSets[NonTerminal::ArraySize] = {TokenType::OpenSquareBracket};
+    m_firstSets[NonTerminal::ArraySize2] = {TokenType::IntegerLiteral, 
+        TokenType::CloseSquareBracket};
+
+    m_firstSets[NonTerminal::ArraySizeRepetition] = {TokenType::OpenSquareBracket, 
+        TokenType::None};
+    m_firstSets[NonTerminal::Type] = {TokenType::IntegerKeyword, TokenType::FloatKeyword, 
+        TokenType::ID};
+
+    m_firstSets[NonTerminal::ReturnType] = {TokenType::IntegerKeyword, 
+        TokenType::FloatKeyword, TokenType::ID, TokenType::Void};
+
+    m_firstSets[NonTerminal::FParams] = {TokenType::ID, TokenType::None};
+    m_firstSets[NonTerminal::AParams] = {TokenType::IntegerLiteral, TokenType::FloatLiteral, 
+        TokenType::OpenParanthese, TokenType::Not, TokenType::ID, TokenType::Plus, 
+        TokenType::Minus, TokenType::None};
+
+    m_firstSets[NonTerminal::FParamsTail] = {TokenType::Comma, TokenType::None};
+    m_firstSets[NonTerminal::AParamsTail] = {TokenType::Comma, TokenType::None};
+    
+    m_firstSets[NonTerminal::RelOp] = {TokenType::Equal, TokenType::NotEqual, 
+        TokenType::LessThan, TokenType::GreaterThan, TokenType::LessOrEqual, 
+        TokenType::GreaterOrEqual};
+
+    m_firstSets[NonTerminal::AddOp] = {TokenType::Plus, TokenType::Minus, TokenType::Or};
+    m_firstSets[NonTerminal::MultOp] = {TokenType::Multiply, 
+        TokenType::Divide, TokenType::And};
+}
+
+void SetManager::InitializeFollowSets()
+{
+    m_followSets[NonTerminal::Start] = {TokenType::EndOfFile};
+    m_followSets[NonTerminal::ClassDeclOrFuncDefRepetition] = {TokenType::EndOfFile};
+    m_followSets[NonTerminal::ClassDeclOrFuncDef] = {TokenType::Class, TokenType::Function};
+    m_followSets[NonTerminal::ClassDecl] = {TokenType::Class, TokenType::Function};
+    m_followSets[NonTerminal::ClassDeclMembDeclRepetition] = {TokenType::CloseCurlyBracket};
+    m_followSets[NonTerminal::ClassDeclInheritance] = {TokenType::OpenCurlyBracket};
+    m_followSets[NonTerminal::ClassDeclInheritanceTail] = {TokenType::OpenCurlyBracket};
+    m_followSets[NonTerminal::Visibility] = {TokenType::Function, 
+        TokenType::Constructor, TokenType::Attribute};
+
+    m_followSets[NonTerminal::MemberDecl] = {TokenType::Public, TokenType::Private, 
+        TokenType::Function, TokenType::Constructor, TokenType::Attribute, 
+        TokenType::CloseCurlyBracket};
+
+    m_followSets[NonTerminal::MemberFuncDecl] = {TokenType::Public, TokenType::Private, 
+        TokenType::Function, TokenType::Constructor, TokenType::Attribute, 
+        TokenType::CloseCurlyBracket};
+
+    m_followSets[NonTerminal::MemberVarDecl] = {TokenType::Public, TokenType::Private, 
+        TokenType::Function, TokenType::Constructor, TokenType::Attribute, 
+        TokenType::CloseCurlyBracket};
+
+    m_followSets[NonTerminal::FuncDef] = {TokenType::Class, TokenType::Function};
+    m_followSets[NonTerminal::FuncHead] = {TokenType::OpenCurlyBracket};
+    m_followSets[NonTerminal::FuncHead2] = {TokenType::OpenCurlyBracket};
+    m_followSets[NonTerminal::FuncHead3] = {TokenType::OpenCurlyBracket};
+    m_followSets[NonTerminal::FuncBody] = {TokenType::Class, TokenType::Function};
+    m_followSets[NonTerminal::LocalVarDeclOrStmtRepetition] = {TokenType::CloseCurlyBracket};
+    m_followSets[NonTerminal::LocalVarDeclOrStmt] = {TokenType::LocalVar, TokenType::If,
+        TokenType::While, TokenType::Read, TokenType::Write, TokenType::Return, 
+        TokenType::ID, TokenType::CloseCurlyBracket};    
+
+    m_followSets[NonTerminal::LocalVarDecl] = {TokenType::LocalVar, TokenType::If,
+        TokenType::While, TokenType::Read, TokenType::Write, TokenType::Return, 
+        TokenType::ID, TokenType::CloseCurlyBracket};    
+    
+    m_followSets[NonTerminal::LocalVarDecl2] = {TokenType::SemiColon};   
+    m_followSets[NonTerminal::LocalVarDeclOrStmt] = {TokenType::Else, TokenType::SemiColon,
+        TokenType::LocalVar, TokenType::If, TokenType::While, TokenType::Read, 
+        TokenType::Write, TokenType::Return, TokenType::ID, TokenType::CloseCurlyBracket};    
+
+    m_followSets[NonTerminal::SimpleStatement] = {TokenType::SemiColon};
+    m_followSets[NonTerminal::SimpleStatement2] = {TokenType::SemiColon};
+    m_followSets[NonTerminal::SimpleStatement3] = {TokenType::SemiColon};
+    m_followSets[NonTerminal::SimpleStatement4] = {TokenType::SemiColon};
+    m_followSets[NonTerminal::StatementRepetition] = {TokenType::CloseCurlyBracket};
+    m_followSets[NonTerminal::StatBlock] = {TokenType::Else, TokenType::SemiColon};
+    m_followSets[NonTerminal::Expr] = {TokenType::Comma, TokenType::SemiColon, 
+        TokenType::CloseParanthese};
+
+    m_followSets[NonTerminal::Expr2] = {TokenType::Comma, TokenType::SemiColon, 
+        TokenType::CloseParanthese};
+
+    m_followSets[NonTerminal::RelExpr] = {TokenType::CloseParanthese};
+    m_followSets[NonTerminal::ArithExpr] = {TokenType::Equal, TokenType::NotEqual, 
+        TokenType::LessThan, TokenType::GreaterThan, TokenType::LessOrEqual, 
+        TokenType::GreaterOrEqual, TokenType::CloseSquareBracket, TokenType::Comma, 
+        TokenType::SemiColon, TokenType::CloseParanthese};
+
+    m_followSets[NonTerminal::ArithExpr2] = {TokenType::Equal, TokenType::NotEqual, 
+        TokenType::LessThan, TokenType::GreaterThan, TokenType::LessOrEqual, 
+        TokenType::GreaterOrEqual, TokenType::CloseSquareBracket, TokenType::Comma, 
+        TokenType::SemiColon, TokenType::CloseParanthese};
+
+    m_followSets[NonTerminal::Sign] = {TokenType::IntegerLiteral, TokenType::FloatLiteral, 
+        TokenType::OpenParanthese, TokenType::Not, TokenType::ID, TokenType::Plus, 
+        TokenType::Minus};
+
+    m_followSets[NonTerminal::Term] = {TokenType::Plus, TokenType::Minus, TokenType::Or, 
+        TokenType::Equal, TokenType::NotEqual, TokenType::LessThan, TokenType::GreaterThan, 
+        TokenType::LessOrEqual, TokenType::GreaterOrEqual, TokenType::CloseSquareBracket, 
+        TokenType::Comma, TokenType::SemiColon, TokenType::CloseParanthese};
+
+    m_followSets[NonTerminal::Term2] = {TokenType::Plus, TokenType::Minus, TokenType::Or, 
+        TokenType::Equal, TokenType::NotEqual, TokenType::LessThan, TokenType::GreaterThan, 
+        TokenType::LessOrEqual, TokenType::GreaterOrEqual, TokenType::CloseSquareBracket, 
+        TokenType::Comma, TokenType::SemiColon, TokenType::CloseParanthese};
+
+    m_followSets[NonTerminal::Factor] = {TokenType::Multiply, TokenType::Divide, 
+        TokenType::And, TokenType::Plus, TokenType::Minus, TokenType::Or, 
+        TokenType::Equal, TokenType::NotEqual, TokenType::LessThan, TokenType::GreaterThan, 
+        TokenType::LessOrEqual, TokenType::GreaterOrEqual, TokenType::CloseSquareBracket, 
+        TokenType::Comma, TokenType::SemiColon, TokenType::CloseParanthese};
+
+    m_followSets[NonTerminal::VarOrFuncCall] = {TokenType::Multiply, TokenType::Divide, 
+        TokenType::And, TokenType::Plus, TokenType::Minus, TokenType::Or, 
+        TokenType::Equal, TokenType::NotEqual, TokenType::LessThan, TokenType::GreaterThan, 
+        TokenType::LessOrEqual, TokenType::GreaterOrEqual, TokenType::CloseSquareBracket, 
+        TokenType::Comma, TokenType::SemiColon, TokenType::CloseParanthese};
+
+    m_followSets[NonTerminal::VarOrFuncCall2] = {TokenType::Multiply, TokenType::Divide, 
+        TokenType::And, TokenType::Plus, TokenType::Minus, TokenType::Or, 
+        TokenType::Equal, TokenType::NotEqual, TokenType::LessThan, TokenType::GreaterThan, 
+        TokenType::LessOrEqual, TokenType::GreaterOrEqual, TokenType::CloseSquareBracket, 
+        TokenType::Comma, TokenType::SemiColon, TokenType::CloseParanthese};
+
+    m_followSets[NonTerminal::VarOrFuncCall3] = {TokenType::Multiply, TokenType::Divide, 
+        TokenType::And, TokenType::Plus, TokenType::Minus, TokenType::Or, 
+        TokenType::Equal, TokenType::NotEqual, TokenType::LessThan, TokenType::GreaterThan, 
+        TokenType::LessOrEqual, TokenType::GreaterOrEqual, TokenType::CloseSquareBracket, 
+        TokenType::Comma, TokenType::SemiColon, TokenType::CloseParanthese};
+
+    m_followSets[NonTerminal::Variable] = {TokenType::CloseParanthese};
+    m_followSets[NonTerminal::Variable2] = {TokenType::CloseParanthese};
+    m_followSets[NonTerminal::Variable3] = {TokenType::CloseParanthese};
+
+    m_followSets[NonTerminal::Indice] = {TokenType::Multiply, TokenType::Divide, 
+        TokenType::And, TokenType::Plus, TokenType::Minus, TokenType::Or, 
+        TokenType::Equal, TokenType::NotEqual, TokenType::LessThan, TokenType::GreaterThan, 
+        TokenType::LessOrEqual, TokenType::GreaterOrEqual, TokenType::CloseSquareBracket, 
+        TokenType::Assign, TokenType::Dot, TokenType::Comma, TokenType::SemiColon, 
+        TokenType::CloseParanthese};
+
+    m_followSets[NonTerminal::ArraySize] = {TokenType::OpenSquareBracket, 
+        TokenType::SemiColon, TokenType::Comma, TokenType::CloseParanthese};
+
+    m_followSets[NonTerminal::ArraySize2] = {TokenType::OpenSquareBracket, 
+        TokenType::SemiColon, TokenType::Comma, TokenType::CloseParanthese};
+
+    m_followSets[NonTerminal::ArraySizeRepetition] = {TokenType::SemiColon, 
+        TokenType::Comma, TokenType::CloseParanthese};
+
+    m_followSets[NonTerminal::Type] = {TokenType::OpenCurlyBracket, TokenType::OpenParanthese, 
+        TokenType::OpenSquareBracket, TokenType::Comma, TokenType::SemiColon, 
+        TokenType::CloseParanthese};
+
+    m_followSets[NonTerminal::ReturnType] = {TokenType::OpenCurlyBracket, 
+        TokenType::SemiColon};
+
+    m_followSets[NonTerminal::FParams] = {TokenType::CloseParanthese};
+    m_followSets[NonTerminal::AParams] = {TokenType::CloseParanthese};
+    m_followSets[NonTerminal::FParamsTail] = {TokenType::CloseParanthese};
+    m_followSets[NonTerminal::AParamsTail] = {TokenType::CloseParanthese};
+    m_followSets[NonTerminal::RelOp] = {TokenType::IntegerLiteral, TokenType::FloatLiteral, 
+        TokenType::OpenParanthese, TokenType::Not, TokenType::ID, 
+        TokenType::Plus, TokenType::Minus};
+
+    m_followSets[NonTerminal::AddOp] = {TokenType::IntegerLiteral, TokenType::FloatLiteral, 
+        TokenType::OpenParanthese, TokenType::Not, TokenType::ID, 
+        TokenType::Plus, TokenType::Minus};
+
+    m_followSets[NonTerminal::MultOp] = {TokenType::IntegerLiteral, TokenType::FloatLiteral, 
+        TokenType::OpenParanthese, TokenType::Not, TokenType::ID, 
+        TokenType::Plus, TokenType::Minus};
+}
+
+
 // Rule //////////////////////////////////////////////
 
 Rule::Rule(NonTerminal left, const std::initializer_list<StackableItem>& right) 
@@ -802,7 +1146,7 @@ bool Parser::Parse(const std::string& filepath)
             else
             {
                 p.m_errorFound = true;
-                p.SkipError();
+                currToken = p.SkipError(currToken, top);
             }
         }
         else if (top.GetType() == StackableType::NonTerminalItem)
@@ -810,8 +1154,7 @@ bool Parser::Parse(const std::string& filepath)
             RuleID rule = p.m_parsingTable[top.GetNonTerminal()]->GetRule(currToken);
             if (rule != NullRule)
             {
-                p.m_parsingStack.pop_front();
-                p.m_derivation.erase(p.m_derivation.begin() + p.m_nextNonTerminalIndex);
+                p.PopNonTerminal();
                 
                 p.PushToStack(RuleManager::GetRule(rule));
                 p.WriteDerivationToFile();
@@ -819,7 +1162,7 @@ bool Parser::Parse(const std::string& filepath)
             else
             {
                 p.m_errorFound = true;
-                p.SkipError();
+                currToken = p.SkipError(currToken, top);
             }
         }
 
@@ -1161,10 +1504,41 @@ void Parser::WriteDerivationToFile()
     m_derivationFile << "\n";
 }
 
-void Parser::SkipError()
+Token Parser::SkipError(const Token& currToken, const StackableItem& top)
 {
-    //temp not implemented yet
-    DEBUG_BREAK();
+    //write error to error file
+    DEBUG_BREAK(); not finished need to implement writing to error file here
+    //
+    if (currToken.GetTokenType() == TokenType::EndOfFile 
+        || SetManager::IsInFollowSet(top, currToken.GetTokenType()))
+    {
+        if (top.GetType() == StackableType::NonTerminalItem)
+        {
+            PopNonTerminal();
+        }
+        else
+        {
+            m_parsingStack.pop_front();
+        }
+    }
+    else
+    {
+        Token nextToken = currToken;
+        while(!SetManager::IsInFirstSet(top, currToken.GetTokenType())
+            || (SetManager::IsInFirstSet(top, TokenType::None) 
+            && !SetManager::IsInFollowSet(top, nextToken.GetTokenType())))
+        {
+            nextToken = GetNextToken();
+        }
+        return nextToken;
+    }
+    return currToken;
+}
+
+void Parser::PopNonTerminal()
+{
+    m_parsingStack.pop_front();
+    m_derivation.erase(m_derivation.begin() + m_nextNonTerminalIndex);
 }
 
 void Parser::UpdateNextNonTerminalIndex()

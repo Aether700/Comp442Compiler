@@ -23,10 +23,6 @@ std::ostream& operator<<(std::ostream& stream, TokenType token)
 			stream << "FloatLiteral";
 			break;
 
-		case TokenType::WhiteSpace:
-			stream << "WhiteSpace";
-			break;
-
 		case TokenType::InlineComment:
 			stream << "InlineComment";
 			break;

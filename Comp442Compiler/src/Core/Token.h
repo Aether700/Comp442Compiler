@@ -9,7 +9,6 @@ enum class TokenType
 	ID,
 	IntegerLiteral,
 	FloatLiteral,
-	WhiteSpace,
 	InlineComment,
 	MultiLineComment,
 

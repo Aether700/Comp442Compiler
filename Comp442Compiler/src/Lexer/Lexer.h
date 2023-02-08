@@ -65,7 +65,7 @@ private:
 		"if", "then", "else", "read", "write", "return", "localvar", "constructor", "attribute", 
 		"function", "public", "private"
 	};
-	static constexpr size_t s_keywordToTokenOffset = 7;
+	static constexpr size_t s_keywordToTokenOffset = 6;
 	static constexpr size_t s_numKeywords = sizeof(s_keywords) / sizeof(const char*);
 
 };
