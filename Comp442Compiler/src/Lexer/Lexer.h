@@ -91,6 +91,7 @@ private:
 
 class Lexer
 {
+	friend class Token;
 public:
 	static void SetInputFile(const std::string& filepath);
 	static Token GetNextToken();
@@ -122,6 +123,8 @@ private:
 	static Lexer& GetInstance();
 
 	size_t m_lineCounter;
+	size_t m_startOfLastLinePos;
+	size_t m_prevStartOfLastLinePos;
 	std::unordered_map<StateID, LexicalTableEntry*> m_lexicalTable;
 	std::ifstream m_inputFile;
 	size_t m_multiLineCommentsOpened;

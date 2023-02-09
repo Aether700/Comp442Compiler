@@ -198,6 +198,7 @@ private:
     std::list<StackableItem> m_parsingStack; // front is top of stack
     bool m_errorFound;
     std::ofstream m_derivationFile;
+    std::ofstream m_errorFile;
     std::vector<StackableItem> m_derivation;
     size_t m_nextNonTerminalIndex;
 };

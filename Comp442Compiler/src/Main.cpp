@@ -75,6 +75,7 @@ void ExitPrompt()
 
 int main(int argc, char* argv[])
 {
+	line printing for the error doesn't work properly check why
 #ifdef DEBUG_MODE
 	std::string file = "testInputFile.txt";
 	std::string currDir = std::string(argv[0]);

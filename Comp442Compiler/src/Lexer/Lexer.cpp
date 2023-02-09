@@ -237,6 +237,7 @@ void Lexer::SetInputFile(const std::string& filepath)
 	l.m_startLineOfMultiLineComment = 0;
 	l.m_lastChar = '\0';
 	l.m_justOpenedOrClosedMultiLineComment = false;
+	l.m_startOfLastLinePos = 0;
 }
 
 Token Lexer::GetNextToken()
@@ -257,13 +258,14 @@ Token Lexer::GetNextToken()
 				l.m_inputFile.clear();
 				l.m_multiLineCommentsOpened = 0; // set to 0 now that error has been recorded
 				t = Token(charBuffer.str(), TokenType::IncompleteMultipleLineComment, 
-					l.m_startLineOfMultiLineComment);
+					l.m_startLineOfMultiLineComment, l.m_startOfLastLinePos);
 				continue;
 			}
 		}
 		else if (lookup == CharData::GetNewLineChar())
 		{
 			l.m_lineCounter++;
+			l.m_startOfLastLinePos = l.m_inputFile.tellg();
 		}
 
 		if (currState != 0 || !(CharData::IsWhitespace(lookup) 
@@ -308,7 +310,8 @@ StateID Lexer::TryToGenerateToken(StateID currState, char lookup,
 		std::cout << "[Debug]: Error encountered at state " << currState 
 			<< " when receiving representation character " << representationChar 
 			<< " | lookup char: " << lookup << "\n";
-		outToken = Token(charBuffer.str(), TokenType::InvalidIdentifier, l.m_lineCounter);
+		outToken = Token(charBuffer.str(), TokenType::InvalidIdentifier, l.m_lineCounter, 
+			l.m_startOfLastLinePos);
 		return currState;
 	}
 
@@ -328,7 +331,8 @@ StateID Lexer::TryToGenerateToken(StateID currState, char lookup,
 		{
 			BackTrack(lookup, charBuffer);
 		}
-		outToken = Token(charBuffer.str(), entry->GetTokenType(), l.m_lineCounter);
+		outToken = Token(charBuffer.str(), entry->GetTokenType(), l.m_lineCounter, 
+			l.m_startOfLastLinePos);
 		DoCustomStateBehavior(nextState, outToken);
 	}
 	return nextState;

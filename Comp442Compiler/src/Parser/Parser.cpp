@@ -294,7 +294,7 @@ std::ostream& operator<<(std::ostream& stream, const StackableItem& item)
         break;
 
     case StackableType::TerminalItem:
-        stream << '\'' <<item.GetTerminal() << '\'';
+        stream << '\'' << TokenTypeToStr(item.GetTerminal()) << '\'';
         break;
 
     default:
@@ -1132,7 +1132,8 @@ bool Parser::Parse(const std::string& filepath)
     Token currToken = GetNextToken();
     
     while (!(p.m_parsingStack.front().GetType() == StackableType::TerminalItem 
-        && p.m_parsingStack.front().GetTerminal() == TokenType::EndOfFile))
+        && p.m_parsingStack.front().GetTerminal() == TokenType::EndOfFile)
+        && currToken.GetTokenType() != TokenType::EndOfFile)
     {
         const StackableItem& top = p.m_parsingStack.front();
         if (top.GetType() == StackableType::TerminalItem)
@@ -1199,7 +1200,9 @@ void Parser::Reset(const std::string& filepath)
     p.m_parsingStack.clear();
     p.m_errorFound = false;
 
-    p.m_derivationFile = std::ofstream(SimplifyFilename(filepath) + ".outderivation");
+    std::string simpleName = SimplifyFilename(filepath);
+    p.m_derivationFile = std::ofstream(simpleName + ".outderivation");
+    p.m_errorFile = std::ofstream(simpleName + ".outsyntaxerrors");
     p.m_derivationFile << NonTerminal::Start << "\n";
 
     p.m_derivation.clear();
@@ -1507,8 +1510,10 @@ void Parser::WriteDerivationToFile()
 Token Parser::SkipError(const Token& currToken, const StackableItem& top)
 {
     //write error to error file
-    DEBUG_BREAK(); not finished need to implement writing to error file here
-    //
+    m_errorFile << "Unexpected token \"" << currToken.GetLexeme() << "\". Expected " 
+        << top << " at line " << currToken.GetLine() << ": \"" 
+        << currToken.GetStrOfLine() << "\"\n"; 
+
     if (currToken.GetTokenType() == TokenType::EndOfFile 
         || SetManager::IsInFollowSet(top, currToken.GetTokenType()))
     {
@@ -1524,9 +1529,10 @@ Token Parser::SkipError(const Token& currToken, const StackableItem& top)
     else
     {
         Token nextToken = currToken;
-        while(!SetManager::IsInFirstSet(top, currToken.GetTokenType())
+        while((!SetManager::IsInFirstSet(top, nextToken.GetTokenType())
             || (SetManager::IsInFirstSet(top, TokenType::None) 
-            && !SetManager::IsInFollowSet(top, nextToken.GetTokenType())))
+            && !SetManager::IsInFollowSet(top, nextToken.GetTokenType()))) 
+            && nextToken.GetTokenType() != TokenType::EndOfFile)
         {
             nextToken = GetNextToken();
         }
