@@ -81,7 +81,7 @@ class Token
 	friend class Lexer;
 public:
 	Token();
-	Token(const std::string& lexeme, TokenType type, size_t line, size_t lineStartPos);
+	Token(const std::string& lexeme, TokenType type, size_t line);
 
 	const std::string& GetLexeme() const;
 	TokenType GetTokenType() const;
@@ -94,5 +94,4 @@ private:
 	TokenType m_type;
 	std::string m_lexeme;
 	size_t m_line;
-	size_t m_lineStartPos;
 };

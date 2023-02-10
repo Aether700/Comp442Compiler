@@ -418,8 +418,8 @@ std::string TokenTypeToStr(TokenType t)
 
 Token::Token() : m_type(TokenType::None), m_line(0) { }
 
-Token::Token(const std::string& lexeme, TokenType type, size_t line, size_t lineStartPos) 
-	: m_lexeme(lexeme), m_type(type), m_line(line), m_lineStartPos(lineStartPos) { }
+Token::Token(const std::string& lexeme, TokenType type, size_t line) 
+	: m_lexeme(lexeme), m_type(type), m_line(line) { }
 
 const std::string& Token::GetLexeme() const { return m_lexeme; }
 TokenType Token::GetTokenType() const { return m_type; }
@@ -428,25 +428,11 @@ size_t Token::GetLine() const { return m_line; }
 std::string Token::GetStrOfLine() const
 {
 	Lexer& l = Lexer::GetInstance();
-	size_t prevPos = l.m_inputFile.tellg();
-	l.m_inputFile.seekg(m_lineStartPos);
-
-	std::stringstream ss;
-	char c;
-	l.m_inputFile.read(&c, 1);
-	while (c != '\n' && !l.m_inputFile.eof())
+	if (l.m_lines.size() > m_line - 1)
 	{
-		ss << c;
-		l.m_inputFile.read(&c, 1);
+		return TrimStr(l.m_lines[m_line - 1]);
 	}
-
-	if (l.m_inputFile.eof())
-	{
-		l.m_inputFile.clear();
-	}
-
-	l.m_inputFile.seekg(prevPos);
-	return TrimStr(ss.str());
+	return TrimStr(l.m_lineBuffer.str());
 }
 
 bool Token::IsError() const

@@ -1,6 +1,5 @@
 #include "Lexer.h"
 #include "../Core/Core.h"
-#include <sstream>
 #include <string.h>
 #include <iostream>
 
@@ -231,13 +230,14 @@ TokenType LexicalTableEntry::GetTokenType() const { return m_tokenType; }
 void Lexer::SetInputFile(const std::string& filepath)
 {
 	Lexer& l = GetInstance();
-	l.m_inputFile = std::ifstream(filepath);
+	l.m_inputFile = std::ifstream(filepath, std::ios_base::in);
 	l.m_lineCounter = 1;
 	l.m_multiLineCommentsOpened = 0;
 	l.m_startLineOfMultiLineComment = 0;
 	l.m_lastChar = '\0';
 	l.m_justOpenedOrClosedMultiLineComment = false;
-	l.m_startOfLastLinePos = 0;
+	l.m_lines.clear();
+	l.m_lineBuffer.str("");
 }
 
 Token Lexer::GetNextToken()
@@ -250,6 +250,8 @@ Token Lexer::GetNextToken()
 	{
 		char lookup;
 		l.m_inputFile.read(&lookup, 1);
+		l.m_lineBuffer << lookup;
+
 		if (l.m_inputFile.eof())
 		{
 			lookup = CharData::GetEOFChar();
@@ -258,14 +260,15 @@ Token Lexer::GetNextToken()
 				l.m_inputFile.clear();
 				l.m_multiLineCommentsOpened = 0; // set to 0 now that error has been recorded
 				t = Token(charBuffer.str(), TokenType::IncompleteMultipleLineComment, 
-					l.m_startLineOfMultiLineComment, l.m_startOfLastLinePos);
+					l.m_startLineOfMultiLineComment);
 				continue;
 			}
 		}
 		else if (lookup == CharData::GetNewLineChar())
 		{
 			l.m_lineCounter++;
-			l.m_startOfLastLinePos = l.m_inputFile.tellg();
+			l.m_lines.push_back(l.m_lineBuffer.str());
+			l.m_lineBuffer.str("");
 		}
 
 		if (currState != 0 || !(CharData::IsWhitespace(lookup) 
@@ -278,6 +281,7 @@ Token Lexer::GetNextToken()
 		StateID nextState = TryToGenerateToken(currState, lookup, charBuffer, t);		
 		currState = nextState;
 		l.m_lastChar = lookup;
+
 	}
 	return Token(t);
 }
@@ -310,8 +314,7 @@ StateID Lexer::TryToGenerateToken(StateID currState, char lookup,
 		std::cout << "[Debug]: Error encountered at state " << currState 
 			<< " when receiving representation character " << representationChar 
 			<< " | lookup char: " << lookup << "\n";
-		outToken = Token(charBuffer.str(), TokenType::InvalidIdentifier, l.m_lineCounter, 
-			l.m_startOfLastLinePos);
+		outToken = Token(charBuffer.str(), TokenType::InvalidIdentifier, l.m_lineCounter);
 		return currState;
 	}
 
@@ -331,8 +334,7 @@ StateID Lexer::TryToGenerateToken(StateID currState, char lookup,
 		{
 			BackTrack(lookup, charBuffer);
 		}
-		outToken = Token(charBuffer.str(), entry->GetTokenType(), l.m_lineCounter, 
-			l.m_startOfLastLinePos);
+		outToken = Token(charBuffer.str(), entry->GetTokenType(), l.m_lineCounter);
 		DoCustomStateBehavior(nextState, outToken);
 	}
 	return nextState;
@@ -345,11 +347,23 @@ void Lexer::BackTrack(char lookup, std::stringstream& charBuffer)
 	l.m_inputFile.putback(lookup);
 	std::string bufferCopy = charBuffer.str();
 	l.m_lastChar = bufferCopy[bufferCopy.length() - 2];
+	
 
 	// update line counter if needed
 	if (lookup == CharData::GetNewLineChar())
 	{
 		l.m_lineCounter--;
+		std::string lastLine = l.m_lines[l.m_lines.size() - 1];
+		l.m_lines.erase(l.m_lines.begin() + (l.m_lines.size() - 1));
+		l.m_lineBuffer.str("");
+		l.m_lineBuffer << lastLine.substr(0, lastLine.length() - 1);
+	}
+	else
+	{
+		// remove previously added chararacter
+		std::string currLine = l.m_lineBuffer.str();
+		l.m_lineBuffer.str("");
+		l.m_lineBuffer << currLine.substr(0, currLine.length() - 1);
 	}
 
 	// remove character from buffer

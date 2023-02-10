@@ -398,7 +398,7 @@ void SetManager::InitializeFirstSets()
     m_firstSets[NonTerminal::Start] = {TokenType::Class, TokenType::Function};
     m_firstSets[NonTerminal::FuncDef] = {TokenType::Function};
     m_firstSets[NonTerminal::FuncHead] = {TokenType::Function};
-    m_firstSets[NonTerminal::FuncHead2] = {TokenType::Scope, TokenType::CloseParanthese};
+    m_firstSets[NonTerminal::FuncHead2] = {TokenType::Scope, TokenType::OpenParanthese};
     m_firstSets[NonTerminal::FuncHead3] = {TokenType::ID, TokenType::Constructor};
     m_firstSets[NonTerminal::FuncBody] = {TokenType::OpenCurlyBracket};
     m_firstSets[NonTerminal::LocalVarDeclOrStmtRepetition] = {TokenType::LocalVar, 
@@ -1120,6 +1120,21 @@ RuleID ParsingTableEntry::GetRule(const Token& t) const
     return it->second;
 }
 
+// ErrorData //////////////////////////////////////////////////////////
+ErrorData::ErrorData(const Token& token, StackableItem top) : m_token(token), m_top(top) { }
+
+const StackableItem& ErrorData::GetTop() const { return m_top; }
+const Token& ErrorData::GetToken() const { return m_token; }
+
+std::ostream& operator<<(std::ostream& stream, const ErrorData& data)
+{
+    const Token& token = data.GetToken();
+    stream << "Unexpected token \"" << token.GetLexeme() << "\". Expected " 
+        << data.GetTop() << " at line " << token.GetLine() << ": \"" 
+        << token.GetStrOfLine() << "\""; 
+    return stream;
+}
+
 // Parser ////////////////////////////////////////////
 bool Parser::Parse(const std::string& filepath)
 {
@@ -1168,6 +1183,8 @@ bool Parser::Parse(const std::string& filepath)
         }
 
     }
+
+    p.WriteErrorsToFile();
 
     if (currToken.GetTokenType() != TokenType::EndOfFile || p.m_errorFound)
     {
@@ -1507,13 +1524,18 @@ void Parser::WriteDerivationToFile()
     m_derivationFile << "\n";
 }
 
+void Parser::WriteErrorsToFile()
+{
+    for (auto it = m_errors.rbegin(); it != m_errors.rend(); it++)
+    {
+        m_errorFile << *it << "\n";
+    }
+}
+
 Token Parser::SkipError(const Token& currToken, const StackableItem& top)
 {
-    //write error to error file
-    m_errorFile << "Unexpected token \"" << currToken.GetLexeme() << "\". Expected " 
-        << top << " at line " << currToken.GetLine() << ": \"" 
-        << currToken.GetStrOfLine() << "\"\n"; 
-
+    m_errors.emplace_front(currToken, top);
+    
     if (currToken.GetTokenType() == TokenType::EndOfFile 
         || SetManager::IsInFollowSet(top, currToken.GetTokenType()))
     {

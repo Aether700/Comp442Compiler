@@ -73,9 +73,26 @@ void ExitPrompt()
 	std::cin.get();
 }
 
+void DebugPrintFile(const std::string& filepath, size_t offset = 0)
+{
+	std::ifstream f = std::ifstream(filepath, std::ios_base::in);
+	f.seekg(offset);
+	while (!f.eof())
+	{
+		char c;
+		f.read(&c, 1);
+		std::cout << c;
+	}
+}
+
 int main(int argc, char* argv[])
 {
+	/*
 	line printing for the error doesn't work properly check why
+	with current input seems like lexer is storing one position too far and 
+	needs and skips first character, fix then check for other errors in 
+	the TempTestInputFileStorage.txt
+	*/
 #ifdef DEBUG_MODE
 	std::string file = "testInputFile.txt";
 	std::string currDir = std::string(argv[0]);
@@ -101,6 +118,7 @@ int main(int argc, char* argv[])
 
 	//Driver(path);
 	std::cout << Parser::Parse(path) << "\n";
+	//DebugPrintFile(path, 193);
 #else
 	std::string directoryPath = "TestFiles";
 	if (!std::filesystem::exists(directoryPath))

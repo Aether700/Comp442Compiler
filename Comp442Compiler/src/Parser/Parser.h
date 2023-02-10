@@ -173,6 +173,21 @@ private:
     std::unordered_map<TokenType, RuleID> m_entries;
 };
 
+class ErrorData
+{
+public:
+    ErrorData(const Token& token, StackableItem top);
+
+    const StackableItem& GetTop() const;
+    const Token& GetToken() const;
+
+private:
+    StackableItem m_top;
+    Token m_token;
+};
+
+std::ostream& operator<<(std::ostream& stream, const ErrorData& data);
+
 class Parser
 {
 public:
@@ -188,6 +203,7 @@ private:
     void InitializeParsingTable();
     void PushToStack(const Rule* r);
     void WriteDerivationToFile();
+    void WriteErrorsToFile();
     Token SkipError(const Token& currToken, const StackableItem& top);
     void PopNonTerminal();
 
@@ -201,4 +217,5 @@ private:
     std::ofstream m_errorFile;
     std::vector<StackableItem> m_derivation;
     size_t m_nextNonTerminalIndex;
+    std::list<ErrorData> m_errors;
 };

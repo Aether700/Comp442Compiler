@@ -4,6 +4,7 @@
 #include <vector>
 #include <fstream>
 #include <utility>
+#include <sstream>
 
 #include "../Core/Token.h"
 
@@ -123,8 +124,8 @@ private:
 	static Lexer& GetInstance();
 
 	size_t m_lineCounter;
-	size_t m_startOfLastLinePos;
-	size_t m_prevStartOfLastLinePos;
+	std::vector<std::string> m_lines;
+	std::stringstream m_lineBuffer;
 	std::unordered_map<StateID, LexicalTableEntry*> m_lexicalTable;
 	std::ifstream m_inputFile;
 	size_t m_multiLineCommentsOpened;
