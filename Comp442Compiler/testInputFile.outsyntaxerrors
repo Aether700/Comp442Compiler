@@ -1,4 +1,0 @@
-Unexpected token ";". Expected <Type> at line 4: "localvar n    : ;"
-Unexpected token "0". Expected <SimpleStatement2> at line 9: "i 0;"
-Unexpected token "j". Expected '(' at line 13: "while j < n-i-1) {"
-Unexpected token "then". Expected <StatBlock> at line 15: "then {"

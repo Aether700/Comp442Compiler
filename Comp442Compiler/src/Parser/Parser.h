@@ -12,6 +12,15 @@
 typedef size_t RuleID;
 static constexpr RuleID NullRule = SIZE_MAX;
 
+enum class ErrorID
+{
+    Default,
+    InvalidTypeSpecifier,
+    InvalidFunctionHead,
+    InvalidArgumentDefinition,
+    InvalidFunctionArgumentProvided,
+};
+
 enum class NonTerminal
 {
     None,
@@ -173,20 +182,54 @@ private:
     std::unordered_map<TokenType, RuleID> m_entries;
 };
 
-class ErrorData
+class ParsingErrorData
 {
 public:
-    ErrorData(const Token& token, StackableItem top);
+    ParsingErrorData(const Token& token, StackableItem top, ErrorID id);
 
     const StackableItem& GetTop() const;
     const Token& GetToken() const;
+    ErrorID GetID() const;
 
 private:
     StackableItem m_top;
     Token m_token;
+    ErrorID m_id;
 };
 
-std::ostream& operator<<(std::ostream& stream, const ErrorData& data);
+// Uses TokenType::None as an "else" case
+class ParsingErrorTableEntry
+{
+public:
+    ParsingErrorTableEntry(
+        const std::initializer_list<std::pair<TokenType, ErrorID>>& entries);
+
+    ErrorID GetError(const Token& t) const;
+
+private:
+    std::unordered_map<TokenType, ErrorID> m_entries;
+};
+
+class ParsingErrorManager
+{
+public:
+    static void WriteErrorToFile(std::ofstream& file, const ParsingErrorData& error);
+
+private:
+    ParsingErrorManager();
+    ~ParsingErrorManager();
+
+    static void DefaultError(std::ofstream& file, const ParsingErrorData& error);
+    static void InvalidTypeSpecifierError(std::ofstream& file, const ParsingErrorData& error);
+    static void InvalidFunctionHeadError(std::ofstream& file, const ParsingErrorData& error);
+    static void InvalidArgumentDefinitionError(std::ofstream& file, 
+        const ParsingErrorData& error);
+    static void InvalidfunctionArgumentProvidedError(std::ofstream& file, 
+        const ParsingErrorData& error);
+    
+
+    static ParsingErrorManager& GetInstance();
+};
 
 class Parser
 {
@@ -201,21 +244,29 @@ private:
     static bool TokenIsIgnored(TokenType type);
 
     void InitializeParsingTable();
+    void InitializeParsingErrorTable();
+
+    ErrorID GetErrorID(const StackableItem& top, const Token& t);
+
     void PushToStack(const Rule* r);
     void WriteDerivationToFile();
+    void RemoveNonTerminalsFromDerivation();
     void WriteErrorsToFile();
     Token SkipError(const Token& currToken, const StackableItem& top);
     void PopNonTerminal();
 
     // returns index of first nonterminal or -1 if none was found
     void UpdateNextNonTerminalIndex();
+    void WriteLexicalErrorToFile(const Token& t);
 
     std::unordered_map<NonTerminal, ParsingTableEntry*> m_parsingTable;
+    std::unordered_map<NonTerminal, ParsingErrorTableEntry*> m_errorTable;
+
     std::list<StackableItem> m_parsingStack; // front is top of stack
     bool m_errorFound;
     std::ofstream m_derivationFile;
     std::ofstream m_errorFile;
     std::vector<StackableItem> m_derivation;
     size_t m_nextNonTerminalIndex;
-    std::list<ErrorData> m_errors;
+    std::list<ParsingErrorData> m_errors;
 };

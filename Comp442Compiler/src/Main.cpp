@@ -7,65 +7,9 @@
 #include "Parser/Parser.h"
 #include "Core/Util.h"
 
-
-std::string ErrorTokenToStr(const Token& t)
-{
-	std::stringstream ss;
-	ss << "Lexical error: " << t.GetTokenType() << ": \""
-		<< t.GetLexeme() << "\": line  " << t.GetLine() << ".\n";
-	return ss.str();
-}
-
-std::string TokenToStr(const Token& t)
-{
-	std::stringstream ss;
-	ss << "[" << t.GetTokenType() << ", \"";
-	if (t.GetTokenType() == TokenType::EndOfFile) 
-	{
-		ss << "EOF";
-	}
-	else
-	{
-		ss << t.GetLexeme();
-	}
-	ss << "\", " << t.GetLine() << "]";
-	return ss.str();
-}
-
-size_t WriteTokenToFile(std::ofstream& tokenFile, std::ofstream& errorFile, Token& t, size_t lastLine)
-{
-	if (t.IsError())
-	{
-		errorFile << ErrorTokenToStr(t);
-	}
-
-	for (; lastLine < t.GetLine(); lastLine++)
-	{
-		tokenFile << '\n';
-	}
-	tokenFile << TokenToStr(t);
-	return t.GetLine();
-}
-
-void Driver(const std::string& filepath)
-{
-	std::string simplifiedName = SimplifyFilename(filepath); 
-	std::string tokenFilename = simplifiedName + ".outlextokens"; 
-	std::string errorFilename = simplifiedName + ".outlexerrors";
-	
-	std::ofstream tokenFile = std::ofstream(tokenFilename);
-	std::ofstream errorFile = std::ofstream(errorFilename);
-
-	Lexer::SetInputFile(filepath);
-	size_t lastLine = 1;
-	Token t = Lexer::GetNextToken();
-	lastLine = WriteTokenToFile(tokenFile, errorFile, t, lastLine);
-	while (t.GetTokenType() != TokenType::EndOfFile)
-	{
-		t = Lexer::GetNextToken();
-		lastLine = WriteTokenToFile(tokenFile, errorFile, t, lastLine);
-	}
-}
+To Do:
+- create test for the free functions only
+- add more error messages for error cases
 
 void ExitPrompt()
 {
@@ -138,7 +82,7 @@ int main(int argc, char* argv[])
 		if (fileExtention == ".src")
 		{
 			std::cout << "Processing file \"" << filename << "\"\n"; 
-			Driver(filename);
+			Parser::Parse(filename);
 		}
 	}
 	std::cout << "Directory processing completed\n";

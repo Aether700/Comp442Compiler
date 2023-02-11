@@ -1121,18 +1121,130 @@ RuleID ParsingTableEntry::GetRule(const Token& t) const
 }
 
 // ErrorData //////////////////////////////////////////////////////////
-ErrorData::ErrorData(const Token& token, StackableItem top) : m_token(token), m_top(top) { }
+ParsingErrorData::ParsingErrorData(const Token& token, StackableItem top, ErrorID id) 
+    : m_token(token), m_top(top), m_id(id) { }
 
-const StackableItem& ErrorData::GetTop() const { return m_top; }
-const Token& ErrorData::GetToken() const { return m_token; }
+const StackableItem& ParsingErrorData::GetTop() const { return m_top; }
+const Token& ParsingErrorData::GetToken() const { return m_token; }
+ErrorID ParsingErrorData::GetID() const { return m_id; }
 
-std::ostream& operator<<(std::ostream& stream, const ErrorData& data)
+std::ostream& operator<<(std::ostream& stream, const ParsingErrorData& data)
 {
     const Token& token = data.GetToken();
     stream << "Unexpected token \"" << token.GetLexeme() << "\". Expected " 
         << data.GetTop() << " at line " << token.GetLine() << ": \"" 
         << token.GetStrOfLine() << "\""; 
     return stream;
+}
+
+// ParsingErrorTableEntry ////////////////////////////////////////////////////////////
+
+ParsingErrorTableEntry::ParsingErrorTableEntry(
+    const std::initializer_list<std::pair<TokenType, ErrorID>>& entries)
+{
+    for (auto& pair : entries)
+    {
+        m_entries[pair.first] = pair.second;
+    }
+}
+
+ErrorID ParsingErrorTableEntry::GetError(const Token& t) const
+{
+    auto it = m_entries.find(t.GetTokenType());
+    if (it == m_entries.end())
+    {
+        // check if there is an else case
+        it = m_entries.find(TokenType::None);
+        if (it == m_entries.end())
+        {
+            return ErrorID::Default;
+        }
+    }
+    return it->second;
+}
+
+// ParsingErrorManager ////////////////////////////////////////////////////////
+
+void ParsingErrorManager::WriteErrorToFile(std::ofstream& file, const ParsingErrorData& error)
+{
+    switch(error.GetID())
+    {
+    case ErrorID::Default:
+        DefaultError(file, error);
+        break;
+
+    case ErrorID::InvalidTypeSpecifier:
+        InvalidTypeSpecifierError(file, error);
+        break;
+    
+    case ErrorID::InvalidFunctionHead:
+        InvalidFunctionHeadError(file, error);
+        break;
+
+    case ErrorID::InvalidArgumentDefinition:
+        InvalidArgumentDefinitionError(file, error);
+        break;
+
+    case ErrorID::InvalidFunctionArgumentProvided:
+        InvalidfunctionArgumentProvidedError(file, error);
+        break;
+
+    default:
+        DEBUG_BREAK();
+        break;
+    }
+    file << "\n";
+}
+
+ParsingErrorManager::ParsingErrorManager() { }
+ParsingErrorManager::~ParsingErrorManager() { }
+
+void ParsingErrorManager::DefaultError(std::ofstream& file, const ParsingErrorData& error)
+{
+    const Token& token = error.GetToken();
+    file << "Unexpected token \"" << token.GetLexeme() << "\". Expected " 
+        << error.GetTop() << " at line " << token.GetLine() << ": \"" 
+        << token.GetStrOfLine() << "\""; 
+}
+
+void ParsingErrorManager::InvalidTypeSpecifierError(std::ofstream& file, 
+    const ParsingErrorData& error)
+{
+    const Token& token = error.GetToken();
+    file << "Invalid type specifier \"" << token.GetLexeme() << "\" found at line " 
+        << token.GetLine() << ": \"" << token.GetStrOfLine() << "\"" ; 
+}
+
+void ParsingErrorManager::InvalidFunctionHeadError(std::ofstream& file, const ParsingErrorData& error)
+{
+    const Token& token = error.GetToken();
+    file << "Invalid function head found at line " << token.GetLine() 
+        << ": \"" << token.GetStrOfLine() << "\". Unexpected token \"" 
+        << token.GetLexeme() << "\" encountered"; 
+}
+
+void ParsingErrorManager::InvalidArgumentDefinitionError(std::ofstream& file, 
+        const ParsingErrorData& error)
+{
+    const Token& token = error.GetToken();
+    file << "Invalid argument definition encountered at line " << token.GetLine() 
+        << ": \"" << token.GetStrOfLine() << "\". Unexpected token \"" 
+        << token.GetLexeme() << "\" encountered"; 
+}
+
+void ParsingErrorManager::InvalidfunctionArgumentProvidedError(std::ofstream& file, 
+        const ParsingErrorData& error)
+{
+    const Token& token = error.GetToken();
+    file << "Invalid function argument provided for function call at line " << token.GetLine() 
+        << ": \"" << token.GetStrOfLine() << "\". Unexpected token \"" 
+        << token.GetLexeme() << "\" encountered"; 
+}
+
+ParsingErrorManager& ParsingErrorManager::GetInstance()
+{
+    static ParsingErrorManager manager;
+    return manager;
 }
 
 // Parser ////////////////////////////////////////////
@@ -1184,20 +1296,35 @@ bool Parser::Parse(const std::string& filepath)
 
     }
 
+
     p.WriteErrorsToFile();
 
     if (currToken.GetTokenType() != TokenType::EndOfFile || p.m_errorFound)
     {
         return false;
     }
+
+    // update derivation to remove all epsilon derivations
+    p.RemoveNonTerminalsFromDerivation();
+    p.WriteDerivationToFile();
+    
     return true;
 }
 
-Parser::Parser() { InitializeParsingTable(); }
+Parser::Parser() 
+{ 
+    InitializeParsingTable(); 
+    InitializeParsingErrorTable();
+}
 
 Parser::~Parser()
 {
     for (auto& pair : m_parsingTable)
+    {
+        delete pair.second;
+    }
+
+    for (auto& pair : m_errorTable)
     {
         delete pair.second;
     }
@@ -1235,7 +1362,7 @@ Token Parser::GetNextToken()
     {
         if (nextToken.IsError())
         {
-            GetInstance().m_errorFound = true;
+            GetInstance().WriteLexicalErrorToFile(nextToken);
         }
         nextToken = Lexer::GetNextToken();
     }
@@ -1488,6 +1615,47 @@ void Parser::InitializeParsingTable()
         {TokenType::Multiply, 109}});
 }
 
+void Parser::InitializeParsingErrorTable()
+{
+    m_errorTable[NonTerminal::Type] = new ParsingErrorTableEntry({ 
+        {TokenType::None, ErrorID::InvalidTypeSpecifier} });
+
+    m_errorTable[NonTerminal::FuncHead] = new ParsingErrorTableEntry({ 
+        {TokenType::None, ErrorID::InvalidFunctionHead} });
+    m_errorTable[NonTerminal::FuncHead2] = new ParsingErrorTableEntry({ 
+        {TokenType::None, ErrorID::InvalidFunctionHead} });
+    m_errorTable[NonTerminal::FuncHead3] = new ParsingErrorTableEntry({ 
+        {TokenType::None, ErrorID::InvalidFunctionHead} });
+
+    m_errorTable[NonTerminal::FParams] = new ParsingErrorTableEntry({ 
+        {TokenType::None, ErrorID::InvalidArgumentDefinition} });
+    m_errorTable[NonTerminal::FParamsTail] = new ParsingErrorTableEntry({ 
+        {TokenType::None, ErrorID::InvalidArgumentDefinition} });
+
+    m_errorTable[NonTerminal::AParams] = new ParsingErrorTableEntry({ 
+        {TokenType::None, ErrorID::InvalidFunctionArgumentProvided} });
+    m_errorTable[NonTerminal::AParamsTail] = new ParsingErrorTableEntry({ 
+        {TokenType::None, ErrorID::InvalidFunctionArgumentProvided} });
+    
+}
+
+ErrorID Parser::GetErrorID(const StackableItem& top, const Token& t)
+{
+    if (top.GetType() == StackableType::NonTerminalItem)
+    {
+        auto it = m_errorTable.find(top.GetNonTerminal());
+        if (it == m_errorTable.end())
+        {
+            return ErrorID::Default;
+        }
+        return it->second->GetError(t);
+    }
+    else
+    {
+        return ErrorID::Default;
+    }
+}
+
 void Parser::PushToStack(const Rule* r)
 {
     const std::list<StackableItem>& rightSide = r->GetRightSide();
@@ -1524,17 +1692,29 @@ void Parser::WriteDerivationToFile()
     m_derivationFile << "\n";
 }
 
+void Parser::RemoveNonTerminalsFromDerivation()
+{
+    for (size_t i = m_nextNonTerminalIndex; i < m_derivation.size(); i++)
+    {
+        if (m_derivation[i].GetType() == StackableType::NonTerminalItem)
+        {
+            m_derivation.erase(m_derivation.begin() + i);
+            i--;
+        }
+    }
+}
+
 void Parser::WriteErrorsToFile()
 {
     for (auto it = m_errors.rbegin(); it != m_errors.rend(); it++)
     {
-        m_errorFile << *it << "\n";
+        ParsingErrorManager::WriteErrorToFile(m_errorFile, *it);
     }
 }
 
 Token Parser::SkipError(const Token& currToken, const StackableItem& top)
 {
-    m_errors.emplace_front(currToken, top);
+    m_errors.emplace_front(currToken, top, GetErrorID(top, currToken));
     
     if (currToken.GetTokenType() == TokenType::EndOfFile 
         || SetManager::IsInFollowSet(top, currToken.GetTokenType()))
@@ -1579,4 +1759,11 @@ void Parser::UpdateNextNonTerminalIndex()
             break;
         }
     }
+}
+
+void Parser::WriteLexicalErrorToFile(const Token& t)
+{
+    m_errorFound = true;
+    m_errorFile << "Lexical error: " << t.GetTokenType() << ": \""
+	    << t.GetLexeme() << "\": line  " << t.GetLine() << ".\n";
 }
