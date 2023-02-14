@@ -21,6 +21,7 @@ enum class ErrorID
     InvalidFunctionArgumentProvided,
     InvalidArithExpr,
     ErroneousTokenAtFuncDef,
+    InvalidStatement,
 };
 
 enum class NonTerminal
@@ -232,6 +233,8 @@ private:
     static void InvalidArithExprError(std::ofstream& file, 
         const ParsingErrorData& error);
     static void ErroneousTokenAtFuncDefError(std::ofstream& file, 
+        const ParsingErrorData& error);
+    static void InvalidStatementError(std::ofstream& file, 
         const ParsingErrorData& error);
     
 

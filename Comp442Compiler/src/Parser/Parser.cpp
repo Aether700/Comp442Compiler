@@ -1197,6 +1197,10 @@ void ParsingErrorManager::WriteErrorToFile(std::ofstream& file, const ParsingErr
         ErroneousTokenAtFuncDefError(file, error);
         break;
 
+    case ErrorID::InvalidStatement:
+        InvalidStatementError(file, error);
+        break;
+
     default:
         DEBUG_BREAK();
         break;
@@ -1267,6 +1271,14 @@ void ParsingErrorManager::ErroneousTokenAtFuncDefError(std::ofstream& file,
         << token.GetLexeme() << "\""; 
 }
 
+void ParsingErrorManager::InvalidStatementError(std::ofstream& file, 
+        const ParsingErrorData& error)
+{
+    const Token& token = error.GetToken();
+    file << "Invalid statement found at line " << token.GetLine() 
+        << ": \"" << token.GetStrOfLine() << "\". Unexpected token \"" 
+        << token.GetLexeme() << "\" encountered";
+}
 
 ParsingErrorManager& ParsingErrorManager::GetInstance()
 {
@@ -1675,6 +1687,15 @@ void Parser::InitializeParsingErrorTable()
 
     m_errorTable[NonTerminal::FuncBody] = new ParsingErrorTableEntry({ 
         {TokenType::None, ErrorID::ErroneousTokenAtFuncDef} });
+
+    m_errorTable[NonTerminal::SimpleStatement] = new ParsingErrorTableEntry({ 
+        {TokenType::None, ErrorID::InvalidStatement} });
+    m_errorTable[NonTerminal::SimpleStatement2] = new ParsingErrorTableEntry({ 
+        {TokenType::None, ErrorID::InvalidStatement} });
+    m_errorTable[NonTerminal::SimpleStatement3] = new ParsingErrorTableEntry({ 
+        {TokenType::None, ErrorID::InvalidStatement} });
+    m_errorTable[NonTerminal::SimpleStatement4] = new ParsingErrorTableEntry({ 
+        {TokenType::None, ErrorID::InvalidStatement} });
 }
 
 ErrorID Parser::GetErrorID(const StackableItem& top, const Token& t)

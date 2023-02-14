@@ -13,6 +13,15 @@ function ValidFunc() => void
     someFunc(arr[.2]);
 }
 
+
+function Func() => myObj
+{
+    // generates an InvalidStatement error
+    k.[].args = 5;
+}
+
+
+
 // generates an InvalidTypeSpecifier error
 function Func(arr : 123) => void { }
 
