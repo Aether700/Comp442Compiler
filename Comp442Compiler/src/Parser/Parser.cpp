@@ -1186,7 +1186,15 @@ void ParsingErrorManager::WriteErrorToFile(std::ofstream& file, const ParsingErr
         break;
 
     case ErrorID::InvalidFunctionArgumentProvided:
-        InvalidfunctionArgumentProvidedError(file, error);
+        InvalidFunctionArgumentProvidedError(file, error);
+        break;
+
+    case ErrorID::InvalidArithExpr:
+        InvalidArithExprError(file, error);
+        break;
+
+    case ErrorID::ErroneousTokenAtFuncDef:
+        ErroneousTokenAtFuncDefError(file, error);
         break;
 
     default:
@@ -1232,7 +1240,7 @@ void ParsingErrorManager::InvalidArgumentDefinitionError(std::ofstream& file,
         << token.GetLexeme() << "\" encountered"; 
 }
 
-void ParsingErrorManager::InvalidfunctionArgumentProvidedError(std::ofstream& file, 
+void ParsingErrorManager::InvalidFunctionArgumentProvidedError(std::ofstream& file, 
         const ParsingErrorData& error)
 {
     const Token& token = error.GetToken();
@@ -1240,6 +1248,25 @@ void ParsingErrorManager::InvalidfunctionArgumentProvidedError(std::ofstream& fi
         << ": \"" << token.GetStrOfLine() << "\". Unexpected token \"" 
         << token.GetLexeme() << "\" encountered"; 
 }
+
+void ParsingErrorManager::InvalidArithExprError(std::ofstream& file, 
+        const ParsingErrorData& error)
+{
+    const Token& token = error.GetToken();
+    file << "Invalid arithmetic expresion provided at line " << token.GetLine() 
+        << ": \"" << token.GetStrOfLine() << "\". Unexpected token \"" 
+        << token.GetLexeme() << "\" encountered"; 
+}
+
+void ParsingErrorManager::ErroneousTokenAtFuncDefError(std::ofstream& file, 
+    const ParsingErrorData& error)
+{
+    const Token& token = error.GetToken();
+    file << "Erroneous token found at line " << token.GetLine() 
+        << ": \"" << token.GetStrOfLine() << "\". Expected a function definition but found: \"" 
+        << token.GetLexeme() << "\""; 
+}
+
 
 ParsingErrorManager& ParsingErrorManager::GetInstance()
 {
@@ -1345,10 +1372,14 @@ void Parser::Reset(const std::string& filepath)
     p.m_errorFound = false;
 
     std::string simpleName = SimplifyFilename(filepath);
+
+    p.m_derivationFile.close();
+    p.m_errorFile.close();
     p.m_derivationFile = std::ofstream(simpleName + ".outderivation");
     p.m_errorFile = std::ofstream(simpleName + ".outsyntaxerrors");
     p.m_derivationFile << NonTerminal::Start << "\n";
 
+    p.m_errors.clear();
     p.m_derivation.clear();
     p.m_derivation.emplace_back(NonTerminal::Start);
     p.m_derivation.emplace_back(TokenType::EndOfFile);
@@ -1636,7 +1667,14 @@ void Parser::InitializeParsingErrorTable()
         {TokenType::None, ErrorID::InvalidFunctionArgumentProvided} });
     m_errorTable[NonTerminal::AParamsTail] = new ParsingErrorTableEntry({ 
         {TokenType::None, ErrorID::InvalidFunctionArgumentProvided} });
-    
+
+    m_errorTable[NonTerminal::ArithExpr] = new ParsingErrorTableEntry({ 
+        {TokenType::None, ErrorID::InvalidArithExpr} });
+    m_errorTable[NonTerminal::ArithExpr2] = new ParsingErrorTableEntry({ 
+        {TokenType::None, ErrorID::InvalidArithExpr} });
+
+    m_errorTable[NonTerminal::FuncBody] = new ParsingErrorTableEntry({ 
+        {TokenType::None, ErrorID::ErroneousTokenAtFuncDef} });
 }
 
 ErrorID Parser::GetErrorID(const StackableItem& top, const Token& t)
@@ -1731,9 +1769,9 @@ Token Parser::SkipError(const Token& currToken, const StackableItem& top)
     else
     {
         Token nextToken = currToken;
-        while((!SetManager::IsInFirstSet(top, nextToken.GetTokenType())
-            || (SetManager::IsInFirstSet(top, TokenType::None) 
-            && !SetManager::IsInFollowSet(top, nextToken.GetTokenType()))) 
+        while((!SetManager::IsInFirstSet(top, nextToken.GetTokenType()) 
+            && (!SetManager::IsInFirstSet(top, TokenType::None) 
+            || !SetManager::IsInFollowSet(top, nextToken.GetTokenType()))) 
             && nextToken.GetTokenType() != TokenType::EndOfFile)
         {
             nextToken = GetNextToken();

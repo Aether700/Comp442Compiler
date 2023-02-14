@@ -19,6 +19,8 @@ enum class ErrorID
     InvalidFunctionHead,
     InvalidArgumentDefinition,
     InvalidFunctionArgumentProvided,
+    InvalidArithExpr,
+    ErroneousTokenAtFuncDef,
 };
 
 enum class NonTerminal
@@ -219,12 +221,17 @@ private:
     ParsingErrorManager();
     ~ParsingErrorManager();
 
+    // custom error message functions
     static void DefaultError(std::ofstream& file, const ParsingErrorData& error);
     static void InvalidTypeSpecifierError(std::ofstream& file, const ParsingErrorData& error);
     static void InvalidFunctionHeadError(std::ofstream& file, const ParsingErrorData& error);
     static void InvalidArgumentDefinitionError(std::ofstream& file, 
         const ParsingErrorData& error);
-    static void InvalidfunctionArgumentProvidedError(std::ofstream& file, 
+    static void InvalidFunctionArgumentProvidedError(std::ofstream& file, 
+        const ParsingErrorData& error);
+    static void InvalidArithExprError(std::ofstream& file, 
+        const ParsingErrorData& error);
+    static void ErroneousTokenAtFuncDefError(std::ofstream& file, 
         const ParsingErrorData& error);
     
 
