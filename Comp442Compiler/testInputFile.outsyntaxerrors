@@ -1,6 +1,0 @@
-Erroneous token found at line 2: "function Func() => integer[] { }". Expected a function definition but found: "["
-Invalid function head found at line 5: "function InvalidFunctionHead ) => void { }". Unexpected token ")" encountered
-Invalid argument definition encountered at line 8: "function SomeClass::SomeMemberFunc(.) => integer { }". Unexpected token "." encountered
-Invalid arithmetic expresion provided at line 13: "someFunc(arr[.2]);". Unexpected token "." encountered
-Invalid statement found at line 20: "k.[].args = 5;". Unexpected token "[" encountered
-Invalid type specifier "123" found at line 26: "function Func(arr : 123) => void { }"

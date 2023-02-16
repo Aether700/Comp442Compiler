@@ -348,7 +348,6 @@ bool SetManager::IsInFollowSet(NonTerminal n, TokenType t)
     return false;
 }
 
-
 bool SetManager::IsInFollowSet(const StackableItem& n, TokenType t)
 {
     if (n.GetType() == StackableType::NonTerminalItem)
@@ -359,6 +358,7 @@ bool SetManager::IsInFollowSet(const StackableItem& n, TokenType t)
 }
 
 SetManager::SetManager() { InitializeSets(); }
+
 SetManager& SetManager::GetInstance()
 {
     static SetManager manager;
@@ -652,22 +652,38 @@ void SetManager::InitializeFollowSets()
 
 // Rule //////////////////////////////////////////////
 
-Rule::Rule(NonTerminal left, const std::initializer_list<StackableItem>& right) 
-    : m_leftSide(left), m_rightSide(right) { }
+Rule::Rule(const std::initializer_list<StackableItem>& right) 
+    : m_rightSide(right) { }
     
-NonTerminal Rule::GetLeftSide() const { return m_leftSide; }
+void Rule::Apply(NonTerminal top, const Token& currToken) const
+{
+    Parser::GetInstance().PushToStack(this);
+}
+
 const std::list<StackableItem>& Rule::GetRightSide() const { return m_rightSide; }
+
+// ParsingErrorRule //////////////////////////////////////////////////
+
+ParsingErrorRule::ParsingErrorRule(ErrorID id) 
+    : Rule({}), m_errorID(id) { }
+
+void ParsingErrorRule::Apply(NonTerminal top, const Token& currToken) const
+{
+    Parser& p = Parser::GetInstance();
+    p.m_errors.emplace_front(currToken, top, m_errorID);
+}
 
 // RuleManager /////////////////////////////////////////////////////////////////////////
 const Rule* RuleManager::GetRule(RuleID id)
 {
     if (id == NullRule)
     {
-        DEBUG_BREAK();
-        return nullptr;
+        return GetInstance().m_defaultRule;
     }
     return GetInstance().m_rules[id];
 }
+
+bool RuleManager::IsError(RuleID id) { return  id > s_errorCutoff; }
 
 RuleManager::RuleManager() { InitializeRules(); }
 RuleManager::~RuleManager() 
@@ -686,418 +702,421 @@ RuleManager& RuleManager::GetInstance()
 
 void RuleManager::InitializeRules()
 {
-    // 0
-    m_rules.push_back(new Rule(NonTerminal::Start,  
-        { NonTerminal::ClassDeclOrFuncDefRepetition }));
+    m_defaultRule = new ParsingErrorRule(ErrorID::Default);
+
+    // 0 Start
+    m_rules.push_back(new Rule({ NonTerminal::ClassDeclOrFuncDefRepetition }));
     
-    // 1
-    m_rules.push_back(new Rule(NonTerminal::ClassDeclOrFuncDefRepetition, 
-        { NonTerminal::ClassDeclOrFuncDef, NonTerminal::ClassDeclOrFuncDefRepetition }));
+    // 1 ClassDeclOrFuncDefRepetition
+    m_rules.push_back(new Rule({ NonTerminal::ClassDeclOrFuncDef, 
+        NonTerminal::ClassDeclOrFuncDefRepetition }));
 
-    // 2
-    m_rules.push_back(new Rule(NonTerminal::ClassDeclOrFuncDefRepetition, { })); 
+    // 2 ClassDeclOrFuncDefRepetition
+    m_rules.push_back(new Rule({ })); 
 
-    // 3
-    m_rules.push_back(new Rule(NonTerminal::ClassDeclOrFuncDef, { NonTerminal::ClassDecl })); 
+    // 3 ClassDeclOrFuncDef
+    m_rules.push_back(new Rule({ NonTerminal::ClassDecl })); 
 
-    // 4
-    m_rules.push_back(new Rule(NonTerminal::ClassDeclOrFuncDef, { NonTerminal::FuncDef })); 
+    // 4 ClassDeclOrFuncDef
+    m_rules.push_back(new Rule({ NonTerminal::FuncDef })); 
 
-    // 5
-    m_rules.push_back(new Rule(NonTerminal::ClassDecl, { TokenType::Class, TokenType::ID, 
+    // 5 ClassDecl
+    m_rules.push_back(new Rule({ TokenType::Class, TokenType::ID, 
         NonTerminal::ClassDeclInheritance, TokenType::OpenCurlyBracket, 
         NonTerminal::ClassDeclMembDeclRepetition, TokenType::CloseCurlyBracket, 
         TokenType::SemiColon })); 
 
-    // 6
-    m_rules.push_back(new Rule(NonTerminal::ClassDeclMembDeclRepetition, 
-        { NonTerminal::Visibility, NonTerminal::MemberDecl, 
+    // 6 ClassDeclMembDeclRepetition
+    m_rules.push_back(new Rule({ NonTerminal::Visibility, NonTerminal::MemberDecl, 
         NonTerminal::ClassDeclMembDeclRepetition }));
 
-    // 7
-    m_rules.push_back(new Rule(NonTerminal::ClassDeclMembDeclRepetition, { }));
+    // 7 ClassDeclMembDeclRepetition
+    m_rules.push_back(new Rule({ }));
 
-    // 8
-    m_rules.push_back(new Rule(NonTerminal::ClassDeclInheritance, 
-        { TokenType::IsA, TokenType::ID, NonTerminal::ClassDeclInheritanceTail }));
+    // 8 ClassDeclInheritance
+    m_rules.push_back(new Rule({ TokenType::IsA, TokenType::ID, 
+        NonTerminal::ClassDeclInheritanceTail }));
 
-    // 9
-    m_rules.push_back(new Rule(NonTerminal::ClassDeclInheritance, { }));
+    // 9 ClassDeclInheritance
+    m_rules.push_back(new Rule({ }));
     
-    // 10
-    m_rules.push_back(new Rule(NonTerminal::ClassDeclInheritanceTail, 
-        { TokenType::Comma, TokenType::ID, NonTerminal::ClassDeclInheritanceTail }));
+    // 10 ClassDeclInheritanceTail
+    m_rules.push_back(new Rule({ TokenType::Comma, TokenType::ID, NonTerminal::ClassDeclInheritanceTail }));
 
-    // 11
-    m_rules.push_back(new Rule(NonTerminal::ClassDeclInheritanceTail, { }));
+    // 11 ClassDeclInheritanceTail
+    m_rules.push_back(new Rule({ }));
 
-    // 12
-    m_rules.push_back(new Rule(NonTerminal::Visibility, { TokenType::Public }));
+    // 12 Visibility
+    m_rules.push_back(new Rule({ TokenType::Public }));
 
-    // 13
-    m_rules.push_back(new Rule(NonTerminal::Visibility, { TokenType::Private }));
+    // 13 Visibility
+    m_rules.push_back(new Rule({ TokenType::Private }));
 
-    // 14
-    m_rules.push_back(new Rule(NonTerminal::Visibility, { }));
+    // 14 Visibility
+    m_rules.push_back(new Rule({ }));
 
-    // 15
-    m_rules.push_back(new Rule(NonTerminal::MemberDecl, { NonTerminal::MemberFuncDecl }));
+    // 15 MemberDecl
+    m_rules.push_back(new Rule({ NonTerminal::MemberFuncDecl }));
 
-    // 16
-    m_rules.push_back(new Rule(NonTerminal::MemberDecl, { NonTerminal::MemberVarDecl }));
+    // 16 MemberDecl
+    m_rules.push_back(new Rule({ NonTerminal::MemberVarDecl }));
 
-    // 17
-    m_rules.push_back(new Rule(NonTerminal::MemberFuncDecl, { TokenType::Function, 
+    // 17 MemberFuncDecl
+    m_rules.push_back(new Rule({ TokenType::Function, 
         TokenType::ID, TokenType::Colon, TokenType::OpenParanthese, NonTerminal::FParams, 
         TokenType::CloseParanthese, TokenType::Arrow, NonTerminal::ReturnType, 
         TokenType::SemiColon }));
 
-    // 18
-    m_rules.push_back(new Rule(NonTerminal::MemberFuncDecl, { TokenType::Constructor, 
+    // 18 MemberFuncDecl
+    m_rules.push_back(new Rule({ TokenType::Constructor, 
         TokenType::Colon, TokenType::OpenParanthese, NonTerminal::FParams, 
         TokenType::CloseParanthese, TokenType::SemiColon }));
 
-    // 19
-    m_rules.push_back(new Rule(NonTerminal::MemberVarDecl, { TokenType::Attribute, 
+    // 19 MemberVarDecl
+    m_rules.push_back(new Rule({ TokenType::Attribute, 
         TokenType::ID, TokenType::Colon,  NonTerminal::Type, NonTerminal::ArraySizeRepetition, 
         TokenType::SemiColon }));
 
-    // 20
-    m_rules.push_back(new Rule(NonTerminal::FuncDef, { NonTerminal::FuncHead, 
-        NonTerminal::FuncBody }));
+    // 20 FuncDef
+    m_rules.push_back(new Rule({ NonTerminal::FuncHead, NonTerminal::FuncBody }));
 
-    // 21
-    m_rules.push_back(new Rule(NonTerminal::FuncHead, { TokenType::Function, 
+    // 21 FuncHead
+    m_rules.push_back(new Rule({ TokenType::Function, 
         TokenType::ID, NonTerminal::FuncHead2 }));
     
-    // 22
-    m_rules.push_back(new Rule(NonTerminal::FuncHead2, { TokenType::Scope, 
-        NonTerminal::FuncHead3 }));
+    // 22 FuncHead2
+    m_rules.push_back(new Rule({ TokenType::Scope, NonTerminal::FuncHead3 }));
 
-    // 23
-    m_rules.push_back(new Rule(NonTerminal::FuncHead2, { TokenType::OpenParanthese, 
+    // 23 FuncHead2
+    m_rules.push_back(new Rule({ TokenType::OpenParanthese, 
         NonTerminal::FParams, TokenType::CloseParanthese, TokenType::Arrow, 
         NonTerminal::ReturnType }));
     
-    // 24
-    m_rules.push_back(new Rule(NonTerminal::FuncHead3, { TokenType::ID, 
+    // 24 FuncHead3
+    m_rules.push_back(new Rule({ TokenType::ID, 
         TokenType::OpenParanthese, NonTerminal::FParams, TokenType::CloseParanthese, 
         TokenType::Arrow, NonTerminal::ReturnType }));
 
-    // 25
-    m_rules.push_back(new Rule(NonTerminal::FuncHead3, { TokenType::Constructor, 
+    // 25 FuncHead3
+    m_rules.push_back(new Rule({ TokenType::Constructor, 
         TokenType::OpenParanthese, NonTerminal::FParams, TokenType::CloseParanthese }));
 
-    // 26
-    m_rules.push_back(new Rule(NonTerminal::FuncBody, { TokenType::OpenCurlyBracket, 
+    // 26 FuncBody
+    m_rules.push_back(new Rule({ TokenType::OpenCurlyBracket, 
         NonTerminal::LocalVarDeclOrStmtRepetition, TokenType::CloseCurlyBracket }));
 
-    // 27
-    m_rules.push_back(new Rule(NonTerminal::LocalVarDeclOrStmtRepetition, {
-        NonTerminal::LocalVarDeclOrStmt, NonTerminal::LocalVarDeclOrStmtRepetition }));
+    // 27 LocalVarDeclOrStmtRepetition
+    m_rules.push_back(new Rule({ NonTerminal::LocalVarDeclOrStmt, 
+        NonTerminal::LocalVarDeclOrStmtRepetition }));
 
-    // 28
-    m_rules.push_back(new Rule(NonTerminal::LocalVarDeclOrStmtRepetition, { }));
+    // 28 LocalVarDeclOrStmtRepetition
+    m_rules.push_back(new Rule({ }));
 
-    // 29
-    m_rules.push_back(new Rule(NonTerminal::LocalVarDeclOrStmt, { NonTerminal::LocalVarDecl }));
+    // 29 LocalVarDeclOrStmt
+    m_rules.push_back(new Rule({ NonTerminal::LocalVarDecl }));
 
-    // 30
-    m_rules.push_back(new Rule(NonTerminal::LocalVarDeclOrStmt, { NonTerminal::Statement }));
+    // 30 LocalVarDeclOrStmt
+    m_rules.push_back(new Rule({ NonTerminal::Statement }));
 
-    // 31
-    m_rules.push_back(new Rule(NonTerminal::LocalVarDecl, { TokenType::LocalVar, TokenType::ID, 
+    // 31 LocalVarDecl
+    m_rules.push_back(new Rule({ TokenType::LocalVar, TokenType::ID, 
         TokenType::Colon, NonTerminal::Type, NonTerminal::LocalVarDecl2, 
         TokenType::SemiColon }));
 
-    // 32
-    m_rules.push_back(new Rule(NonTerminal::LocalVarDecl2, { 
-        NonTerminal::ArraySizeRepetition }));
+    // 32 LocalVarDecl2
+    m_rules.push_back(new Rule({ NonTerminal::ArraySizeRepetition }));
 
-    // 33
-    m_rules.push_back(new Rule(NonTerminal::LocalVarDecl2, { 
-        TokenType::OpenParanthese, NonTerminal::AParams, TokenType::CloseParanthese }));
+    // 33 LocalVarDecl2
+    m_rules.push_back(new Rule({ TokenType::OpenParanthese, NonTerminal::AParams, 
+        TokenType::CloseParanthese }));
 
-    // 34
-    m_rules.push_back(new Rule(NonTerminal::Statement, { NonTerminal::SimpleStatement, 
+    // 34 Statement
+    m_rules.push_back(new Rule({ NonTerminal::SimpleStatement, 
         TokenType::SemiColon }));
 
-    // 35
-    m_rules.push_back(new Rule(NonTerminal::Statement, { TokenType::If, 
+    // 35 Statement
+    m_rules.push_back(new Rule({ TokenType::If, 
         TokenType::OpenParanthese, NonTerminal::RelExpr, TokenType::CloseParanthese, 
         TokenType::Then, NonTerminal::StatBlock, TokenType::Else, NonTerminal::StatBlock, 
         TokenType::SemiColon }));
 
-    // 36
-    m_rules.push_back(new Rule(NonTerminal::Statement, { TokenType::While, 
+    // 36 Statement
+    m_rules.push_back(new Rule({ TokenType::While, 
         TokenType::OpenParanthese, NonTerminal::RelExpr, TokenType::CloseParanthese, 
         NonTerminal::StatBlock, TokenType::SemiColon }));
 
-    // 37
-    m_rules.push_back(new Rule(NonTerminal::Statement, { TokenType::Read, 
+    // 37 Statement
+    m_rules.push_back(new Rule({ TokenType::Read, 
         TokenType::OpenParanthese, NonTerminal::Variable, TokenType::CloseParanthese, 
         TokenType::SemiColon }));
 
-    // 38
-    m_rules.push_back(new Rule(NonTerminal::Statement, { TokenType::Write, 
+    // 38 Statement
+    m_rules.push_back(new Rule({ TokenType::Write, 
         TokenType::OpenParanthese, NonTerminal::Expr, TokenType::CloseParanthese, 
         TokenType::SemiColon }));
 
-    // 39
-    m_rules.push_back(new Rule(NonTerminal::Statement, { TokenType::Return, 
+    // 39 Statement
+    m_rules.push_back(new Rule({ TokenType::Return, 
         TokenType::OpenParanthese, NonTerminal::Expr, TokenType::CloseParanthese, 
         TokenType::SemiColon }));
 
-    // 40
-    m_rules.push_back(new Rule(NonTerminal::SimpleStatement, { TokenType::ID, 
+    // 40 SimpleStatement
+    m_rules.push_back(new Rule({ TokenType::ID, 
         NonTerminal::SimpleStatement2 }));
     
-    // 41
-    m_rules.push_back(new Rule(NonTerminal::SimpleStatement2, { NonTerminal::Indice, 
+    // 41 SimpleStatement2
+    m_rules.push_back(new Rule({ NonTerminal::Indice, 
         NonTerminal::SimpleStatement3 }));
 
-    // 42
-    m_rules.push_back(new Rule(NonTerminal::SimpleStatement2, { TokenType::OpenParanthese, 
+    // 42 SimpleStatement2
+    m_rules.push_back(new Rule({ TokenType::OpenParanthese, 
         NonTerminal::AParams, TokenType::CloseParanthese, NonTerminal::SimpleStatement4 }));
 
-    // 43
-    m_rules.push_back(new Rule(NonTerminal::SimpleStatement3, { TokenType::Dot, 
-        NonTerminal::SimpleStatement }));
+    // 43 SimpleStatement3
+    m_rules.push_back(new Rule({ TokenType::Dot, NonTerminal::SimpleStatement }));
 
-    // 44
-    m_rules.push_back(new Rule(NonTerminal::SimpleStatement3, { TokenType::Assign, 
-        NonTerminal::Expr }));
+    // 44 SimpleStatement3
+    m_rules.push_back(new Rule({ TokenType::Assign, NonTerminal::Expr }));
 
-    // 45
-    m_rules.push_back(new Rule(NonTerminal::SimpleStatement4, { TokenType::Dot, 
-        NonTerminal::SimpleStatement }));
+    // 45 SimpleStatement4
+    m_rules.push_back(new Rule({ TokenType::Dot, NonTerminal::SimpleStatement }));
 
-    // 46
-    m_rules.push_back(new Rule(NonTerminal::SimpleStatement4, { }));
+    // 46 SimpleStatement4
+    m_rules.push_back(new Rule({ }));
 
-    // 47
-    m_rules.push_back(new Rule(NonTerminal::StatementRepetition, { NonTerminal::Statement, 
-        NonTerminal::StatementRepetition }));
+    // 47 StatementRepetition
+    m_rules.push_back(new Rule({ NonTerminal::Statement, NonTerminal::StatementRepetition }));
 
-    // 48
-    m_rules.push_back(new Rule(NonTerminal::StatementRepetition, { }));
+    // 48 StatementRepetition
+    m_rules.push_back(new Rule({ }));
 
-    // 49
-    m_rules.push_back(new Rule(NonTerminal::StatBlock, { TokenType::OpenCurlyBracket, 
+    // 49 StatBlock
+    m_rules.push_back(new Rule({ TokenType::OpenCurlyBracket, 
         NonTerminal::StatementRepetition, TokenType::CloseCurlyBracket }));
 
-    // 50
-    m_rules.push_back(new Rule(NonTerminal::StatBlock, { NonTerminal::Statement }));
+    // 50 StatBlock
+    m_rules.push_back(new Rule({ NonTerminal::Statement }));
 
-    // 51
-    m_rules.push_back(new Rule(NonTerminal::StatBlock, { }));
+    // 51 StatBlock
+    m_rules.push_back(new Rule({ }));
 
-    // 52
-    m_rules.push_back(new Rule(NonTerminal::Expr, { NonTerminal::ArithExpr, 
-        NonTerminal::Expr2 }));
+    // 52 Expr
+    m_rules.push_back(new Rule({ NonTerminal::ArithExpr, NonTerminal::Expr2 }));
 
-    // 53
-    m_rules.push_back(new Rule(NonTerminal::Expr2, { NonTerminal::RelOp, 
-        NonTerminal::ArithExpr }));
+    // 53 Expr2
+    m_rules.push_back(new Rule({ NonTerminal::RelOp, NonTerminal::ArithExpr }));
 
-    // 54
-    m_rules.push_back(new Rule(NonTerminal::Expr2, { }));
+    // 54 Expr2
+    m_rules.push_back(new Rule({ }));
 
-    // 55
-    m_rules.push_back(new Rule(NonTerminal::RelExpr, { NonTerminal::ArithExpr, 
+    // 55 RelExpr
+    m_rules.push_back(new Rule({ NonTerminal::ArithExpr, 
         NonTerminal::RelOp, NonTerminal::ArithExpr }));
 
-    // 56
-    m_rules.push_back(new Rule(NonTerminal::ArithExpr, { NonTerminal::Term, 
+    // 56 ArithExpr
+    m_rules.push_back(new Rule({ NonTerminal::Term, NonTerminal::ArithExpr2 }));
+
+    // 57 ArithExpr2
+    m_rules.push_back(new Rule({ NonTerminal::AddOp, NonTerminal::Term, 
         NonTerminal::ArithExpr2 }));
 
-    // 57
-    m_rules.push_back(new Rule(NonTerminal::ArithExpr2, { NonTerminal::AddOp, 
-        NonTerminal::Term, NonTerminal::ArithExpr2 }));
+    // 58 ArithExpr2
+    m_rules.push_back(new Rule({ }));
 
-    // 58
-    m_rules.push_back(new Rule(NonTerminal::ArithExpr2, { }));
+    // 59 Sign
+    m_rules.push_back(new Rule({ TokenType::Plus }));
 
-    // 59
-    m_rules.push_back(new Rule(NonTerminal::Sign, { TokenType::Plus }));
+    // 60 Sign
+    m_rules.push_back(new Rule({ TokenType::Minus }));
 
-    // 60
-    m_rules.push_back(new Rule(NonTerminal::Sign, { TokenType::Minus }));
-
-    // 61
-    m_rules.push_back(new Rule(NonTerminal::Term, { NonTerminal::Factor, 
+    // 61 Term
+    m_rules.push_back(new Rule({ NonTerminal::Factor, 
         NonTerminal::Term2 }));
     
-    // 62
-    m_rules.push_back(new Rule(NonTerminal::Term2, { NonTerminal::MultOp, 
+    // 62 Term2
+    m_rules.push_back(new Rule({ NonTerminal::MultOp, 
         NonTerminal::Factor, NonTerminal::Term2 }));
 
-    // 63
-    m_rules.push_back(new Rule(NonTerminal::Term2, { }));
+    // 63 Term2
+    m_rules.push_back(new Rule({ }));
 
-    // 64
-    m_rules.push_back(new Rule(NonTerminal::Factor, { NonTerminal::VarOrFuncCall }));
+    // 64 Factor
+    m_rules.push_back(new Rule({ NonTerminal::VarOrFuncCall }));
 
-    // 65
-    m_rules.push_back(new Rule(NonTerminal::Factor, { TokenType::IntegerLiteral }));
+    // 65 Factor
+    m_rules.push_back(new Rule({ TokenType::IntegerLiteral }));
 
-    // 66
-    m_rules.push_back(new Rule(NonTerminal::Factor, { TokenType::FloatLiteral }));
+    // 66 Factor
+    m_rules.push_back(new Rule({ TokenType::FloatLiteral }));
 
-    // 67
-    m_rules.push_back(new Rule(NonTerminal::Factor, { TokenType::OpenParanthese, 
+    // 67 Factor
+    m_rules.push_back(new Rule({ TokenType::OpenParanthese, 
         NonTerminal::ArithExpr, TokenType::CloseParanthese }));
 
-    // 68
-    m_rules.push_back(new Rule(NonTerminal::Factor, { TokenType::Not, NonTerminal::Factor }));
+    // 68 Factor
+    m_rules.push_back(new Rule({ TokenType::Not, NonTerminal::Factor }));
 
-    // 69
-    m_rules.push_back(new Rule(NonTerminal::Factor, { NonTerminal::Sign, 
+    // 69 Factor
+    m_rules.push_back(new Rule({ NonTerminal::Sign, 
         NonTerminal::Factor }));
 
-    // 70
-    m_rules.push_back(new Rule(NonTerminal::VarOrFuncCall, { TokenType::ID, 
-        NonTerminal::VarOrFuncCall2 }));
+    // 70 VarOrFuncCall
+    m_rules.push_back(new Rule({ TokenType::ID, NonTerminal::VarOrFuncCall2 }));
 
-    // 71
-    m_rules.push_back(new Rule(NonTerminal::VarOrFuncCall2, { NonTerminal::Indice, 
-        NonTerminal::VarOrFuncCall3 }));
+    // 71 VarOrFuncCall2
+    m_rules.push_back(new Rule({ NonTerminal::Indice, NonTerminal::VarOrFuncCall3 }));
 
-    // 72
-    m_rules.push_back(new Rule(NonTerminal::VarOrFuncCall2, { TokenType::OpenParanthese, 
+    // 72 VarOrFuncCall2
+    m_rules.push_back(new Rule({ TokenType::OpenParanthese, 
         NonTerminal::AParams, TokenType::CloseParanthese, NonTerminal::VarOrFuncCall3 }));
 
-    // 73
-    m_rules.push_back(new Rule(NonTerminal::VarOrFuncCall3, { TokenType::Dot, 
-        NonTerminal::VarOrFuncCall }));
+    // 73 VarOrFuncCall3
+    m_rules.push_back(new Rule({ TokenType::Dot, NonTerminal::VarOrFuncCall }));
 
-    // 74
-    m_rules.push_back(new Rule(NonTerminal::VarOrFuncCall3, { }));
+    // 74 VarOrFuncCall3
+    m_rules.push_back(new Rule({ }));
 
-    // 75
-    m_rules.push_back(new Rule(NonTerminal::Variable, { TokenType::ID, 
-        NonTerminal::Variable2 }));
+    // 75 Variable
+    m_rules.push_back(new Rule({ TokenType::ID, NonTerminal::Variable2 }));
 
-    // 76
-    m_rules.push_back(new Rule(NonTerminal::Variable2, { NonTerminal::Indice, 
-        NonTerminal::Variable3 }));
+    // 76 Variable2
+    m_rules.push_back(new Rule({ NonTerminal::Indice, NonTerminal::Variable3 }));
 
-    // 77
-    m_rules.push_back(new Rule(NonTerminal::Variable2, { TokenType::OpenParanthese, 
+    // 77 Variable2
+    m_rules.push_back(new Rule({ TokenType::OpenParanthese, 
         NonTerminal::AParams, TokenType::CloseParanthese, TokenType::Dot, 
         NonTerminal::Variable }));
 
-    // 78
-    m_rules.push_back(new Rule(NonTerminal::Variable3, { TokenType::Dot, 
-        NonTerminal::Variable }));
+    // 78 Variable3
+    m_rules.push_back(new Rule({ TokenType::Dot, NonTerminal::Variable }));
     
-    // 79
-    m_rules.push_back(new Rule(NonTerminal::Variable3, { }));
+    // 79 Variable3
+    m_rules.push_back(new Rule({ }));
 
-    // 80
-    m_rules.push_back(new Rule(NonTerminal::Indice, { TokenType::OpenSquareBracket, 
+    // 80 Indice
+    m_rules.push_back(new Rule({ TokenType::OpenSquareBracket, 
         NonTerminal::ArithExpr, TokenType::CloseSquareBracket, NonTerminal::Indice }));
 
-    // 81
-    m_rules.push_back(new Rule(NonTerminal::Indice, { }));
+    // 81 Indice
+    m_rules.push_back(new Rule({ }));
 
-    // 82
-    m_rules.push_back(new Rule(NonTerminal::ArraySize, { TokenType::OpenSquareBracket, 
+    // 82 ArraySize
+    m_rules.push_back(new Rule({ TokenType::OpenSquareBracket, 
         NonTerminal::ArraySize2 }));
 
-    // 83
-    m_rules.push_back(new Rule(NonTerminal::ArraySize2, { TokenType::IntegerLiteral, 
-        TokenType::CloseSquareBracket }));
+    // 83 ArraySize2
+    m_rules.push_back(new Rule({ TokenType::IntegerLiteral, TokenType::CloseSquareBracket }));
 
-    // 84
-    m_rules.push_back(new Rule(NonTerminal::ArraySize2, { TokenType::CloseSquareBracket }));
+    // 84 ArraySize2
+    m_rules.push_back(new Rule({ TokenType::CloseSquareBracket }));
 
-    // 85
-    m_rules.push_back(new Rule(NonTerminal::ArraySizeRepetition, { NonTerminal::ArraySize, 
+    // 85 ArraySizeRepetition
+    m_rules.push_back(new Rule({ NonTerminal::ArraySize, 
         NonTerminal::ArraySizeRepetition }));
 
-    // 86
-    m_rules.push_back(new Rule(NonTerminal::ArraySizeRepetition, { }));
+    // 86 ArraySizeRepetition
+    m_rules.push_back(new Rule({ }));
 
-    // 87
-    m_rules.push_back(new Rule(NonTerminal::Type, { TokenType::IntegerKeyword }));
+    // 87 Type
+    m_rules.push_back(new Rule({ TokenType::IntegerKeyword }));
 
-    // 88
-    m_rules.push_back(new Rule(NonTerminal::Type, { TokenType::FloatKeyword }));
+    // 88 Type
+    m_rules.push_back(new Rule({ TokenType::FloatKeyword }));
 
-    // 89
-    m_rules.push_back(new Rule(NonTerminal::Type, { TokenType::ID }));
+    // 89 Type
+    m_rules.push_back(new Rule({ TokenType::ID }));
 
-    // 90
-    m_rules.push_back(new Rule(NonTerminal::ReturnType, { NonTerminal::Type }));
+    // 90 ReturnType
+    m_rules.push_back(new Rule({ NonTerminal::Type }));
 
-    // 91
-    m_rules.push_back(new Rule(NonTerminal::ReturnType, { TokenType::Void }));
+    // 91 ReturnType
+    m_rules.push_back(new Rule({ TokenType::Void }));
 
-    // 92
-    m_rules.push_back(new Rule(NonTerminal::FParams, { TokenType::ID, TokenType::Colon, 
+    // 92 FParams
+    m_rules.push_back(new Rule({ TokenType::ID, TokenType::Colon, 
         NonTerminal::Type, NonTerminal::ArraySizeRepetition, NonTerminal::FParamsTail }));
 
-    // 93
-    m_rules.push_back(new Rule(NonTerminal::FParams, { }));
+    // 93 FParams
+    m_rules.push_back(new Rule({ }));
 
-    // 94
-    m_rules.push_back(new Rule(NonTerminal::AParams, { NonTerminal::Expr, 
-        NonTerminal::AParamsTail }));
+    // 94 AParams
+    m_rules.push_back(new Rule({ NonTerminal::Expr, NonTerminal::AParamsTail }));
 
-    // 95
-    m_rules.push_back(new Rule(NonTerminal::AParams, { }));
+    // 95 AParams
+    m_rules.push_back(new Rule({ }));
 
-    // 96
-    m_rules.push_back(new Rule(NonTerminal::FParamsTail, { TokenType::Comma, 
+    // 96 FParamsTail
+    m_rules.push_back(new Rule({ TokenType::Comma, 
         TokenType::ID, TokenType::Colon, NonTerminal::Type, NonTerminal::ArraySizeRepetition, 
         NonTerminal::FParamsTail }));
 
-    // 97
-    m_rules.push_back(new Rule(NonTerminal::FParamsTail, { }));
+    // 97 FParamsTail
+    m_rules.push_back(new Rule({ }));
 
-    // 98
-    m_rules.push_back(new Rule(NonTerminal::AParamsTail, { TokenType::Comma, 
+    // 98 AParamsTail
+    m_rules.push_back(new Rule({ TokenType::Comma, 
         NonTerminal::Expr, NonTerminal::AParamsTail }));
 
-    // 99
-    m_rules.push_back(new Rule(NonTerminal::AParamsTail, { }));
+    // 99 AParamsTail
+    m_rules.push_back(new Rule({ }));
 
-    // 100
-    m_rules.push_back(new Rule(NonTerminal::RelOp, { TokenType::Equal }));
+    // 100 RelOp
+    m_rules.push_back(new Rule({ TokenType::Equal }));
 
-    // 101
-    m_rules.push_back(new Rule(NonTerminal::RelOp, { TokenType::NotEqual }));
+    // 101 RelOp
+    m_rules.push_back(new Rule({ TokenType::NotEqual }));
 
-    // 102
-    m_rules.push_back(new Rule(NonTerminal::RelOp, { TokenType::LessThan }));
+    // 102 RelOp
+    m_rules.push_back(new Rule({ TokenType::LessThan }));
 
-    // 103
-    m_rules.push_back(new Rule(NonTerminal::RelOp, { TokenType::GreaterThan }));
+    // 103 RelOp
+    m_rules.push_back(new Rule({ TokenType::GreaterThan }));
 
-    // 104
-    m_rules.push_back(new Rule(NonTerminal::RelOp, { TokenType::LessOrEqual }));
+    // 104 RelOp
+    m_rules.push_back(new Rule({ TokenType::LessOrEqual }));
 
-    // 105
-    m_rules.push_back(new Rule(NonTerminal::RelOp, { TokenType::GreaterOrEqual }));
+    // 105 RelOp
+    m_rules.push_back(new Rule({ TokenType::GreaterOrEqual }));
 
-    // 106
-    m_rules.push_back(new Rule(NonTerminal::AddOp, { TokenType::Plus }));
+    // 106 AddOp
+    m_rules.push_back(new Rule({ TokenType::Plus }));
 
-    // 107
-    m_rules.push_back(new Rule(NonTerminal::AddOp, { TokenType::Minus }));
+    // 107 AddOp
+    m_rules.push_back(new Rule({ TokenType::Minus }));
 
-    // 108
-    m_rules.push_back(new Rule(NonTerminal::AddOp, { TokenType::Or }));
+    // 108 AddOp
+    m_rules.push_back(new Rule({ TokenType::Or }));
 
-    // 109
-    m_rules.push_back(new Rule(NonTerminal::MultOp, { TokenType::Multiply }));
+    // 109 MultOp
+    m_rules.push_back(new Rule({ TokenType::Multiply }));
 
-    // 110
-    m_rules.push_back(new Rule(NonTerminal::MultOp, { TokenType::Divide }));
+    // 110 MultOp
+    m_rules.push_back(new Rule({ TokenType::Divide }));
 
-    // 111
-    m_rules.push_back(new Rule(NonTerminal::MultOp, { TokenType::And }));
+    // 111 MultOp
+    m_rules.push_back(new Rule({ TokenType::And }));
+    
+    ////////////////////////////////////////////////////////////////////////////
+    // Error Cutoff ////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////
+
+    // 112 Type
+    m_rules.push_back(new ParsingErrorRule(ErrorID::InvalidTypeSpecifier));
+    
+    // 113 FuncHead
+    m_rules.push_back(new ParsingErrorRule(ErrorID::InvalidFunctionHead));
+    
+    // 114 FParams
+    m_rules.push_back(new ParsingErrorRule(ErrorID::InvalidArgumentDefinition));
+    
+    // 115 ArithExpr
+    m_rules.push_back(new ParsingErrorRule(ErrorID::InvalidArithExpr));
+    
+    // 116 FuncBody
+    m_rules.push_back(new ParsingErrorRule(ErrorID::ErroneousTokenAtFuncDef));
+    
+    // 117 SimpleStatement
+    m_rules.push_back(new ParsingErrorRule(ErrorID::InvalidStatement));
 }
 
 // ParsingTableEntry ///////////////////////////////////////////////////////////////////
@@ -1115,7 +1134,12 @@ RuleID ParsingTableEntry::GetRule(const Token& t) const
     auto it = m_entries.find(t.GetTokenType());
     if (it == m_entries.end())
     {
-        return NullRule;
+        // check if there is an else case
+        it = m_entries.find(TokenType::None);
+        if (it == m_entries.end())
+        {
+            return NullRule;
+        }
     }
     return it->second;
 }
@@ -1135,32 +1159,6 @@ std::ostream& operator<<(std::ostream& stream, const ParsingErrorData& data)
         << data.GetTop() << " at line " << token.GetLine() << ": \"" 
         << token.GetStrOfLine() << "\""; 
     return stream;
-}
-
-// ParsingErrorTableEntry ////////////////////////////////////////////////////////////
-
-ParsingErrorTableEntry::ParsingErrorTableEntry(
-    const std::initializer_list<std::pair<TokenType, ErrorID>>& entries)
-{
-    for (auto& pair : entries)
-    {
-        m_entries[pair.first] = pair.second;
-    }
-}
-
-ErrorID ParsingErrorTableEntry::GetError(const Token& t) const
-{
-    auto it = m_entries.find(t.GetTokenType());
-    if (it == m_entries.end())
-    {
-        // check if there is an else case
-        it = m_entries.find(TokenType::None);
-        if (it == m_entries.end())
-        {
-            return ErrorID::Default;
-        }
-    }
-    return it->second;
 }
 
 // ParsingErrorManager ////////////////////////////////////////////////////////
@@ -1183,10 +1181,6 @@ void ParsingErrorManager::WriteErrorToFile(std::ofstream& file, const ParsingErr
 
     case ErrorID::InvalidArgumentDefinition:
         InvalidArgumentDefinitionError(file, error);
-        break;
-
-    case ErrorID::InvalidFunctionArgumentProvided:
-        InvalidFunctionArgumentProvidedError(file, error);
         break;
 
     case ErrorID::InvalidArithExpr:
@@ -1227,7 +1221,8 @@ void ParsingErrorManager::InvalidTypeSpecifierError(std::ofstream& file,
         << token.GetLine() << ": \"" << token.GetStrOfLine() << "\"" ; 
 }
 
-void ParsingErrorManager::InvalidFunctionHeadError(std::ofstream& file, const ParsingErrorData& error)
+void ParsingErrorManager::InvalidFunctionHeadError(std::ofstream& file, 
+    const ParsingErrorData& error)
 {
     const Token& token = error.GetToken();
     file << "Invalid function head found at line " << token.GetLine() 
@@ -1240,15 +1235,6 @@ void ParsingErrorManager::InvalidArgumentDefinitionError(std::ofstream& file,
 {
     const Token& token = error.GetToken();
     file << "Invalid argument definition encountered at line " << token.GetLine() 
-        << ": \"" << token.GetStrOfLine() << "\". Unexpected token \"" 
-        << token.GetLexeme() << "\" encountered"; 
-}
-
-void ParsingErrorManager::InvalidFunctionArgumentProvidedError(std::ofstream& file, 
-        const ParsingErrorData& error)
-{
-    const Token& token = error.GetToken();
-    file << "Invalid function argument provided for function call at line " << token.GetLine() 
         << ": \"" << token.GetStrOfLine() << "\". Unexpected token \"" 
         << token.GetLexeme() << "\" encountered"; 
 }
@@ -1319,16 +1305,17 @@ bool Parser::Parse(const std::string& filepath)
         else if (top.GetType() == StackableType::NonTerminalItem)
         {
             RuleID rule = p.m_parsingTable[top.GetNonTerminal()]->GetRule(currToken);
-            if (rule != NullRule)
+            if (!RuleManager::IsError(rule))
             {
+                NonTerminal topSymbol = top.GetNonTerminal();
                 p.PopNonTerminal();
-                
-                p.PushToStack(RuleManager::GetRule(rule));
+                RuleManager::GetRule(rule)->Apply(topSymbol, currToken);
                 p.WriteDerivationToFile();
             }
             else
             {
                 p.m_errorFound = true;
+                RuleManager::GetRule(rule)->Apply(top.GetNonTerminal(), currToken);
                 currToken = p.SkipError(currToken, top);
             }
         }
@@ -1353,17 +1340,11 @@ bool Parser::Parse(const std::string& filepath)
 Parser::Parser() 
 { 
     InitializeParsingTable(); 
-    InitializeParsingErrorTable();
 }
 
 Parser::~Parser()
 {
     for (auto& pair : m_parsingTable)
-    {
-        delete pair.second;
-    }
-
-    for (auto& pair : m_errorTable)
     {
         delete pair.second;
     }
@@ -1461,16 +1442,17 @@ void Parser::InitializeParsingTable()
         = new ParsingTableEntry({{TokenType::Function, 20}});
 
     m_parsingTable[NonTerminal::FuncHead] 
-        = new ParsingTableEntry({{TokenType::Function, 21}});
+        = new ParsingTableEntry({{TokenType::Function, 21}, {TokenType::None, 113}});
 
     m_parsingTable[NonTerminal::FuncHead2] 
-        = new ParsingTableEntry({{TokenType::OpenParanthese, 23}, {TokenType::Scope, 22}});
+        = new ParsingTableEntry({{TokenType::OpenParanthese, 23}, {TokenType::Scope, 22}, 
+        {TokenType::None, 113}});
 
     m_parsingTable[NonTerminal::FuncHead3] 
         = new ParsingTableEntry({{TokenType::ID, 24}, {TokenType::Constructor, 25}});
 
     m_parsingTable[NonTerminal::FuncBody] 
-        = new ParsingTableEntry({{TokenType::OpenCurlyBracket, 26}});
+        = new ParsingTableEntry({{TokenType::OpenCurlyBracket, 26}, {TokenType::None, 116}});
 
     m_parsingTable[NonTerminal::MemberVarDecl] 
         = new ParsingTableEntry({{TokenType::Attribute, 19}});
@@ -1498,7 +1480,7 @@ void Parser::InitializeParsingTable()
         {TokenType::If, 35}});
 
     m_parsingTable[NonTerminal::SimpleStatement] 
-        = new ParsingTableEntry({{TokenType::ID, 40}});
+        = new ParsingTableEntry({{TokenType::ID, 40}, {TokenType::None, 117}});
 
     m_parsingTable[NonTerminal::SimpleStatement2] 
         = new ParsingTableEntry({{TokenType::OpenSquareBracket, 41}, 
@@ -1540,7 +1522,7 @@ void Parser::InitializeParsingTable()
     m_parsingTable[NonTerminal::ArithExpr] 
         = new ParsingTableEntry({{TokenType::Minus, 56}, {TokenType::Plus, 56}, 
         {TokenType::ID, 56}, {TokenType::IntegerLiteral, 56}, {TokenType::OpenParanthese, 56}, 
-        {TokenType::Not, 56}, {TokenType::FloatLiteral, 56}});
+        {TokenType::Not, 56}, {TokenType::FloatLiteral, 56}, {TokenType::None, 115}});
 
     m_parsingTable[NonTerminal::ArithExpr2] 
         = new ParsingTableEntry({{TokenType::Or, 57}, {TokenType::Minus, 57}, 
@@ -1624,14 +1606,15 @@ void Parser::InitializeParsingTable()
 
     m_parsingTable[NonTerminal::Type] 
         = new ParsingTableEntry({{TokenType::ID, 89}, {TokenType::FloatKeyword, 88}, 
-        {TokenType::IntegerKeyword, 87}});
+        {TokenType::IntegerKeyword, 87}, {TokenType::None, 112}});
 
     m_parsingTable[NonTerminal::ReturnType] 
         = new ParsingTableEntry({{TokenType::ID, 90}, {TokenType::Void, 91}, 
         {TokenType::FloatKeyword, 90}, {TokenType::IntegerKeyword, 90}});
 
     m_parsingTable[NonTerminal::FParams] 
-        = new ParsingTableEntry({{TokenType::ID, 92}, {TokenType::CloseParanthese, 93}});
+        = new ParsingTableEntry({{TokenType::ID, 92}, {TokenType::CloseParanthese, 93}, 
+        {TokenType::None, 114}});
 
     m_parsingTable[NonTerminal::AParams] 
         = new ParsingTableEntry({{TokenType::Minus, 94}, {TokenType::Plus, 94}, 
@@ -1656,63 +1639,6 @@ void Parser::InitializeParsingTable()
     m_parsingTable[NonTerminal::MultOp] 
         = new ParsingTableEntry({{TokenType::And, 111}, {TokenType::Divide, 110}, 
         {TokenType::Multiply, 109}});
-}
-
-void Parser::InitializeParsingErrorTable()
-{
-    m_errorTable[NonTerminal::Type] = new ParsingErrorTableEntry({ 
-        {TokenType::None, ErrorID::InvalidTypeSpecifier} });
-
-    m_errorTable[NonTerminal::FuncHead] = new ParsingErrorTableEntry({ 
-        {TokenType::None, ErrorID::InvalidFunctionHead} });
-    m_errorTable[NonTerminal::FuncHead2] = new ParsingErrorTableEntry({ 
-        {TokenType::None, ErrorID::InvalidFunctionHead} });
-    m_errorTable[NonTerminal::FuncHead3] = new ParsingErrorTableEntry({ 
-        {TokenType::None, ErrorID::InvalidFunctionHead} });
-
-    m_errorTable[NonTerminal::FParams] = new ParsingErrorTableEntry({ 
-        {TokenType::None, ErrorID::InvalidArgumentDefinition} });
-    m_errorTable[NonTerminal::FParamsTail] = new ParsingErrorTableEntry({ 
-        {TokenType::None, ErrorID::InvalidArgumentDefinition} });
-
-    m_errorTable[NonTerminal::AParams] = new ParsingErrorTableEntry({ 
-        {TokenType::None, ErrorID::InvalidFunctionArgumentProvided} });
-    m_errorTable[NonTerminal::AParamsTail] = new ParsingErrorTableEntry({ 
-        {TokenType::None, ErrorID::InvalidFunctionArgumentProvided} });
-
-    m_errorTable[NonTerminal::ArithExpr] = new ParsingErrorTableEntry({ 
-        {TokenType::None, ErrorID::InvalidArithExpr} });
-    m_errorTable[NonTerminal::ArithExpr2] = new ParsingErrorTableEntry({ 
-        {TokenType::None, ErrorID::InvalidArithExpr} });
-
-    m_errorTable[NonTerminal::FuncBody] = new ParsingErrorTableEntry({ 
-        {TokenType::None, ErrorID::ErroneousTokenAtFuncDef} });
-
-    m_errorTable[NonTerminal::SimpleStatement] = new ParsingErrorTableEntry({ 
-        {TokenType::None, ErrorID::InvalidStatement} });
-    m_errorTable[NonTerminal::SimpleStatement2] = new ParsingErrorTableEntry({ 
-        {TokenType::None, ErrorID::InvalidStatement} });
-    m_errorTable[NonTerminal::SimpleStatement3] = new ParsingErrorTableEntry({ 
-        {TokenType::None, ErrorID::InvalidStatement} });
-    m_errorTable[NonTerminal::SimpleStatement4] = new ParsingErrorTableEntry({ 
-        {TokenType::None, ErrorID::InvalidStatement} });
-}
-
-ErrorID Parser::GetErrorID(const StackableItem& top, const Token& t)
-{
-    if (top.GetType() == StackableType::NonTerminalItem)
-    {
-        auto it = m_errorTable.find(top.GetNonTerminal());
-        if (it == m_errorTable.end())
-        {
-            return ErrorID::Default;
-        }
-        return it->second->GetError(t);
-    }
-    else
-    {
-        return ErrorID::Default;
-    }
 }
 
 void Parser::PushToStack(const Rule* r)
@@ -1773,8 +1699,6 @@ void Parser::WriteErrorsToFile()
 
 Token Parser::SkipError(const Token& currToken, const StackableItem& top)
 {
-    m_errors.emplace_front(currToken, top, GetErrorID(top, currToken));
-    
     if (currToken.GetTokenType() == TokenType::EndOfFile 
         || SetManager::IsInFollowSet(top, currToken.GetTokenType()))
     {
