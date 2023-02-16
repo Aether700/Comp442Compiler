@@ -1,27 +1,245 @@
-// generates an ErroneousTokenAtFuncDef error
-function Func() => integer[] { }
-
-// generates an InvalidFunctionHead error
-function InvalidFunctionHead ) => void { }
-
-// generates an InvalidArgumentDefinition error
-function SomeClass::SomeMemberFunc(.) => integer { }
-
-function ValidFunc() => void
+class EmptyClass
 {
-    // generates an InvalidArithExpr error
-    someFunc(arr[.2]);
+
+};
+
+class EmptyClassChild
+{
+
+};
+
+class MyObj isa EmptyClass
+{
+    public attribute myInt : integer;
+    private attribute myFloat : float;
+    attribute myVar : integer;
+};
+
+class SecondObj isa EmptyClass, EmptyClassChild
+{
+    function Func1 : (myInt : integer, myFloat : float, empty : EmptyClass) => void;
+    function Func2 : (arr : integer[], multiArr : integer[][20][], 
+        specifiedArr : EmptyClass[5]) => integer;
+    function Func3 : () => float;
+    function Func4 : (count : integer) => EmptyClass;
+    function Func5 : () => void;
+};
+
+function SecondObj::Func1(myInt : integer, myFloat : float, empty : EmptyClass) => void
+{
+
 }
 
-
-function Func() => myObj
+function SecondObj::Func2(arr : integer[], multiArr : integer[][20][], 
+    specifiedArr : EmptyClass[5]) => integer
 {
-    // generates an InvalidStatement error
-    k.[].args = 5;
+    localvar myArr : integer[];
+    localvar myArr2 : integer[3];
+    localvar myArr3 : integer[][3][];
+    localvar obj : MyObj;
+    localvar obj2 : SecondObj;
+
+    // do id manipulation
+    obj.myVar = 5;
+    obj2.Func4(obj);
+    obj2.Func4(5).obj = 5;
+    someFunc(obj).someAttribute = 52;
+    someFunc(obj).someMemFunc();
+    obj.myArr[obj2] = 3;
+    myArr[obj].someMem = 4;
+    myArr[obj].someMem[arr] = 5;
+    obj.myArr[obj][arr] = 5;
+    myArr[obj][arr].someMem = 4;
+    myArr[obj][arr].someMem[arr][obj2] = 4;
+    someFunc(obj).someArr[someVar] = 4;
+    someFunc(obj).someArr[someVar][otherVar] = 4;
+    someVar = myArr[(2 + 4 * 3) / 3];
+
+    // do expressions
+    x = 5;
+    y = 5 - 6;
+    m = 5 * 6;
+    e = 9 + 10 * 2;
+    b = 6 * 12 <> 3;
+    b2 = 6 * 12 <> 3 + 6;
+    e2 = (2+5);
+    e3 = (2*(-2+4));
+    b3 = not 5 == 4;
+    e4 = myArr[5].obj.someFunc().arr[4][6] + obj2;
+    e5 = (2*(obj.myFunc() + +9)) == not someFunc(obj[5][6].myVar.Func() <> 6.53e-6);
 }
 
+function SecondObj::Func3() => float
+{
+    localvar f : float;
+    localvar i : integer;
 
+    i = 5;
+    f = 2.5;
 
-// generates an InvalidTypeSpecifier error
-function Func(arr : 123) => void { }
+    if (i < 5) then
+    {
+        if(f <> 0) then {}
+        else{};
+        while(0 == 5){};
+        while(i < 4)
+        {
+            i = i + 1;
+        };
+    }
+    else 
+    {
+        while (i <> f)
+        {
+            if(i == f) then { read(f); }
+            else { write(i); };
+            f = f - 5.63;
+        };
+    };
 
+    return (f);
+}
+
+function SecondObj::Func4(count : integer) => EmptyClass
+{
+    localvar empty : EmptyClass;
+    Func3();
+    Func1(5, Func3(), empty);
+    Func4(count - 1);
+}
+
+function SecondObj::Func5() => void
+{
+    write(5); 
+}
+
+/*
+    classes
+    --------------------------------------
+| | no class declaration
+|X| class declaration
+|X| multiple class declarations
+|X| no data member declaration
+|X| data member declaration
+|X| multiple data member declaration
+|X| no member function declaration
+|X| member function declaration
+|X| multiple member function declaration
+|X| no member
+|X| no inherited class
+|X| one inherited class
+|X| multiple inherited classes
+|X| private member specifier
+|X| public member specifier
+
+    functions: definitions
+    --------------------------------------
+|X| no main function definition
+| | main function definition
+|X| no free function definition
+| | free function definition
+| | multiple free function definitions
+| | no member function definition
+|X| member function definition
+|X| multiple member function definitions
+|X| return type: void
+|X| return type: integer
+|X| return type: float
+|X| return type: id
+| | return type: array (not allowed)
+
+    functions: formal parameters
+    --------------------------------------
+|X| type: integer
+|X| type: float
+|X| type: id
+|X| type: 1-dim array 
+|X| type: n-dim array
+|X| type: array (with size)
+|X| type: array (without size)
+
+    functions: calls
+    --------------------------------------
+| | free function call
+|X| member function call
+|X| parameters:0
+|X| parameters:1
+|X| parameters:n
+|X| array parameter - 1-dim
+|X| array parameter - n-dim
+|X| array parameter - with size
+|X| array parameter - without size
+|X| function call as statement
+|X| function call as expression factor
+|X| expression as parameter
+
+    variable declaration
+    --------------------------------------
+|X| type: integer
+|X| type: float
+| | type: string
+|X| type: id
+|X| type: 1-dim array 
+|X| type: n-dim array
+|X| type: array (with size)
+|X| type: array (without size) (not allowed)
+
+    function body: local variable declarations
+    --------------------------------------
+|X| no local variable declarations
+|X| local variable declarations
+|X| intertwined statements and variable declarations
+
+    function body: statements
+    --------------------------------------
+|X| no statement
+|X| 1 statement
+|X| n statements
+|X| if statement
+|X| if: empty then or else blocks
+|X| if: 1-statement then or else blocks
+|X| if: n-statements then or else blocks
+|X| while statement
+|X| while: empty block
+|X| while: 1-statement block
+|X| while: n-statement block
+|X| read(<variable>) statement
+|X| write(<expr>) statement
+|X| return(<expr>) statement
+|X| assignment statement
+
+    variable + idnest
+    --------------------------------------
+|X| id
+|X| id.id
+|X| id.id(id)
+|X| id(id).id
+|X| id(id).id()
+|X| id.id[id]
+|X| id[id].id
+|X| id[id].id[id]
+|X| id.id[id][id]
+|X| id[id][id].id
+|X| id[id][id].id[id][id]
+|X| id(id).id[id]
+|X| id(id).id[id][id]
+|X| expression as array index
+
+    expressions
+    --------------------------------------
+|X| single variable
+|X| involving addop
+|X| involving multop
+|X| involving relop
+|X| involving addop + multop
+|X| involving multop + relop
+|X| involving addop + multop + relop
+|X| involving parentheses
+|X| involving nested parentheses
+|X| involving not
+|X| involving sign
+|X| involving literals
+|X| involving variable + idnest
+|X| involving function calls
+|X| involving all the above in one expression
+*/

@@ -148,23 +148,21 @@ private:
 class Rule
 {
 public:
-    Rule(NonTerminal left, const std::initializer_list<StackableItem>& right);
+    Rule(const std::initializer_list<StackableItem>& right);
     
-    virtual void Apply(const Token& currToken) const;
-    NonTerminal GetLeftSide() const;
+    virtual void Apply(NonTerminal top, const Token& currToken) const;
     const std::list<StackableItem>& GetRightSide() const;
 
 private:
-    NonTerminal m_leftSide;
     std::list<StackableItem> m_rightSide;
 };
 
 class ParsingErrorRule : public Rule
 {
 public:
-    ParsingErrorRule(NonTerminal left, ErrorID id);
+    ParsingErrorRule(ErrorID id);
 
-    virtual void Apply(const Token& currToken) const override;
+    virtual void Apply(NonTerminal top, const Token& currToken) const override;
 private:
     ErrorID m_errorID;
 };
@@ -186,6 +184,7 @@ private:
     void InitializeRules();
 
     std::vector<Rule*> m_rules;
+    Rule* m_defaultRule;
 };
 
 class ParsingTableEntry
@@ -193,7 +192,8 @@ class ParsingTableEntry
 public:
     ParsingTableEntry(const std::initializer_list<std::pair<TokenType, RuleID>>& entries);
 
-    // returns NullRule if the provided token does not have a valid entry in the table
+    // returns NullRule if the provided token does not have a valid entry in the 
+    // table and if no else clause was specified using TokenType::None
     RuleID GetRule(const Token& t) const;
 private:
     std::unordered_map<TokenType, RuleID> m_entries;
