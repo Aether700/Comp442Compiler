@@ -7,12 +7,6 @@
 #include "Parser/Parser.h"
 #include "Core/Util.h"
 
-/*
-To Do:
-- add more error messages for error cases
-- create error file to show off the different error messages
-*/
-
 void ExitPrompt()
 {
 	std::cout << "\nPress enter to exit\n";

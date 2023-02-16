@@ -18,7 +18,6 @@ enum class ErrorID
     InvalidTypeSpecifier,
     InvalidFunctionHead,
     InvalidArgumentDefinition,
-    InvalidFunctionArgumentProvided,
     InvalidArithExpr,
     ErroneousTokenAtFuncDef,
     InvalidStatement,
@@ -151,6 +150,7 @@ class Rule
 public:
     Rule(NonTerminal left, const std::initializer_list<StackableItem>& right);
     
+    virtual void Apply(const Token& currToken) const;
     NonTerminal GetLeftSide() const;
     const std::list<StackableItem>& GetRightSide() const;
 
@@ -159,14 +159,28 @@ private:
     std::list<StackableItem> m_rightSide;
 };
 
+class ParsingErrorRule : public Rule
+{
+public:
+    ParsingErrorRule(NonTerminal left, ErrorID id);
+
+    virtual void Apply(const Token& currToken) const override;
+private:
+    ErrorID m_errorID;
+};
+
 class RuleManager
 {
 public:
     static const Rule* GetRule(RuleID id);
+    static bool IsError(RuleID id);
 
 private:
     RuleManager();
     ~RuleManager();
+
+    // if a rule is greater than this cutoff it is an error
+    static constexpr RuleID s_errorCutoff = 111;
 
     static RuleManager& GetInstance();
     void InitializeRules();
@@ -200,19 +214,6 @@ private:
     ErrorID m_id;
 };
 
-// Uses TokenType::None as an "else" case
-class ParsingErrorTableEntry
-{
-public:
-    ParsingErrorTableEntry(
-        const std::initializer_list<std::pair<TokenType, ErrorID>>& entries);
-
-    ErrorID GetError(const Token& t) const;
-
-private:
-    std::unordered_map<TokenType, ErrorID> m_entries;
-};
-
 class ParsingErrorManager
 {
 public:
@@ -228,8 +229,6 @@ private:
     static void InvalidFunctionHeadError(std::ofstream& file, const ParsingErrorData& error);
     static void InvalidArgumentDefinitionError(std::ofstream& file, 
         const ParsingErrorData& error);
-    static void InvalidFunctionArgumentProvidedError(std::ofstream& file, 
-        const ParsingErrorData& error);
     static void InvalidArithExprError(std::ofstream& file, 
         const ParsingErrorData& error);
     static void ErroneousTokenAtFuncDefError(std::ofstream& file, 
@@ -243,6 +242,8 @@ private:
 
 class Parser
 {
+    friend class Rule;
+    friend class ParsingErrorRule;
 public:
     static bool Parse(const std::string& filepath);
 private:
@@ -254,9 +255,6 @@ private:
     static bool TokenIsIgnored(TokenType type);
 
     void InitializeParsingTable();
-    void InitializeParsingErrorTable();
-
-    ErrorID GetErrorID(const StackableItem& top, const Token& t);
 
     void PushToStack(const Rule* r);
     void WriteDerivationToFile();
@@ -270,7 +268,6 @@ private:
     void WriteLexicalErrorToFile(const Token& t);
 
     std::unordered_map<NonTerminal, ParsingTableEntry*> m_parsingTable;
-    std::unordered_map<NonTerminal, ParsingErrorTableEntry*> m_errorTable;
 
     std::list<StackableItem> m_parsingStack; // front is top of stack
     bool m_errorFound;

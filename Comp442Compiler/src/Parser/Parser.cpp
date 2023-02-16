@@ -655,8 +655,23 @@ void SetManager::InitializeFollowSets()
 Rule::Rule(NonTerminal left, const std::initializer_list<StackableItem>& right) 
     : m_leftSide(left), m_rightSide(right) { }
     
+void Rule::Apply(const Token& currToken) const
+{
+    Parser::GetInstance().PushToStack(this);
+}
+
 NonTerminal Rule::GetLeftSide() const { return m_leftSide; }
 const std::list<StackableItem>& Rule::GetRightSide() const { return m_rightSide; }
+
+// ParsingErrorRule //////////////////////////////////////////////////
+ParsingErrorRule::ParsingErrorRule(NonTerminal left, ErrorID id) 
+    : Rule(left, {}), m_errorID(id) { }
+
+void ParsingErrorRule::Apply(const Token& currToken) const
+{
+    Parser& p = Parser::GetInstance();
+    p.m_errors.emplace_front(currToken, GetLeftSide(), m_errorID);
+}
 
 // RuleManager /////////////////////////////////////////////////////////////////////////
 const Rule* RuleManager::GetRule(RuleID id)
@@ -668,6 +683,8 @@ const Rule* RuleManager::GetRule(RuleID id)
     }
     return GetInstance().m_rules[id];
 }
+
+bool RuleManager::IsError(RuleID id) { return  id > s_errorCutoff; }
 
 RuleManager::RuleManager() { InitializeRules(); }
 RuleManager::~RuleManager() 
@@ -1098,6 +1115,33 @@ void RuleManager::InitializeRules()
 
     // 111
     m_rules.push_back(new Rule(NonTerminal::MultOp, { TokenType::And }));
+    
+    ////////////////////////////////////////////////////////////////////////////
+    // Error Cutoff ////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////
+
+    // 112
+    m_rules.push_back(new ParsingErrorRule(NonTerminal::Type, ErrorID::InvalidTypeSpecifier));
+    
+    // 113
+    m_rules.push_back(new ParsingErrorRule(NonTerminal::FuncHead, 
+        ErrorID::InvalidFunctionHead));
+    
+    // 114
+    m_rules.push_back(new ParsingErrorRule(NonTerminal::FParams, 
+        ErrorID::InvalidArgumentDefinition));
+    
+    // 115
+    m_rules.push_back(new ParsingErrorRule(NonTerminal::ArithExpr, 
+        ErrorID::InvalidArithExpr));
+    
+    // 116
+    m_rules.push_back(new ParsingErrorRule(NonTerminal::FuncBody, 
+        ErrorID::ErroneousTokenAtFuncDef));
+    
+    // 117
+    m_rules.push_back(new ParsingErrorRule(NonTerminal::SimpleStatement, 
+        ErrorID::InvalidStatement));
 }
 
 // ParsingTableEntry ///////////////////////////////////////////////////////////////////
@@ -1135,32 +1179,6 @@ std::ostream& operator<<(std::ostream& stream, const ParsingErrorData& data)
         << data.GetTop() << " at line " << token.GetLine() << ": \"" 
         << token.GetStrOfLine() << "\""; 
     return stream;
-}
-
-// ParsingErrorTableEntry ////////////////////////////////////////////////////////////
-
-ParsingErrorTableEntry::ParsingErrorTableEntry(
-    const std::initializer_list<std::pair<TokenType, ErrorID>>& entries)
-{
-    for (auto& pair : entries)
-    {
-        m_entries[pair.first] = pair.second;
-    }
-}
-
-ErrorID ParsingErrorTableEntry::GetError(const Token& t) const
-{
-    auto it = m_entries.find(t.GetTokenType());
-    if (it == m_entries.end())
-    {
-        // check if there is an else case
-        it = m_entries.find(TokenType::None);
-        if (it == m_entries.end())
-        {
-            return ErrorID::Default;
-        }
-    }
-    return it->second;
 }
 
 // ParsingErrorManager ////////////////////////////////////////////////////////
@@ -1227,7 +1245,8 @@ void ParsingErrorManager::InvalidTypeSpecifierError(std::ofstream& file,
         << token.GetLine() << ": \"" << token.GetStrOfLine() << "\"" ; 
 }
 
-void ParsingErrorManager::InvalidFunctionHeadError(std::ofstream& file, const ParsingErrorData& error)
+void ParsingErrorManager::InvalidFunctionHeadError(std::ofstream& file, 
+    const ParsingErrorData& error)
 {
     const Token& token = error.GetToken();
     file << "Invalid function head found at line " << token.GetLine() 
@@ -1240,15 +1259,6 @@ void ParsingErrorManager::InvalidArgumentDefinitionError(std::ofstream& file,
 {
     const Token& token = error.GetToken();
     file << "Invalid argument definition encountered at line " << token.GetLine() 
-        << ": \"" << token.GetStrOfLine() << "\". Unexpected token \"" 
-        << token.GetLexeme() << "\" encountered"; 
-}
-
-void ParsingErrorManager::InvalidFunctionArgumentProvidedError(std::ofstream& file, 
-        const ParsingErrorData& error)
-{
-    const Token& token = error.GetToken();
-    file << "Invalid function argument provided for function call at line " << token.GetLine() 
         << ": \"" << token.GetStrOfLine() << "\". Unexpected token \"" 
         << token.GetLexeme() << "\" encountered"; 
 }
@@ -1353,7 +1363,6 @@ bool Parser::Parse(const std::string& filepath)
 Parser::Parser() 
 { 
     InitializeParsingTable(); 
-    InitializeParsingErrorTable();
 }
 
 Parser::~Parser()
@@ -1656,63 +1665,6 @@ void Parser::InitializeParsingTable()
     m_parsingTable[NonTerminal::MultOp] 
         = new ParsingTableEntry({{TokenType::And, 111}, {TokenType::Divide, 110}, 
         {TokenType::Multiply, 109}});
-}
-
-void Parser::InitializeParsingErrorTable()
-{
-    m_errorTable[NonTerminal::Type] = new ParsingErrorTableEntry({ 
-        {TokenType::None, ErrorID::InvalidTypeSpecifier} });
-
-    m_errorTable[NonTerminal::FuncHead] = new ParsingErrorTableEntry({ 
-        {TokenType::None, ErrorID::InvalidFunctionHead} });
-    m_errorTable[NonTerminal::FuncHead2] = new ParsingErrorTableEntry({ 
-        {TokenType::None, ErrorID::InvalidFunctionHead} });
-    m_errorTable[NonTerminal::FuncHead3] = new ParsingErrorTableEntry({ 
-        {TokenType::None, ErrorID::InvalidFunctionHead} });
-
-    m_errorTable[NonTerminal::FParams] = new ParsingErrorTableEntry({ 
-        {TokenType::None, ErrorID::InvalidArgumentDefinition} });
-    m_errorTable[NonTerminal::FParamsTail] = new ParsingErrorTableEntry({ 
-        {TokenType::None, ErrorID::InvalidArgumentDefinition} });
-
-    m_errorTable[NonTerminal::AParams] = new ParsingErrorTableEntry({ 
-        {TokenType::None, ErrorID::InvalidFunctionArgumentProvided} });
-    m_errorTable[NonTerminal::AParamsTail] = new ParsingErrorTableEntry({ 
-        {TokenType::None, ErrorID::InvalidFunctionArgumentProvided} });
-
-    m_errorTable[NonTerminal::ArithExpr] = new ParsingErrorTableEntry({ 
-        {TokenType::None, ErrorID::InvalidArithExpr} });
-    m_errorTable[NonTerminal::ArithExpr2] = new ParsingErrorTableEntry({ 
-        {TokenType::None, ErrorID::InvalidArithExpr} });
-
-    m_errorTable[NonTerminal::FuncBody] = new ParsingErrorTableEntry({ 
-        {TokenType::None, ErrorID::ErroneousTokenAtFuncDef} });
-
-    m_errorTable[NonTerminal::SimpleStatement] = new ParsingErrorTableEntry({ 
-        {TokenType::None, ErrorID::InvalidStatement} });
-    m_errorTable[NonTerminal::SimpleStatement2] = new ParsingErrorTableEntry({ 
-        {TokenType::None, ErrorID::InvalidStatement} });
-    m_errorTable[NonTerminal::SimpleStatement3] = new ParsingErrorTableEntry({ 
-        {TokenType::None, ErrorID::InvalidStatement} });
-    m_errorTable[NonTerminal::SimpleStatement4] = new ParsingErrorTableEntry({ 
-        {TokenType::None, ErrorID::InvalidStatement} });
-}
-
-ErrorID Parser::GetErrorID(const StackableItem& top, const Token& t)
-{
-    if (top.GetType() == StackableType::NonTerminalItem)
-    {
-        auto it = m_errorTable.find(top.GetNonTerminal());
-        if (it == m_errorTable.end())
-        {
-            return ErrorID::Default;
-        }
-        return it->second->GetError(t);
-    }
-    else
-    {
-        return ErrorID::Default;
-    }
 }
 
 void Parser::PushToStack(const Rule* r)
