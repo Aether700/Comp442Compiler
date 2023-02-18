@@ -18,9 +18,13 @@ enum class ErrorID
     InvalidTypeSpecifier,
     InvalidFunctionHead,
     InvalidArgumentDefinition,
+    InvalidArgumentProvided,
     InvalidArithExpr,
     ErroneousTokenAtFuncDef,
     InvalidStatement,
+    InvalidArraySize,
+    InvalidRelExpr,
+    InvalidOperator,
 };
 
 enum class NonTerminal
@@ -150,7 +154,7 @@ class Rule
 public:
     Rule(const std::initializer_list<StackableItem>& right);
     
-    virtual void Apply(NonTerminal top, const Token& currToken) const;
+    virtual void Apply(const StackableItem& top, const Token& currToken) const;
     const std::list<StackableItem>& GetRightSide() const;
 
 private:
@@ -162,7 +166,7 @@ class ParsingErrorRule : public Rule
 public:
     ParsingErrorRule(ErrorID id);
 
-    virtual void Apply(NonTerminal top, const Token& currToken) const override;
+    virtual void Apply(const StackableItem& top, const Token& currToken) const override;
 private:
     ErrorID m_errorID;
 };
@@ -202,7 +206,7 @@ private:
 class ParsingErrorData
 {
 public:
-    ParsingErrorData(const Token& token, StackableItem top, ErrorID id);
+    ParsingErrorData(const Token& token, const StackableItem& top, ErrorID id);
 
     const StackableItem& GetTop() const;
     const Token& GetToken() const;
@@ -229,11 +233,19 @@ private:
     static void InvalidFunctionHeadError(std::ofstream& file, const ParsingErrorData& error);
     static void InvalidArgumentDefinitionError(std::ofstream& file, 
         const ParsingErrorData& error);
+    static void InvalidArgumentProvidedError(std::ofstream& file, 
+        const ParsingErrorData& error);
     static void InvalidArithExprError(std::ofstream& file, 
         const ParsingErrorData& error);
     static void ErroneousTokenAtFuncDefError(std::ofstream& file, 
         const ParsingErrorData& error);
     static void InvalidStatementError(std::ofstream& file, 
+        const ParsingErrorData& error);
+    static void InvalidArraySizeError(std::ofstream& file, 
+        const ParsingErrorData& error);
+    static void InvalidRelExprError(std::ofstream& file, 
+        const ParsingErrorData& error);
+    static void InvalidOperatorError(std::ofstream& file, 
         const ParsingErrorData& error);
     
 

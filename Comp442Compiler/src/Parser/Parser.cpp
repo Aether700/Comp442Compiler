@@ -655,7 +655,7 @@ void SetManager::InitializeFollowSets()
 Rule::Rule(const std::initializer_list<StackableItem>& right) 
     : m_rightSide(right) { }
     
-void Rule::Apply(NonTerminal top, const Token& currToken) const
+void Rule::Apply(const StackableItem& top, const Token& currToken) const
 {
     Parser::GetInstance().PushToStack(this);
 }
@@ -667,7 +667,7 @@ const std::list<StackableItem>& Rule::GetRightSide() const { return m_rightSide;
 ParsingErrorRule::ParsingErrorRule(ErrorID id) 
     : Rule({}), m_errorID(id) { }
 
-void ParsingErrorRule::Apply(NonTerminal top, const Token& currToken) const
+void ParsingErrorRule::Apply(const StackableItem& top, const Token& currToken) const
 {
     Parser& p = Parser::GetInstance();
     p.m_errors.emplace_front(currToken, top, m_errorID);
@@ -1100,23 +1100,35 @@ void RuleManager::InitializeRules()
     // Error Cutoff ////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
 
-    // 112 Type
+    // 112
     m_rules.push_back(new ParsingErrorRule(ErrorID::InvalidTypeSpecifier));
     
-    // 113 FuncHead
+    // 113
     m_rules.push_back(new ParsingErrorRule(ErrorID::InvalidFunctionHead));
     
-    // 114 FParams
+    // 114
     m_rules.push_back(new ParsingErrorRule(ErrorID::InvalidArgumentDefinition));
     
-    // 115 ArithExpr
+    // 115
     m_rules.push_back(new ParsingErrorRule(ErrorID::InvalidArithExpr));
     
-    // 116 FuncBody
+    // 116 
     m_rules.push_back(new ParsingErrorRule(ErrorID::ErroneousTokenAtFuncDef));
     
-    // 117 SimpleStatement
+    // 117
     m_rules.push_back(new ParsingErrorRule(ErrorID::InvalidStatement));
+
+    // 118
+    m_rules.push_back(new ParsingErrorRule(ErrorID::InvalidArgumentProvided));
+
+    // 119
+    m_rules.push_back(new ParsingErrorRule(ErrorID::InvalidArraySize));
+
+    // 120
+    m_rules.push_back(new ParsingErrorRule(ErrorID::InvalidRelExpr));
+
+    // 121
+    m_rules.push_back(new ParsingErrorRule(ErrorID::InvalidOperator));
 }
 
 // ParsingTableEntry ///////////////////////////////////////////////////////////////////
@@ -1145,7 +1157,7 @@ RuleID ParsingTableEntry::GetRule(const Token& t) const
 }
 
 // ErrorData //////////////////////////////////////////////////////////
-ParsingErrorData::ParsingErrorData(const Token& token, StackableItem top, ErrorID id) 
+ParsingErrorData::ParsingErrorData(const Token& token, const StackableItem& top, ErrorID id) 
     : m_token(token), m_top(top), m_id(id) { }
 
 const StackableItem& ParsingErrorData::GetTop() const { return m_top; }
@@ -1183,6 +1195,10 @@ void ParsingErrorManager::WriteErrorToFile(std::ofstream& file, const ParsingErr
         InvalidArgumentDefinitionError(file, error);
         break;
 
+    case ErrorID::InvalidArgumentProvided:
+        InvalidArgumentProvidedError(file, error);
+        break;
+
     case ErrorID::InvalidArithExpr:
         InvalidArithExprError(file, error);
         break;
@@ -1193,6 +1209,18 @@ void ParsingErrorManager::WriteErrorToFile(std::ofstream& file, const ParsingErr
 
     case ErrorID::InvalidStatement:
         InvalidStatementError(file, error);
+        break;
+
+    case ErrorID::InvalidArraySize:
+        InvalidArraySizeError(file, error);
+        break;
+
+    case ErrorID::InvalidRelExpr:
+        InvalidRelExprError(file, error);
+        break;
+
+    case ErrorID::InvalidOperator:
+        InvalidOperatorError(file, error);
         break;
 
     default:
@@ -1239,6 +1267,15 @@ void ParsingErrorManager::InvalidArgumentDefinitionError(std::ofstream& file,
         << token.GetLexeme() << "\" encountered"; 
 }
 
+void ParsingErrorManager::InvalidArgumentProvidedError(std::ofstream& file, 
+    const ParsingErrorData& error)
+{
+    const Token& token = error.GetToken();
+    file << "Invalid argument provided at line " << token.GetLine() 
+        << ": \"" << token.GetStrOfLine() << "\". Unexpected token \"" 
+        << token.GetLexeme() << "\" encountered";
+}
+
 void ParsingErrorManager::InvalidArithExprError(std::ofstream& file, 
         const ParsingErrorData& error)
 {
@@ -1253,7 +1290,7 @@ void ParsingErrorManager::ErroneousTokenAtFuncDefError(std::ofstream& file,
 {
     const Token& token = error.GetToken();
     file << "Erroneous token found at line " << token.GetLine() 
-        << ": \"" << token.GetStrOfLine() << "\". Expected a function definition but found: \"" 
+        << ": \"" << token.GetStrOfLine() << "\". Expected a function definition but found: \""
         << token.GetLexeme() << "\""; 
 }
 
@@ -1264,6 +1301,33 @@ void ParsingErrorManager::InvalidStatementError(std::ofstream& file,
     file << "Invalid statement found at line " << token.GetLine() 
         << ": \"" << token.GetStrOfLine() << "\". Unexpected token \"" 
         << token.GetLexeme() << "\" encountered";
+}
+
+void ParsingErrorManager::InvalidArraySizeError(std::ofstream& file, 
+    const ParsingErrorData& error)
+{
+    const Token& token = error.GetToken();
+    file << "Invalid array size specified at line " << token.GetLine() 
+        << ": \"" << token.GetStrOfLine() << "\". Unexpected token \"" 
+        << token.GetLexeme() << "\" encountered";
+}
+
+void ParsingErrorManager::InvalidRelExprError(std::ofstream& file, 
+    const ParsingErrorData& error)
+{
+    const Token& token = error.GetToken();
+    file << "Invalid relation expression provided at line " << token.GetLine() 
+        << ": \"" << token.GetStrOfLine() << "\". Unexpected token \"" 
+        << token.GetLexeme() << "\" encountered";
+}
+
+void ParsingErrorManager::InvalidOperatorError(std::ofstream& file, 
+    const ParsingErrorData& error)
+{
+    const Token& token = error.GetToken();
+    file << "Invalid operator \"" << token.GetLexeme() << "\" encountered at line " 
+        << token.GetLine() << ": \"" << token.GetStrOfLine() <<"\". The provided operator " 
+        << "is either unknown or invalid in this context.";
 }
 
 ParsingErrorManager& ParsingErrorManager::GetInstance()
@@ -1298,6 +1362,8 @@ bool Parser::Parse(const std::string& filepath)
             }
             else
             {
+                // use default error rule
+                RuleManager::GetRule(NullRule)->Apply(top, currToken);
                 p.m_errorFound = true;
                 currToken = p.SkipError(currToken, top);
             }
@@ -1315,7 +1381,7 @@ bool Parser::Parse(const std::string& filepath)
             else
             {
                 p.m_errorFound = true;
-                RuleManager::GetRule(rule)->Apply(top.GetNonTerminal(), currToken);
+                RuleManager::GetRule(rule)->Apply(top, currToken);
                 currToken = p.SkipError(currToken, top);
             }
         }
@@ -1446,10 +1512,11 @@ void Parser::InitializeParsingTable()
 
     m_parsingTable[NonTerminal::FuncHead2] 
         = new ParsingTableEntry({{TokenType::OpenParanthese, 23}, {TokenType::Scope, 22}, 
-        {TokenType::None, 113}});
+        {TokenType::None, 113}, {TokenType::None, 113}});
 
     m_parsingTable[NonTerminal::FuncHead3] 
-        = new ParsingTableEntry({{TokenType::ID, 24}, {TokenType::Constructor, 25}});
+        = new ParsingTableEntry({{TokenType::ID, 24}, {TokenType::Constructor, 25}, 
+        {TokenType::None, 113}});
 
     m_parsingTable[NonTerminal::FuncBody] 
         = new ParsingTableEntry({{TokenType::OpenCurlyBracket, 26}, {TokenType::None, 116}});
@@ -1460,7 +1527,8 @@ void Parser::InitializeParsingTable()
     m_parsingTable[NonTerminal::LocalVarDeclOrStmtRepetition] 
         = new ParsingTableEntry({{TokenType::ID, 27}, {TokenType::CloseCurlyBracket, 28}, 
         {TokenType::Return, 27}, {TokenType::Write, 27}, {TokenType::Read, 27}, 
-        {TokenType::While, 27}, {TokenType::If, 27}, {TokenType::LocalVar, 27}});
+        {TokenType::While, 27}, {TokenType::If, 27}, {TokenType::LocalVar, 27}, 
+        {TokenType::None, 117}});
 
     m_parsingTable[NonTerminal::LocalVarDeclOrStmt] 
         = new ParsingTableEntry({{TokenType::ID, 30}, {TokenType::Return, 30}, 
@@ -1495,7 +1563,7 @@ void Parser::InitializeParsingTable()
     m_parsingTable[NonTerminal::StatementRepetition] 
         = new ParsingTableEntry({{TokenType::ID, 47}, {TokenType::CloseCurlyBracket, 48}, 
         {TokenType::Return, 47}, {TokenType::Write, 47}, {TokenType::Read, 47}, 
-        {TokenType::While, 47}, {TokenType::If, 47}});
+        {TokenType::While, 47}, {TokenType::If, 47}, {TokenType::None, 117}});
 
     m_parsingTable[NonTerminal::StatBlock] 
         = new ParsingTableEntry({{TokenType::ID, 50}, {TokenType::OpenCurlyBracket, 49}, 
@@ -1512,12 +1580,12 @@ void Parser::InitializeParsingTable()
         = new ParsingTableEntry({{TokenType::GreaterOrEqual, 53}, {TokenType::LessOrEqual, 53}, 
         {TokenType::GreaterThan, 53}, {TokenType::LessThan, 53}, {TokenType::NotEqual, 53}, 
         {TokenType::Equal, 53}, {TokenType::Comma, 54}, {TokenType::CloseParanthese, 54}, 
-        {TokenType::SemiColon, 54}});
+        {TokenType::SemiColon, 54}, {TokenType::None, 121}});
 
     m_parsingTable[NonTerminal::RelExpr] 
         = new ParsingTableEntry({{TokenType::Minus, 55}, {TokenType::Plus, 55}, 
         {TokenType::ID, 55}, {TokenType::IntegerLiteral, 55}, {TokenType::OpenParanthese, 55}, 
-        {TokenType::Not, 55}, {TokenType::FloatLiteral, 55}});
+        {TokenType::Not, 55}, {TokenType::FloatLiteral, 55}, {TokenType::None, 120}});
 
     m_parsingTable[NonTerminal::ArithExpr] 
         = new ParsingTableEntry({{TokenType::Minus, 56}, {TokenType::Plus, 56}, 
@@ -1529,7 +1597,8 @@ void Parser::InitializeParsingTable()
         {TokenType::Plus, 57}, {TokenType::GreaterOrEqual, 58}, {TokenType::LessOrEqual, 58}, 
         {TokenType::GreaterThan, 58}, {TokenType::LessThan, 58}, {TokenType::NotEqual, 58}, 
         {TokenType::Equal, 58}, {TokenType::Comma, 58}, {TokenType::CloseSquareBracket, 58}, 
-        {TokenType::CloseParanthese, 58}, {TokenType::SemiColon, 58}});   
+        {TokenType::CloseParanthese, 58}, {TokenType::SemiColon, 58}, 
+        {TokenType::None, 121}});   
 
     m_parsingTable[NonTerminal::Sign] 
         = new ParsingTableEntry({{TokenType::Minus, 60}, {TokenType::Plus, 59}});
@@ -1545,7 +1614,8 @@ void Parser::InitializeParsingTable()
         {TokenType::Plus, 63}, {TokenType::GreaterOrEqual, 63}, {TokenType::LessOrEqual, 63}, 
         {TokenType::GreaterThan, 63}, {TokenType::LessThan, 63}, {TokenType::NotEqual, 63}, 
         {TokenType::Equal, 63}, {TokenType::Comma, 63}, {TokenType::CloseSquareBracket, 63}, 
-        {TokenType::CloseParanthese, 63}, {TokenType::SemiColon, 63}});
+        {TokenType::CloseParanthese, 63}, {TokenType::SemiColon, 63}, 
+        {TokenType::None, 121}});
 
     m_parsingTable[NonTerminal::Factor] 
         = new ParsingTableEntry({{TokenType::Minus, 69}, {TokenType::Plus, 69}, 
@@ -1594,15 +1664,15 @@ void Parser::InitializeParsingTable()
         {TokenType::SemiColon, 81}});
 
     m_parsingTable[NonTerminal::ArraySize] 
-        = new ParsingTableEntry({{TokenType::OpenSquareBracket, 82}});
+        = new ParsingTableEntry({{TokenType::OpenSquareBracket, 82}, {TokenType::None, 119}});
 
     m_parsingTable[NonTerminal::ArraySize2] 
         = new ParsingTableEntry({{TokenType::CloseSquareBracket, 84}, 
-        {TokenType::IntegerLiteral, 83}});
+        {TokenType::IntegerLiteral, 83}, {TokenType::None, 119}});
 
     m_parsingTable[NonTerminal::ArraySizeRepetition] 
         = new ParsingTableEntry({{TokenType::Comma, 86}, {TokenType::OpenSquareBracket, 85}, 
-        {TokenType::CloseParanthese, 86}, {TokenType::SemiColon, 86}});
+        {TokenType::CloseParanthese, 86}, {TokenType::SemiColon, 86}, {TokenType::None, 119}});
 
     m_parsingTable[NonTerminal::Type] 
         = new ParsingTableEntry({{TokenType::ID, 89}, {TokenType::FloatKeyword, 88}, 
@@ -1610,7 +1680,8 @@ void Parser::InitializeParsingTable()
 
     m_parsingTable[NonTerminal::ReturnType] 
         = new ParsingTableEntry({{TokenType::ID, 90}, {TokenType::Void, 91}, 
-        {TokenType::FloatKeyword, 90}, {TokenType::IntegerKeyword, 90}});
+        {TokenType::FloatKeyword, 90}, {TokenType::IntegerKeyword, 90}, 
+        {TokenType::None, 112}});
 
     m_parsingTable[NonTerminal::FParams] 
         = new ParsingTableEntry({{TokenType::ID, 92}, {TokenType::CloseParanthese, 93}, 
@@ -1619,26 +1690,30 @@ void Parser::InitializeParsingTable()
     m_parsingTable[NonTerminal::AParams] 
         = new ParsingTableEntry({{TokenType::Minus, 94}, {TokenType::Plus, 94}, 
         {TokenType::ID, 94}, {TokenType::IntegerLiteral, 94}, {TokenType::CloseParanthese, 95}, 
-        {TokenType::OpenParanthese, 94}, {TokenType::Not, 94}, {TokenType::FloatLiteral, 94}});
+        {TokenType::OpenParanthese, 94}, {TokenType::Not, 94}, {TokenType::FloatLiteral, 94}, 
+        {TokenType::None, 118}});
 
     m_parsingTable[NonTerminal::FParamsTail] 
-        = new ParsingTableEntry({{TokenType::Comma, 96}, {TokenType::CloseParanthese, 97}});
+        = new ParsingTableEntry({{TokenType::Comma, 96}, {TokenType::CloseParanthese, 97}, 
+        {TokenType::None, 112}});
     
     m_parsingTable[NonTerminal::AParamsTail] 
-        = new ParsingTableEntry({{TokenType::Comma, 98}, {TokenType::CloseParanthese, 99}});
+        = new ParsingTableEntry({{TokenType::Comma, 98}, {TokenType::CloseParanthese, 99}, 
+        {TokenType::None, 118}});
 
     m_parsingTable[NonTerminal::RelOp] 
         = new ParsingTableEntry({{TokenType::GreaterOrEqual, 105}, 
         {TokenType::LessOrEqual, 104}, {TokenType::GreaterThan, 103},
-        {TokenType::LessThan, 102}, {TokenType::NotEqual, 101}, {TokenType::Equal, 100}});
+        {TokenType::LessThan, 102}, {TokenType::NotEqual, 101}, {TokenType::Equal, 100}, 
+        {TokenType::None, 121}});
 
     m_parsingTable[NonTerminal::AddOp] 
         = new ParsingTableEntry({{TokenType::Or, 108}, {TokenType::Minus, 107}, 
-        {TokenType::Plus, 106}});
+        {TokenType::Plus, 106}, {TokenType::None, 121}});
 
     m_parsingTable[NonTerminal::MultOp] 
         = new ParsingTableEntry({{TokenType::And, 111}, {TokenType::Divide, 110}, 
-        {TokenType::Multiply, 109}});
+        {TokenType::Multiply, 109}, {TokenType::None, 121}});
 }
 
 void Parser::PushToStack(const Rule* r)
