@@ -2,7 +2,7 @@
 #include <list>
 #include <string>
 
-class StateBlockNode;
+class StatBlockNode;
 
 class ASTNode
 {
@@ -138,10 +138,16 @@ public:
 class VariableNode : public ASTNode
 {
 public:
-    VariableNode(IDNode* var);
+    VariableNode(IDNode* var, DimensionNode* dimension);
     VariableNode(DotNode* var);
 
     ASTNode* GetVariable();
+    
+    // can be nullptr
+    DimensionNode* GetDimension();
+
+private:
+    DimensionNode* m_dimension;
 };
 
 class ReadStatNode : public ASTNode
@@ -232,22 +238,46 @@ public:
     StatBlockNode* GetStatBlock();
 };
 
+class MemberData
+{
+public:
+    MemberData(const std::string& visibility);
+    const std::string& GetVisibility() const;
+
+private:
+    std::string m_visibility;
+};
+
+class MemVarNode : public VarDeclNode, public MemberData
+{
+public:
+    MemVarNode(const std::string& visibility, IDNode* id, 
+        TypeNode* type, DimensionNode* dimension);
+};
+
+class MemFuncNode : public FunctionDefNode, public MemberData
+{
+public:
+    MemFuncNode(const std::string& visibility, IDNode* id, TypeNode* returnType, 
+        FParamListNode* parameters, StatBlockNode* statBlock);
+};
+
 class ClassDefNode : public ASTNode
 {
 public:
     ClassDefNode(IDNode* id);
     ~ClassDefNode();
 
-    void AddVarDecl(VarDeclNode* var);
-    void AddFuncDecl(FunctionDefNode* func);
+    void AddVarDecl(MemVarNode* var);
+    void AddFuncDecl(MemFuncNode* func);
 
     IDNode* GetID();
-    std::list<VarDeclNode*>& GetVarDecl();
-    std::list<FunctionDefNode*>& GetFuncDefNode();
+    std::list<MemVarNode*>& GetVarDecl();
+    std::list<MemFuncNode*>& GetFuncDefNode();
 
 private:
-    std::list<VarDeclNode*> m_varDeclarations;
-    std::list<FunctionDefNode*> m_functionDefinitions;
+    std::list<MemVarNode*> m_varDeclarations;
+    std::list<MemFuncNode*> m_functionDefinitions;
 };
 
 class ClassDefListNode : public ASTNode
