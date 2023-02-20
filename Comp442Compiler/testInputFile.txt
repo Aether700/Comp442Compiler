@@ -1,4 +1,7 @@
-// dsiofds/*/*/*
-/**/
+function F() => void
+{
+    if (5 . 3)
+    {
 
-12.05e
+    }
+}

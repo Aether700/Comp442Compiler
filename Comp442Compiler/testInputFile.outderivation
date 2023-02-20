@@ -1,0 +1,27 @@
+<Start>
+-> <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> <ClassDeclOrFuncDef> <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> <FuncDef> <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> <FuncHead> <FuncBody> <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id' <FuncHead2> <FuncBody> <ClassDeclOrFuncDefRepetition> 'EOF' 
+
+
+-> 'function' 'id' '(' <FParams> ')' '=>' <ReturnType> <FuncBody> <ClassDeclOrFuncDefRepetition> 'EOF' 
+
+-> 'function' 'id' '(' ')' '=>' <ReturnType> <FuncBody> <ClassDeclOrFuncDefRepetition> 'EOF' 
+
+
+-> 'function' 'id' '(' ')' '=>' 'void' <FuncBody> <ClassDeclOrFuncDefRepetition> 'EOF' 
+
+-> 'function' 'id' '(' ')' '=>' 'void' '{' <LocalVarDeclOrStmtRepetition> '}' <ClassDeclOrFuncDefRepetition> 'EOF' 
+
+-> 'function' 'id' '(' ')' '=>' 'void' '{' <LocalVarDeclOrStmt> <LocalVarDeclOrStmtRepetition> '}' <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id' '(' ')' '=>' 'void' '{' <Statement> <LocalVarDeclOrStmtRepetition> '}' <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id' '(' ')' '=>' 'void' '{' 'if' '(' <RelExpr> ')' 'then' <StatBlock> 'else' <StatBlock> ';' <LocalVarDeclOrStmtRepetition> '}' <ClassDeclOrFuncDefRepetition> 'EOF' 
+
+
+-> 'function' 'id' '(' ')' '=>' 'void' '{' 'if' '(' <ArithExpr> <RelOp> <ArithExpr> ')' 'then' <StatBlock> 'else' <StatBlock> ';' <LocalVarDeclOrStmtRepetition> '}' <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id' '(' ')' '=>' 'void' '{' 'if' '(' <Term> <ArithExpr2> <RelOp> <ArithExpr> ')' 'then' <StatBlock> 'else' <StatBlock> ';' <LocalVarDeclOrStmtRepetition> '}' <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id' '(' ')' '=>' 'void' '{' 'if' '(' <Factor> <Term2> <ArithExpr2> <RelOp> <ArithExpr> ')' 'then' <StatBlock> 'else' <StatBlock> ';' <LocalVarDeclOrStmtRepetition> '}' <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id' '(' ')' '=>' 'void' '{' 'if' '(' 'integer literal' <Term2> <ArithExpr2> <RelOp> <ArithExpr> ')' 'then' <StatBlock> 'else' <StatBlock> ';' <LocalVarDeclOrStmtRepetition> '}' <ClassDeclOrFuncDefRepetition> 'EOF' 
+

@@ -1,11 +1,7 @@
 #include "Lexer.h"
 #include "../Core/Core.h"
-#include <sstream>
 #include <string.h>
-
-//temp/////////////////////////
 #include <iostream>
-/////////////////////////
 
 static constexpr char letterChar = 'l';
 static constexpr char nonzeroChar = 'n';
@@ -18,249 +14,6 @@ static constexpr char possibleCharacterInput[] =
 	'=', '0', '{', '}', '[', ']', '(', ')', ';', ':', '.', '<', '>', ',', '_'
 };
 static constexpr size_t numCharInput = sizeof(possibleCharacterInput) / sizeof(char);
-
-std::ostream& operator<<(std::ostream& stream, TokenType token)
-{
-	switch(token)
-	{
-		case TokenType::None:
-			stream << "None";
-			break;
-
-		case TokenType::ID:
-			stream << "ID";
-			break;
-
-		case TokenType::IntegerLiteral:
-			stream << "IntegerLiteral";
-			break;
-
-		case TokenType::FloatLiteral:
-			stream << "FloatLiteral";
-			break;
-
-		case TokenType::WhiteSpace:
-			stream << "WhiteSpace";
-			break;
-
-		case TokenType::InlineComment:
-			stream << "InlineComment";
-			break;
-
-		case TokenType::MultiLineComment:
-			stream << "MultiLineComment";
-			break;
-
-		//keywords
-		case TokenType::Or:
-			stream << "Or";
-			break;
-
-		case TokenType::And:
-			stream << "And";
-			break;
-
-		case TokenType::Not:
-			stream << "Not";
-			break;
-
-		case TokenType::IntegerKeyword:
-			stream << "IntegerKeyword";
-			break;
-
-		case TokenType::FloatKeyword:
-			stream << "FloatKeyword";
-			break;
-
-		case TokenType::Void:
-			stream << "Void";
-			break;
-
-		case TokenType::Class:
-			stream << "Class";
-			break;
-
-		case TokenType::Self:
-			stream << "Self";
-			break;
-
-		case TokenType::IsA:
-			stream << "IsA";
-			break;
-
-		case TokenType::While:
-			stream << "While";
-			break;
-
-		case TokenType::If:
-			stream << "If";
-			break;
-
-		case TokenType::Then:
-			stream << "Then";
-			break;
-
-		case TokenType::Else:
-			stream << "Else";
-			break;
-
-		case TokenType::Read:
-			stream << "Read";
-			break;
-
-		case TokenType::Write:
-			stream << "Write";
-			break;
-
-		case TokenType::Return:
-			stream << "Return";
-			break;
-
-		case TokenType::LocalVar:
-			stream << "LocalVar";
-			break;
-
-		case TokenType::Constructor:
-			stream << "Constructor";
-			break;
-
-		case TokenType::Attribute:
-			stream << "Attribute";
-			break;
-
-		case TokenType::Function:
-			stream << "Function";
-			break;
-
-		case TokenType::Public:
-			stream << "Public";
-			break;
-
-		case TokenType::Private:
-			stream << "Private";
-			break;
-
-
-		// Operators and punctuations
-		case TokenType::Equal:
-			stream << "Equal";
-			break;
-
-		case TokenType::NotEqual:
-			stream << "NotEqual";
-			break;
-
-		case TokenType::LessThan:
-			stream << "LessThan";
-			break;
-
-		case TokenType::GreaterThan:
-			stream << "GreaterThan";
-			break;
-
-		case TokenType::LessOrEqual:
-			stream << "LessOrEqual";
-			break;
-
-		case TokenType::GreaterOrEqual:
-			stream << "GreaterOrEqual";
-			break;
-
-		case TokenType::Plus:
-			stream << "Plus";
-			break;
-
-		case TokenType::Minus:
-			stream << "Minus";
-			break;
-
-		case TokenType::Multiply:
-			stream << "Multiply";
-			break;
-
-		case TokenType::Divide:
-			stream << "Divide";
-			break;
-
-		case TokenType::Assign:
-			stream << "Assign";
-			break;
-
-		case TokenType::OpenParanthese:
-			stream << "OpenParanthese";
-			break;
-
-		case TokenType::CloseParanthese:
-			stream << "CloseParanthese";
-			break;
-
-		case TokenType::OpenSquareBracket:
-			stream << "OpenSquareBracket";
-			break;
-
-		case TokenType::CloseSquareBracket:
-			stream << "CloseSquareBracket";
-			break;
-
-		case TokenType::OpenCurlyBracket:
-			stream << "OpenCurlyBracket";
-			break;
-
-		case TokenType::CloseCurlyBracket:
-			stream << "CloseCurlyBracket";
-			break;
-
-		case TokenType::SemiColon:
-			stream << "SemiColon";
-			break;
-
-		case TokenType::Comma:
-			stream << "Comma";
-			break;
-
-		case TokenType::Dot:
-			stream << "Dot";
-			break;
-
-		case TokenType::Colon:
-			stream << "Colon";
-			break;
-
-		case TokenType::Arrow:
-			stream << "Arrow";
-			break;
-	
-		case TokenType::Scope:
-			stream << "Scope";
-			break;
-
-		case TokenType::EndOfFile:
-			stream << "EOF";
-			break;
-
-		case TokenType::InvalidCharacter:
-			stream << "InvalidCharacter";
-			break;
-		
-		case TokenType::InvalidNumber:
-			stream << "InvalidNumber";
-			break;
-			
-		case TokenType::InvalidIdentifier:
-			stream << "InvalidIdentifier";
-			break;
-		
-		case TokenType::IncompleteMultipleLineComment:
-			stream << "IncompleteMultipleLineComment";
-			break;
-
-		default:
-			stream << "Unknown Token";
-			DEBUG_BREAK();
-			break;
-	}
-	return stream;
-}
 
 // CharData ///////////////////////////////////////////////////////////////////////
 char CharData::GetRepresentationChar(char c)
@@ -442,24 +195,6 @@ char CharData::GetElseChar() { return s_elseChar; }
 char CharData::GetFloatPowerChar() { return s_floatPowerChar; }
 char CharData::GetNewLineChar() { return s_newlineChar; }
 
-
-// Token ////////////////////////////////////////////////////////////////
-
-Token::Token() : m_type(TokenType::None), m_line(0) { }
-
-Token::Token(const std::string& lexeme, TokenType type, size_t line) : m_lexeme(lexeme), 
-	m_type(type), m_line(line) { }
-
-const std::string& Token::GetLexeme() const { return m_lexeme; }
-TokenType Token::GetTokenType() const { return m_type; }
-size_t Token::GetLine() const { return m_line; }
-
-bool Token::IsError() const
-{
-	return m_type == TokenType::InvalidCharacter || m_type == TokenType::InvalidNumber 
-		|| m_type == TokenType::InvalidIdentifier || m_type == TokenType::IncompleteMultipleLineComment;	
-}
-
 // LexicalTableEntry //////////////////////////////////////////////////////////////////////////
 
 LexicalTableEntry::LexicalTableEntry(const std::initializer_list<std::pair<char, StateID>>& stateTransitions, bool isFinal, 
@@ -495,12 +230,14 @@ TokenType LexicalTableEntry::GetTokenType() const { return m_tokenType; }
 void Lexer::SetInputFile(const std::string& filepath)
 {
 	Lexer& l = GetInstance();
-	l.m_inputFile = std::ifstream(filepath);
+	l.m_inputFile = std::ifstream(filepath, std::ios_base::in);
 	l.m_lineCounter = 1;
 	l.m_multiLineCommentsOpened = 0;
 	l.m_startLineOfMultiLineComment = 0;
 	l.m_lastChar = '\0';
 	l.m_justOpenedOrClosedMultiLineComment = false;
+	l.m_lines.clear();
+	l.m_lineBuffer.str("");
 }
 
 Token Lexer::GetNextToken()
@@ -513,6 +250,8 @@ Token Lexer::GetNextToken()
 	{
 		char lookup;
 		l.m_inputFile.read(&lookup, 1);
+		l.m_lineBuffer << lookup;
+
 		if (l.m_inputFile.eof())
 		{
 			lookup = CharData::GetEOFChar();
@@ -528,6 +267,8 @@ Token Lexer::GetNextToken()
 		else if (lookup == CharData::GetNewLineChar())
 		{
 			l.m_lineCounter++;
+			l.m_lines.push_back(l.m_lineBuffer.str());
+			l.m_lineBuffer.str("");
 		}
 
 		if (currState != 0 || !(CharData::IsWhitespace(lookup) 
@@ -540,6 +281,7 @@ Token Lexer::GetNextToken()
 		StateID nextState = TryToGenerateToken(currState, lookup, charBuffer, t);		
 		currState = nextState;
 		l.m_lastChar = lookup;
+
 	}
 	return Token(t);
 }
@@ -605,11 +347,23 @@ void Lexer::BackTrack(char lookup, std::stringstream& charBuffer)
 	l.m_inputFile.putback(lookup);
 	std::string bufferCopy = charBuffer.str();
 	l.m_lastChar = bufferCopy[bufferCopy.length() - 2];
+	
 
 	// update line counter if needed
 	if (lookup == CharData::GetNewLineChar())
 	{
 		l.m_lineCounter--;
+		std::string lastLine = l.m_lines[l.m_lines.size() - 1];
+		l.m_lines.erase(l.m_lines.begin() + (l.m_lines.size() - 1));
+		l.m_lineBuffer.str("");
+		l.m_lineBuffer << lastLine.substr(0, lastLine.length() - 1);
+	}
+	else
+	{
+		// remove previously added chararacter
+		std::string currLine = l.m_lineBuffer.str();
+		l.m_lineBuffer.str("");
+		l.m_lineBuffer << currLine.substr(0, currLine.length() - 1);
 	}
 
 	// remove character from buffer
@@ -788,7 +542,7 @@ void Lexer::InitializeLexicalTable()
 	m_lexicalTable[23] = new LexicalTableEntry({}, true, true, TokenType::IntegerLiteral);
 	m_lexicalTable[24] = new LexicalTableEntry({{CharData::GetLetterChar(), 30},
 		{CharData::GetNonzeroChar(), 9}, {CharData::GetElseChar(), 25}, 
-		{CharData::GetFloatPowerChar(), 15}, {'.', 30}, {'_', 30}});
+		{CharData::GetFloatPowerChar(), 15}, {'0', 10}, {'.', 30}, {'_', 30}});
 	
 	m_lexicalTable[25] = new LexicalTableEntry({}, true, true, TokenType::FloatLiteral);
 	m_lexicalTable[26] = new LexicalTableEntry({{CharData::GetLetterChar(), 26}, 
@@ -799,7 +553,8 @@ void Lexer::InitializeLexicalTable()
 	m_lexicalTable[29] = new LexicalTableEntry({}, true, true, TokenType::InvalidNumber);
 	m_lexicalTable[30] = new LexicalTableEntry({{CharData::GetLetterChar(), 30}, 
 		{CharData::GetNonzeroChar(), 30}, {CharData::GetElseChar(), 29}, 
-		{CharData::GetEOFChar(), 29}, {'e', 30}, {'0', 30}, {'.', 30}, {'_', 30}});
+		{CharData::GetEOFChar(), 29}, {CharData::GetFloatPowerChar(), 30}, 
+		{'0', 30}, {'.', 30}, {'_', 30}});
 
 	m_lexicalTable[31] = new LexicalTableEntry({}, true, false, TokenType::InvalidCharacter);
 }

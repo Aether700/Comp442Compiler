@@ -1,4 +1,0 @@
-[InlineComment, "// dsiofds/*/*/*", 1]
-[MultiLineComment, "/**/", 2]
-
-[InvalidNumber, "12.05e", 4][EOF, "EOF", 4]

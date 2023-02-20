@@ -1,0 +1,185 @@
+/* sort the array */
+function bubbleSort(arr: integer[], size: integer) => void 
+{
+  localvar n    : ;
+  localvar i    : integer;
+  localvar j    : integer;
+  localvar temp : integer; 
+  n = size;
+  i 0;
+  j = 0;
+  temp = 0;
+  while (i < n-1) { 
+    while j < n-i-1) {
+      if (arr[j] > arr[j+1]) 
+        then {
+          // swap temp and arr[i]
+          temp = arr[j];
+          arr[j] = arr[j+1];
+          arr[j+1] = temp;
+        } else ;
+        j = j+1;
+      };
+    i = i+1;
+  };
+}
+   
+/* print the array */
+function printArray arr: integer[], size: integer) => void 
+{
+  localvar n: integer;
+  localvar i: integer; 
+  n = size;
+  i = 0; 
+  while (i n) { 
+    write(arr[i]);
+      i = i+1;
+  };
+} 
+
+// main funtion to test above
+function main() => void
+{
+  localvar arr: integer[7]; 
+  arr[0] = 64;
+  arr[1] = 34;
+  arr[2] = 25;
+  arr[3] = 12;
+  arr[4] = 22;
+  arr[5] = 11;
+  arr[6] = 90;
+  printarray(arr, 7); 
+  bubbleSort(arr, 7);
+  printarray(arr, 7); 
+}
+
+/* // for all test files
+    classes
+    --------------------------------------
+|X| no class declaration
+|X| class declaration
+|X| multiple class declarations
+|X| no data member declaration
+|X| data member declaration
+|X| multiple data member declaration
+|X| no member function declaration
+|X| member function declaration
+|X| multiple member function declaration
+|X| no member
+|X| no inherited class
+|X| one inherited class
+|X| multiple inherited classes
+|X| private member specifier
+|X| public member specifier
+
+    functions: definitions
+    --------------------------------------
+|X| no main function definition
+|X| main function definition
+|X| no free function definition
+|X| free function definition
+|X| multiple free function definitions
+|X| no member function definition
+|X| member function definition
+|X| multiple member function definitions
+|X| return type: void
+|X| return type: integer
+|X| return type: float
+|X| return type: id
+| | return type: array (not allowed)
+
+    functions: formal parameters
+    --------------------------------------
+|X| type: integer
+|X| type: float
+|X| type: id
+|X| type: 1-dim array 
+|X| type: n-dim array
+|X| type: array (with size)
+|X| type: array (without size)
+
+    functions: calls
+    --------------------------------------
+|X| free function call
+|X| member function call
+|X| parameters:0
+|X| parameters:1
+|X| parameters:n
+|X| array parameter - 1-dim
+|X| array parameter - n-dim
+|X| array parameter - with size
+|X| array parameter - without size
+|X| function call as statement
+|X| function call as expression factor
+|X| expression as parameter
+
+    variable declaration
+    --------------------------------------
+|X| type: integer
+|X| type: float
+| | type: string
+|X| type: id
+|X| type: 1-dim array 
+|X| type: n-dim array
+|X| type: array (with size)
+|X| type: array (without size) (not allowed)
+
+    function body: local variable declarations
+    --------------------------------------
+|X| no local variable declarations
+|X| local variable declarations
+|X| intertwined statements and variable declarations
+
+    function body: statements
+    --------------------------------------
+|X| no statement
+|X| 1 statement
+|X| n statements
+|X| if statement
+|X| if: empty then or else blocks
+|X| if: 1-statement then or else blocks
+|X| if: n-statements then or else blocks
+|X| while statement
+|X| while: empty block
+|X| while: 1-statement block
+|X| while: n-statement block
+|X| read(<variable>) statement
+|X| write(<expr>) statement
+|X| return(<expr>) statement
+|X| assignment statement
+
+    variable + idnest
+    --------------------------------------
+|X| id
+|X| id.id
+|X| id.id(id)
+|X| id(id).id
+|X| id(id).id()
+|X| id.id[id]
+|X| id[id].id
+|X| id[id].id[id]
+|X| id.id[id][id]
+|X| id[id][id].id
+|X| id[id][id].id[id][id]
+|X| id(id).id[id]
+|X| id(id).id[id][id]
+|X| expression as array index
+
+    expressions
+    --------------------------------------
+|X| single variable
+|X| involving addop
+|X| involving multop
+|X| involving relop
+|X| involving addop + multop
+|X| involving multop + relop
+|X| involving addop + multop + relop
+|X| involving parentheses
+|X| involving nested parentheses
+|X| involving not
+|X| involving sign
+|X| involving literals
+|X| involving variable + idnest
+|X| involving function calls
+|X| involving all the above in one expression
+*/

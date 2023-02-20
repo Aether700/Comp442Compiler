@@ -4,80 +4,12 @@
 #include <vector>
 #include <fstream>
 #include <utility>
+#include <sstream>
+
+#include "../Core/Token.h"
 
 typedef size_t StateID;
 static constexpr StateID NullState = SIZE_MAX;
-
-enum class TokenType
-{
-	None,
-	
-	ID,
-	IntegerLiteral,
-	FloatLiteral,
-	WhiteSpace,
-	InlineComment,
-	MultiLineComment,
-
-	//keywords
-	Or,
-	And,
-	Not,
-	IntegerKeyword,
-	FloatKeyword,
-	Void,
-	Class,
-	Self,
-	IsA,
-	While,
-	If,
-	Then,
-	Else,
-	Read,
-	Write,
-	Return,
-	LocalVar,
-	Constructor,
-	Attribute,
-	Function,
-	Public,
-	Private,
-
-	// Operators and punctuations
-	Equal,
-	NotEqual,
-	LessThan,
-	GreaterThan,
-	LessOrEqual,
-	GreaterOrEqual,
-	Plus,
-	Minus,
-	Multiply,
-	Divide,
-	Assign,
-	OpenParanthese,
-	CloseParanthese,
-	OpenSquareBracket,
-	CloseSquareBracket,
-	OpenCurlyBracket,
-	CloseCurlyBracket,
-	SemiColon,
-	Comma,
-	Dot,
-	Colon,
-	Arrow,
-	Scope,
-
-
-	EndOfFile,
-
-	InvalidCharacter,
-	InvalidNumber,
-	InvalidIdentifier,
-	IncompleteMultipleLineComment
-};
-
-std::ostream& operator<<(std::ostream& stream, TokenType token);
 
 class CharData
 {
@@ -134,28 +66,9 @@ private:
 		"if", "then", "else", "read", "write", "return", "localvar", "constructor", "attribute", 
 		"function", "public", "private"
 	};
-	static constexpr size_t s_keywordToTokenOffset = 7;
+	static constexpr size_t s_keywordToTokenOffset = 6;
 	static constexpr size_t s_numKeywords = sizeof(s_keywords) / sizeof(const char*);
 
-};
-
-class Token
-{
-	friend class Lexer;
-public:
-	Token();
-	Token(const std::string& lexeme, TokenType type, size_t line);
-
-	const std::string& GetLexeme() const;
-	TokenType GetTokenType() const;
-	size_t GetLine() const;
-
-	bool IsError() const;
-
-private:
-	TokenType m_type;
-	std::string m_lexeme;
-	size_t m_line;
 };
 
 class LexicalTableEntry
@@ -179,6 +92,7 @@ private:
 
 class Lexer
 {
+	friend class Token;
 public:
 	static void SetInputFile(const std::string& filepath);
 	static Token GetNextToken();
@@ -210,6 +124,8 @@ private:
 	static Lexer& GetInstance();
 
 	size_t m_lineCounter;
+	std::vector<std::string> m_lines;
+	std::stringstream m_lineBuffer;
 	std::unordered_map<StateID, LexicalTableEntry*> m_lexicalTable;
 	std::ifstream m_inputFile;
 	size_t m_multiLineCommentsOpened;
