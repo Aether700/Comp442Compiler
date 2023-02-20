@@ -125,16 +125,10 @@ ExprNode* BaseLangStatNode::GetExpr() { return (ExprNode*)*begin(); }
 ReturnStatNode::ReturnStatNode(ExprNode* expr) : BaseLangStatNode(expr) { }
 
 // VariableNode ///////////////////////////////////////////////////
-VariableNode::VariableNode(IDNode* var, DimensionNode* dimension) : m_dimension(dimension)
-{ 
-    AddChild(var); 
-    AddChild(dimension);
-}
-
-VariableNode::VariableNode(DotNode* var) : m_dimension(nullptr) { AddChild(var); }
+VariableNode::VariableNode(IDNode* var) { AddChild(var); }
+VariableNode::VariableNode(DotNode* var) { AddChild(var); }
 
 ASTNode* VariableNode::GetVariable() { return *begin(); }
-DimensionNode* VariableNode::GetDimension() { return m_dimension; }
 
 // ReadStatNode //////////////////////////////////////////////////
 ReadStatNode::ReadStatNode(VariableNode* var) { AddChild(var); }
@@ -228,17 +222,6 @@ TypeNode* FunctionDefNode::GetReturnType() { return (TypeNode*)*(begin()++); }
 FParamListNode* FunctionDefNode::GetParameters() { return (FParamListNode*)*((begin()++)++); }
 StatBlockNode* FunctionDefNode::GetStatBlock() { return (StatBlockNode*)*(((begin()++)++)++); }
 
-// MemberData ////////////////////////////////////////////////////////
-MemberData::MemberData(const std::string& visibility) : m_visibility(visibility) { }
-const std::string& MemberData::GetVisibility() const { return m_visibility; }
-
-// MemVarNode /////////////////////////////////////////////////////////////
-MemVarNode::MemVarNode(const std::string& visibility, IDNode* id, 
-    TypeNode* type, DimensionNode* dimension) : VarDeclNode(id, type, dimension), 
-    MemberData(visibility)
-{
-}
-
 // ClassDefNode //////////////////////////////////////////////////////////////
 ClassDefNode::ClassDefNode(IDNode* id)
 {
@@ -259,15 +242,15 @@ ClassDefNode::~ClassDefNode()
 }
 
 IDNode* ClassDefNode::GetID() { return (IDNode*)*begin(); }
-void ClassDefNode::AddVarDecl(MemVarNode* var) { m_varDeclarations.push_back(var); }
+void ClassDefNode::AddVarDecl(VarDeclNode* var) { m_varDeclarations.push_back(var); }
 
-void ClassDefNode::AddFuncDecl(MemFuncNode* func) 
+void ClassDefNode::AddFuncDecl(FunctionDefNode* func) 
 { 
     m_functionDefinitions.push_back(func); 
 }
 
-std::list<MemVarNode*>& ClassDefNode::GetVarDecl() { return m_varDeclarations; }
-std::list<MemFuncNode*>& ClassDefNode::GetFuncDefNode() { return m_functionDefinitions; }
+std::list<VarDeclNode*>& ClassDefNode::GetVarDecl() { return m_varDeclarations; }
+std::list<FunctionDefNode*>& ClassDefNode::GetFuncDefNode() { return m_functionDefinitions; }
 
 // ClassDefListNode ////////////////////////////////////////////////////////////
 void ClassDefListNode::AddClass(ClassDefNode* classDef)
