@@ -238,21 +238,28 @@ public:
     StatBlockNode* GetStatBlock();
 };
 
-class MemVarNode : public VarDeclNode
+class MemberData
 {
 public:
-    MemVarNode(const std::string& visibility, IDNode* id, 
-        TypeNode* type, DimensionNode* dimension);
+    MemberData(const std::string& visibility);
 
     const std::string& GetVisibility() const;
-
 private:
     std::string m_visibility;
 };
 
-class MemFuncNode : public FunctionDefNode
+class MemVarNode : public VarDeclNode, public MemberData
 {
+public:
+    MemVarNode(const std::string& visibility, IDNode* id, 
+        TypeNode* type, DimensionNode* dimension);
+};
 
+class MemFuncNode : public FunctionDefNode, public MemberData
+{
+public:
+    MemFuncNode(const std::string& visibility, IDNode* id, TypeNode* returnType, 
+        FParamListNode* parameters, StatBlockNode* statBlock);
 };
 
 class ClassDefNode : public ASTNode
@@ -262,15 +269,15 @@ public:
     ~ClassDefNode();
 
     void AddVarDecl(MemVarNode* var);
-    void AddFuncDecl(FunctionDefNode* func);
+    void AddFuncDecl(MemFuncNode* func);
 
     IDNode* GetID();
     std::list<MemVarNode*>& GetVarDecl();
-    std::list<FunctionDefNode*>& GetFuncDefNode();
+    std::list<MemFuncNode*>& GetFuncDefNode();
 
 private:
     std::list<MemVarNode*> m_varDeclarations;
-    std::list<FunctionDefNode*> m_functionDefinitions;
+    std::list<MemFuncNode*> m_functionDefinitions;
 };
 
 class ClassDefListNode : public ASTNode

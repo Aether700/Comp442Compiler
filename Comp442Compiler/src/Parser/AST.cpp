@@ -228,14 +228,19 @@ TypeNode* FunctionDefNode::GetReturnType() { return (TypeNode*)*(begin()++); }
 FParamListNode* FunctionDefNode::GetParameters() { return (FParamListNode*)*((begin()++)++); }
 StatBlockNode* FunctionDefNode::GetStatBlock() { return (StatBlockNode*)*(((begin()++)++)++); }
 
+// MemberData //////////////////////////////////////////////////////////////////
+MemberData::MemberData(const std::string& visibility) : m_visibility(visibility) { }
+const std::string& MemberData::GetVisibility() const { return m_visibility; }
+
 // MemVarNode /////////////////////////////////////////////////////////////
 MemVarNode::MemVarNode(const std::string& visibility, IDNode* id, 
-    TypeNode* type, DimensionNode* dimension) : VarDeclNode(id, type, dimension)
-{
-    
-}
+    TypeNode* type, DimensionNode* dimension) : VarDeclNode(id, type, dimension), 
+    MemberData(visibility) { }
 
-const std::string& MemVarNode::GetVisibility() const { return m_visibility; }
+// MemFuncNode ///////////////////////////////////////////////////////////////////
+MemFuncNode::MemFuncNode(const std::string& visibility, IDNode* id, TypeNode* returnType, 
+    FParamListNode* parameters, StatBlockNode* statBlock) 
+    : FunctionDefNode(id, returnType, parameters, statBlock), MemberData(visibility) { }
 
 // ClassDefNode //////////////////////////////////////////////////////////////
 ClassDefNode::ClassDefNode(IDNode* id)
@@ -245,12 +250,12 @@ ClassDefNode::ClassDefNode(IDNode* id)
 
 ClassDefNode::~ClassDefNode()
 {
-    for (VarDeclNode* var : m_varDeclarations)
+    for (MemVarNode* var : m_varDeclarations)
     {
         delete var;
     }
 
-    for (FunctionDefNode* func : m_functionDefinitions)
+    for (MemFuncNode* func : m_functionDefinitions)
     {
         delete func;
     }
@@ -259,13 +264,13 @@ ClassDefNode::~ClassDefNode()
 IDNode* ClassDefNode::GetID() { return (IDNode*)*begin(); }
 void ClassDefNode::AddVarDecl(MemVarNode* var) { m_varDeclarations.push_back(var); }
 
-void ClassDefNode::AddFuncDecl(FunctionDefNode* func) 
+void ClassDefNode::AddFuncDecl(MemFuncNode* func) 
 { 
     m_functionDefinitions.push_back(func); 
 }
 
 std::list<MemVarNode*>& ClassDefNode::GetVarDecl() { return m_varDeclarations; }
-std::list<FunctionDefNode*>& ClassDefNode::GetFuncDefNode() { return m_functionDefinitions; }
+std::list<MemFuncNode*>& ClassDefNode::GetFuncDefNode() { return m_functionDefinitions; }
 
 // ClassDefListNode ////////////////////////////////////////////////////////////
 void ClassDefListNode::AddClass(ClassDefNode* classDef)
