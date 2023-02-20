@@ -124,9 +124,16 @@ ExprNode* BaseLangStatNode::GetExpr() { return (ExprNode*)*begin(); }
 // ReturnStatNode ////////////////////////////////////////////////
 ReturnStatNode::ReturnStatNode(ExprNode* expr) : BaseLangStatNode(expr) { }
 
-// ReadStatNode //////////////////////////////////////////////////
-ReadStatNode::ReadStatNode(ExprNode* expr) : BaseLangStatNode(expr) { }
+// VariableNode ///////////////////////////////////////////////////
+VariableNode::VariableNode(IDNode* var) { AddChild(var); }
+VariableNode::VariableNode(DotNode* var) { AddChild(var); }
 
+ASTNode* VariableNode::GetVariable() { return *begin(); }
+
+// ReadStatNode //////////////////////////////////////////////////
+ReadStatNode::ReadStatNode(VariableNode* var) { AddChild(var); }
+
+VariableNode* ReadStatNode::GetVariable() { return (VariableNode*)*begin(); }
 
 // WriteStatNode //////////////////////////////////////////////////////
 WriteStatNode::WriteStatNode(ExprNode* expr) : BaseLangStatNode(expr) { }

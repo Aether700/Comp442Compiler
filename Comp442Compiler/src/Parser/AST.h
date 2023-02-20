@@ -120,7 +120,7 @@ public:
     ExprNode(RelOpNode* op);
 };
 
-// base node of simple statements provided by the language such as return, read or write
+// base node of simple statements provided by the language such as return or write
 class BaseLangStatNode : public ASTNode
 {
 public:
@@ -135,10 +135,21 @@ public:
     ReturnStatNode(ExprNode* expr);
 };
 
-class ReadStatNode : public BaseLangStatNode
+class VariableNode : public ASTNode
 {
 public:
-    ReadStatNode(ExprNode* expr);
+    VariableNode(IDNode* var);
+    VariableNode(DotNode* var);
+
+    ASTNode* GetVariable();
+};
+
+class ReadStatNode : public ASTNode
+{
+public:
+    ReadStatNode(VariableNode* var);
+
+    VariableNode* GetVariable();
 };
 
 class WriteStatNode : public BaseLangStatNode
