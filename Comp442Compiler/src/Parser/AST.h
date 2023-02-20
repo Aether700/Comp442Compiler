@@ -2,51 +2,102 @@
 #include <list>
 #include <string>
 
+class StateBlockNode;
+
 class ASTNode
 {
 public:
+    using Iterator = std::list<ASTNode*>::iterator;
+
     ASTNode();
     virtual ~ASTNode();
 
     ASTNode* GetParent();
     const ASTNode* GetParent() const;
 
-    void AddChild(ASTNode* child);
 
-    auto begin();
-    auto end();
+    ASTNode::Iterator begin();
+    ASTNode::Iterator end();
+
+protected:
+    void AddChild(ASTNode* child);
 
 private:
     ASTNode* m_parent;
     std::list<ASTNode*> m_children;
 };
 
-class VarNode : public ASTNode
+class IDNode : public ASTNode
 {
 public:
-    VarNode(const std::string& id);
-    VarNode(const std::string& id, const std::list<std::string>& indices);
+    IDNode(const std::string& id);
 
     const std::string& GetID() const;
-    const std::list<std::string>& GetIndices() const;
-
 private:
     std::string m_id;
-    std::list<std::string> m_indices;
 };
 
-class VarDeclNode : public VarNode
+class TypeNode : public ASTNode
 {
 public:
-    VarDeclNode(const std::string& id, const std::string& type);
-    VarDeclNode(const std::string& id, const std::string& type, 
-        const std::list<std::string>& arraySize);
+    TypeNode(const std::string& type);
 
     const std::string& GetType() const;
-    const std::list<std::string>& GetArraySize() const;
-
 private:
     std::string m_type;
+};
+
+class BaseOperatorNode : public ASTNode
+{
+public:
+    BaseOperatorNode(const std::string& op);
+    const std::string& GetOperator() const;
+
+private:
+    std::string m_operator;
+};
+
+class AddOpNode : public BaseOperatorNode
+{
+public:
+    AddOpNode(const std::string& op);
+};
+
+class MultOpNode : public BaseOperatorNode
+{
+public:
+    MultOpNode(const std::string& op);
+};
+
+class RelOpNode : public BaseOperatorNode
+{
+public:
+    RelOpNode(const std::string& op);
+};
+
+class LiteralNode : public ASTNode
+{
+public:
+    LiteralNode(IDNode* lexeme, TypeNode* type);
+
+    IDNode* GetLexemeNode();
+    TypeNode* GetType();
+};
+
+class DimensionNode : public ASTNode
+{
+public: 
+    void AddDimension(LiteralNode* dimension);
+};
+
+class VarDeclNode : public ASTNode
+{
+public:
+    VarDeclNode(IDNode* id, TypeNode* type, DimensionNode* dimension);
+
+    IDNode* GetID();
+    TypeNode* GetType();
+    DimensionNode* GetDimension();
 };
 
 class DotNode : public ASTNode
@@ -58,24 +109,146 @@ public:
     ASTNode* GetRight();
 };
 
+class ExprNode : public ASTNode
+{
+public:
+    ExprNode(LiteralNode* literal);
+    ExprNode(VarDeclNode* var);
+    ExprNode(DotNode* dot);
+    ExprNode(AddOpNode* op);
+    ExprNode(MultOpNode* op);
+    ExprNode(RelOpNode* op);
+};
+
+// base node of simple statements provided by the language such as return, read or write
+class BaseLangStatNode : public ASTNode
+{
+public:
+    BaseLangStatNode(ExprNode* expr);
+
+    ExprNode* GetExpr();
+};
+
+class ReturnStatNode : public BaseLangStatNode
+{
+public:
+    ReturnStatNode(ExprNode* expr);
+};
+
+class ReadStatNode : public BaseLangStatNode
+{
+public:
+    ReadStatNode(ExprNode* expr);
+};
+
+class WriteStatNode : public BaseLangStatNode
+{
+public:
+    WriteStatNode(ExprNode* expr);
+};
+
+class AssignStatNode : public ASTNode
+{
+public:
+    AssignStatNode(IDNode* left, ExprNode* expr);
+    AssignStatNode(DotNode* left, ExprNode* expr);
+
+    ASTNode* GetLeft();
+    ExprNode* GetRight();
+};
+
+class IfStatNode : public ASTNode
+{
+public:
+    IfStatNode(RelOpNode* condition, StatBlockNode* ifBranch, StatBlockNode* elseBranch);
+
+    RelOpNode* GetCondition();
+    StatBlockNode* GetIfBranch();
+    StatBlockNode* GetElseBranch();
+};
+
+class WhileStatNode : public ASTNode
+{
+public:
+    WhileStatNode(RelOpNode* condition, StatBlockNode* statBlock);
+
+    RelOpNode* GetCondition();
+    StatBlockNode* GetStatBlock();
+};
+
+class AParamListNode : public ASTNode
+{
+public:
+    void AddParam(ExprNode* param);
+};
+
+class FuncCallNode : public ASTNode
+{
+public:
+    FuncCallNode(IDNode* id, AParamListNode* parameters);
+
+    IDNode* GetID();
+    AParamListNode* GetParameters();
+};
+
+class StatBlockNode : public ASTNode
+{
+public:
+    void AddStatement(ReturnStatNode* statement);
+    void AddStatement(ReadStatNode* statement);
+    void AddStatement(WriteStatNode* statement);
+    void AddStatement(AssignStatNode* statement);
+    void AddStatement(IfStatNode* statement);
+    void AddStatement(WhileStatNode* statement);
+    void AddStatement(FuncCallNode* statement);
+};
+
+class FParamListNode : public ASTNode
+{
+public:
+    void AddVarDecl(VarDeclNode* var);
+};
+
+class FunctionDefNode : public ASTNode
+{
+public:
+    FunctionDefNode(IDNode* id, TypeNode* returnType, FParamListNode* parameters,  
+        StatBlockNode* statBlock);
+
+    IDNode* GetID();
+    TypeNode* GetReturnType();
+    FParamListNode* GetParameters();
+    StatBlockNode* GetStatBlock();
+};
+
 class ClassDefNode : public ASTNode
 {
-    // Not implemented yet
+public:
+    ClassDefNode(IDNode* id);
+    ~ClassDefNode();
+
+    void AddVarDecl(VarDeclNode* var);
+    void AddFuncDecl(FunctionDefNode* func);
+
+    IDNode* GetID();
+    std::list<VarDeclNode*>& GetVarDecl();
+    std::list<FunctionDefNode*>& GetFuncDefNode();
+
+private:
+    std::list<VarDeclNode*> m_varDeclarations;
+    std::list<FunctionDefNode*> m_functionDefinitions;
 };
 
-class FreeFunctionDefNode : public ASTNode
+class ClassDefListNode : public ASTNode
 {
-    // Not implemented yet
+public:
+    void AddClass(ClassDefNode* classDef);
 };
 
-class ClassListNode : public ASTNode
+class FunctionDefListNode : public ASTNode
 {
-    // Not implemented yet
-};
-
-class FreeFunctionListNode : public ASTNode
-{
-    // Not implemented yet
+public:
+    void AddFunc(FunctionDefNode* funcDef);
 };
 
 class ProgramNode : public ASTNode
@@ -83,6 +256,6 @@ class ProgramNode : public ASTNode
 public:
     ProgramNode();
 
-    ClassListNode* GetClassList();
-    FreeFunctionListNode* GetFunctionList();
+    ClassDefListNode* GetClassList();
+    FunctionDefListNode* GetFunctionList();
 };
