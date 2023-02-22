@@ -5,6 +5,7 @@
 
 class StatBlockNode;
 class ExprNode;
+class AParamListNode;
 
 class ASTNode
 {
@@ -36,6 +37,13 @@ private:
 
 // serves as stop point when looping
 class StopNode : public ASTNode { };
+
+// serves as a marker when an array size is not specified
+class UnspecificedDimensionNode : public ASTNode 
+{ 
+public:
+    virtual std::string ToString(size_t indent = 0) override;
+};
 
 class IDNode : public ASTNode
 {
@@ -120,7 +128,7 @@ public:
 class DimensionNode : public ASTNode
 {
 public: 
-    void AddDimension(ASTNode* dimension);
+    void AddLoopingChild(ASTNode* dimension);
 
     virtual std::string ToString(size_t indent = 0) override;
 };
@@ -129,10 +137,17 @@ class VarDeclNode : public ASTNode
 {
 public:
     VarDeclNode(IDNode* id, TypeNode* type, DimensionNode* dimension);
+    VarDeclNode(IDNode* id, TypeNode* type, AParamListNode* params);
 
     IDNode* GetID();
     TypeNode* GetType();
     DimensionNode* GetDimension();
+    AParamListNode* GetParamList();
+
+    virtual std::string ToString(size_t indent = 0) override;
+
+private:
+    ASTNode* GetThirdNode();
 };
 
 class DotNode : public ASTNode
@@ -236,7 +251,7 @@ public:
 class AParamListNode : public ASTNode
 {
 public:
-    void AddParam(ExprNode* param);
+    void AddLoopingChild(ASTNode* param);
 };
 
 class FuncCallNode : public ASTNode
@@ -251,13 +266,9 @@ public:
 class StatBlockNode : public ASTNode
 {
 public:
-    void AddStatement(ReturnStatNode* statement);
-    void AddStatement(ReadStatNode* statement);
-    void AddStatement(WriteStatNode* statement);
-    void AddStatement(AssignStatNode* statement);
-    void AddStatement(IfStatNode* statement);
-    void AddStatement(WhileStatNode* statement);
-    void AddStatement(FuncCallNode* statement);
+    void AddLoopingChild(ASTNode* statement);
+
+    virtual std::string ToString(size_t indent = 0) override;
 };
 
 class FParamListNode : public ASTNode

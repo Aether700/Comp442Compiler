@@ -9,6 +9,8 @@
 
 //transform grammar into attribute grammar
 
+current test file seems to break when assembling ExprNode check why
+
 void ExitPrompt()
 {
 	std::cout << "\nPress enter to exit\n";

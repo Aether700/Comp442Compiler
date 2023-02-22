@@ -33,16 +33,21 @@ enum class ErrorID
 enum class SemanticAction
 {
     PushStopNode,
+    PushUnspecifiedDimensionNode,
     ConstructIntLiteral,
     ConstructFloatLiteral,
     ConstructAssignStat,
     PushID,
     PushOp,
+    PushType,
     ConstructExpr,
     ConstructAddOp,
     ConstructMultOp,
     ConstructDimensions,
     ConstructSimpleVar,
+    ConstructVarDecl,
+    ConstructStatBlock,
+    ConstructAParams,
 };
 
 enum class NonTerminal
@@ -304,8 +309,8 @@ private:
     void ConstructFloatLiteralAction();
     void ConstructExprAction();
     void ConstructAssignStatAction();
-    void ConstructDimensionsAction();
     void ConstructSimpleVarAction();
+    void ConstructVarDeclAction();
 
     template<typename NodeType, typename... Args>
     void Push(Args... args)
@@ -327,6 +332,33 @@ private:
         m_semanticStack.pop_front();
 
         m_semanticStack.push_front(new NodeType(left, op, right));
+    }
+
+    template<typename NodeType>
+    void ConstructLoopingNode()
+    {
+        NodeType* targetNode = new NodeType();
+        ASTNode* topNode = m_semanticStack.front();
+        m_semanticStack.pop_front();
+        while(dynamic_cast<StopNode*>(topNode) == nullptr)
+        {
+            targetNode->AddLoopingChild(topNode);
+            topNode = m_semanticStack.front();
+            m_semanticStack.pop_front();
+        }
+        delete topNode;
+
+        m_semanticStack.push_front(targetNode);
+    }
+
+    template<typename NodeType>
+    NodeType* PopTargetNodeFromSemanticStack()
+    {
+        ASTNode* top = m_semanticStack.front();
+        m_semanticStack.pop_front();
+        NodeType* targetNode = dynamic_cast<NodeType*>(top);
+        ASSERT(targetNode != nullptr);
+        return targetNode;
     }
 
     // returns index of first nonterminal or -1 if none was found

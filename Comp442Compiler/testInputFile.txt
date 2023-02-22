@@ -1,5 +1,6 @@
 function F() => void
 {
-    localvar x : integer;
-    x[5][2 * 3 - 1][5 + 6][3] = 33 + 5 * 5 - 2;
+    localvar x : Obj(5, myVar); //a var decl like this doesn't work
+    //localvar x : integer[10][][5][6];
+    //x[5][2 * 3 - 1][5 + 6][3] = 33 + 5 * 5 - 2;
 }

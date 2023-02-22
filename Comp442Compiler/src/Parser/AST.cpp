@@ -41,6 +41,16 @@ void ASTNode::WriteIndentToStream(std::stringstream& ss, size_t indent)
 ASTNode::Iterator ASTNode::begin() { return m_children.begin(); }
 ASTNode::Iterator ASTNode::end() { return m_children.end(); }
 
+// UnspecificedDimensionNode //////////////////////////////////////////
+std::string UnspecificedDimensionNode::ToString(size_t indent)
+{
+    std::stringstream ss;
+    WriteIndentToStream(ss, indent);
+    ss << "UnspecifiedArrDimension\n";
+
+    return ss.str();
+}
+
 // IDNode ////////////////////////////////////////////////////////
 IDNode::IDNode(const std::string& id) : m_id(id) { }
 
@@ -133,7 +143,7 @@ std::string LiteralNode::ToString(size_t indent)
 }
 
 // DimensionNode ////////////////////////////////////
-void DimensionNode::AddDimension(ASTNode* dimension) { AddChildFirst(dimension); }
+void DimensionNode::AddLoopingChild(ASTNode* dimension) { AddChildFirst(dimension); }
 
 std::string DimensionNode::ToString(size_t indent)
 {
@@ -155,6 +165,13 @@ VarDeclNode::VarDeclNode(IDNode* id, TypeNode* type, DimensionNode* dimension)
     AddChild(dimension);
 }
 
+VarDeclNode::VarDeclNode(IDNode* id, TypeNode* type, AParamListNode* param)
+{
+    AddChild(id);
+    AddChild(type);
+    AddChild(param);
+}
+
 IDNode* VarDeclNode::GetID()
 {
     return (IDNode*)*begin();
@@ -167,7 +184,29 @@ TypeNode* VarDeclNode::GetType()
 
 DimensionNode* VarDeclNode::GetDimension()
 {
-    return (DimensionNode*)*((begin()++)++);
+    return dynamic_cast<DimensionNode*>(GetThirdNode());
+}
+
+AParamListNode* VarDeclNode::GetParamList()
+{
+    return dynamic_cast<AParamListNode*>(GetThirdNode());
+}
+
+std::string VarDeclNode::ToString(size_t indent)
+{
+    std::stringstream ss;
+    WriteIndentToStream(ss, indent);
+    ss << "VarDecl\n";
+    ss << GetID()->ToString(indent + 1);
+    ss << GetType()->ToString(indent + 1);
+    ss << GetThirdNode()->ToString(indent + 1);
+
+    return ss.str();
+}
+
+ASTNode* VarDeclNode::GetThirdNode()
+{
+    return *(++(++(begin())));
 }
 
 // DotNode ////////////////////////////////////////////////////////
@@ -288,8 +327,9 @@ RelOpNode* WhileStatNode::GetCondition() { return (RelOpNode*)*begin(); }
 StatBlockNode* WhileStatNode::GetStatBlock() { return (StatBlockNode*)*(++begin()); }
 
 // AParamList //////////////////////////////////////////////
-void AParamListNode::AddParam(ExprNode* param)
+void AParamListNode::AddLoopingChild(ASTNode* param)
 {
+    ASSERT(dynamic_cast<ExprNode*>(param) != nullptr);
     AddChild(param);
 }
 
@@ -304,13 +344,19 @@ IDNode* FuncCallNode::GetID() { return (IDNode*)*begin(); }
 AParamListNode* FuncCallNode::GetParameters() { return (AParamListNode*)*(++begin()); }
 
 // StatBlockNode ///////////////////////////////////////////////////
-void StatBlockNode::AddStatement(ReturnStatNode* statement) { AddChild(statement); }
-void StatBlockNode::AddStatement(ReadStatNode* statement) { AddChild(statement); }
-void StatBlockNode::AddStatement(WriteStatNode* statement) { AddChild(statement); }
-void StatBlockNode::AddStatement(AssignStatNode* statement) { AddChild(statement); }
-void StatBlockNode::AddStatement(IfStatNode* statement) { AddChild(statement); }
-void StatBlockNode::AddStatement(WhileStatNode* statement) { AddChild(statement); }
-void StatBlockNode::AddStatement(FuncCallNode* statement) { AddChild(statement); }
+void StatBlockNode::AddLoopingChild(ASTNode* statement) { AddChild(statement); }
+
+std::string StatBlockNode::ToString(size_t indent)
+{
+    std::stringstream ss;
+    WriteIndentToStream(ss, indent);
+    ss << "StatBlock\n";
+    for (ASTNode* statement : *this)
+    {
+        ss << statement->ToString(indent + 1);
+    }
+    return ss.str();
+}
 
 // FParamListNode //////////////////////////////////////////
 void FParamListNode::AddVarDecl(VarDeclNode* var)
