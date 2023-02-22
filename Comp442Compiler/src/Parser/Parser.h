@@ -7,7 +7,10 @@
 #include <fstream>
 #include <vector>
 
+#include "AST.h"
 #include "../Core/Token.h"
+#include "../Core/Core.h"
+
 
 typedef size_t RuleID;
 static constexpr RuleID NullRule = SIZE_MAX;
@@ -25,6 +28,21 @@ enum class ErrorID
     InvalidArraySize,
     InvalidRelExpr,
     InvalidOperator,
+};
+
+enum class SemanticAction
+{
+    PushStopNode,
+    ConstructIntLiteral,
+    ConstructFloatLiteral,
+    ConstructAssignStat,
+    PushID,
+    PushOp,
+    ConstructExpr,
+    ConstructAddOp,
+    ConstructMultOp,
+    ConstructDimensions,
+    ConstructSimpleVar,
 };
 
 enum class NonTerminal
@@ -93,7 +111,7 @@ enum class StackableType
 {
     TerminalItem,
     NonTerminalItem,
-    SemanticAction
+    SemanticActionItem
 };
 
 class StackableItem
@@ -102,21 +120,25 @@ public:
     StackableItem();
     StackableItem(TokenType t);
     StackableItem(NonTerminal nonTerminal);
+    StackableItem(SemanticAction action);
     ~StackableItem();
     
     StackableType GetType() const;
     TokenType GetTerminal() const;
     NonTerminal GetNonTerminal() const;
+    SemanticAction GetAction() const;
 
 private:
     union Item
     {
         Item(TokenType t);
         Item(NonTerminal nonTerminal);
+        Item(SemanticAction action);
         ~Item();
 
         TokenType m_terminal;
         NonTerminal m_nonTerminal;
+        SemanticAction m_action;
     } m_item;
     StackableType m_type;
 };
@@ -275,16 +297,51 @@ private:
     Token SkipError(const Token& currToken, const StackableItem& top);
     void PopNonTerminal();
 
+    // SemanticAction processing
+    void ProcessSemanticAction(SemanticAction action);
+    
+    void ConstructIntLiteralAction();
+    void ConstructFloatLiteralAction();
+    void ConstructExprAction();
+    void ConstructAssignStatAction();
+    void ConstructDimensionsAction();
+    void ConstructSimpleVarAction();
+
+    template<typename NodeType, typename... Args>
+    void Push(Args... args)
+    {
+        m_semanticStack.push_front(new NodeType(std::forward<Args>(args)...));
+    }
+
+    template<typename NodeType>
+    void ConstructBinaryOperatorNode()
+    {
+        ASTNode* right = m_semanticStack.front();
+        m_semanticStack.pop_front();
+
+        OperatorNode* op = dynamic_cast<OperatorNode*>(m_semanticStack.front());
+        ASSERT(op != nullptr);
+        m_semanticStack.pop_front();
+
+        ASTNode* left = m_semanticStack.front();
+        m_semanticStack.pop_front();
+
+        m_semanticStack.push_front(new NodeType(left, op, right));
+    }
+
     // returns index of first nonterminal or -1 if none was found
     void UpdateNextNonTerminalIndex();
     void WriteLexicalErrorToFile(const Token& t);
 
     std::unordered_map<NonTerminal, ParsingTableEntry*> m_parsingTable;
 
+    Token m_prevToken;
     std::list<StackableItem> m_parsingStack; // front is top of stack
+    std::list<ASTNode*> m_semanticStack;
     bool m_errorFound;
     std::ofstream m_derivationFile;
     std::ofstream m_errorFile;
+    std::ofstream m_astOutFile;
     std::vector<StackableItem> m_derivation;
     size_t m_nextNonTerminalIndex;
     std::list<ParsingErrorData> m_errors;

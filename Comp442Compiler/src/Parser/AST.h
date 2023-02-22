@@ -1,8 +1,10 @@
 #pragma once
 #include <list>
 #include <string>
+#include <sstream>
 
 class StatBlockNode;
+class ExprNode;
 
 class ASTNode
 {
@@ -15,17 +17,25 @@ public:
     ASTNode* GetParent();
     const ASTNode* GetParent() const;
 
+    // eventually will be abstract
+    virtual std::string ToString(size_t indent = 0) { return ""; }
 
     ASTNode::Iterator begin();
     ASTNode::Iterator end();
 
 protected:
     void AddChild(ASTNode* child);
+    void AddChildFirst(ASTNode* child);
+
+    void WriteIndentToStream(std::stringstream& ss, size_t indent);
 
 private:
     ASTNode* m_parent;
     std::list<ASTNode*> m_children;
 };
+
+// serves as stop point when looping
+class StopNode : public ASTNode { };
 
 class IDNode : public ASTNode
 {
@@ -33,6 +43,9 @@ public:
     IDNode(const std::string& id);
 
     const std::string& GetID() const;
+
+    virtual std::string ToString(size_t indent = 0) override;
+
 private:
     std::string m_id;
 };
@@ -47,32 +60,50 @@ private:
     std::string m_type;
 };
 
-class BaseOperatorNode : public ASTNode
+class OperatorNode : public ASTNode
 {
 public:
-    BaseOperatorNode(const std::string& op);
+    OperatorNode(const std::string& op);
     const std::string& GetOperator() const;
+
+    virtual std::string ToString(size_t indent = 0) override;
 
 private:
     std::string m_operator;
 };
 
-class AddOpNode : public BaseOperatorNode
+class BaseBinaryOperator : public ASTNode
 {
 public:
-    AddOpNode(const std::string& op);
+    BaseBinaryOperator(const std::string& name, ASTNode* left, OperatorNode* op, ASTNode* right);
+
+    ASTNode* GetLeft();
+    OperatorNode* GetOperator();
+    ASTNode* GetRight();
+
+    virtual std::string ToString(size_t indent = 0) override;
+
+private:
+    std::string m_name;
 };
 
-class MultOpNode : public BaseOperatorNode
+class AddOpNode : public BaseBinaryOperator
 {
 public:
-    MultOpNode(const std::string& op);
+    AddOpNode(ASTNode* left, OperatorNode* op, ASTNode* right);
+
 };
 
-class RelOpNode : public BaseOperatorNode
+class MultOpNode : public BaseBinaryOperator
 {
 public:
-    RelOpNode(const std::string& op);
+    MultOpNode(ASTNode* left, OperatorNode* op, ASTNode* right);
+};
+
+class RelOpNode : public BaseBinaryOperator
+{
+public:
+    RelOpNode(ASTNode* left, OperatorNode* op, ASTNode* right);
 };
 
 class LiteralNode : public ASTNode
@@ -82,12 +113,16 @@ public:
 
     IDNode* GetLexemeNode();
     TypeNode* GetType();
+
+    virtual std::string ToString(size_t indent = 0) override;
 };
 
 class DimensionNode : public ASTNode
 {
 public: 
-    void AddDimension(LiteralNode* dimension);
+    void AddDimension(ASTNode* dimension);
+
+    virtual std::string ToString(size_t indent = 0) override;
 };
 
 class VarDeclNode : public ASTNode
@@ -118,6 +153,8 @@ public:
     ExprNode(AddOpNode* op);
     ExprNode(MultOpNode* op);
     ExprNode(RelOpNode* op);
+
+    virtual std::string ToString(size_t indent = 0) override;
 };
 
 // base node of simple statements provided by the language such as return or write
@@ -146,6 +183,8 @@ public:
     // can be nullptr
     DimensionNode* GetDimension();
 
+    virtual std::string ToString(size_t indent = 0) override;
+
 private:
     DimensionNode* m_dimension;
 };
@@ -167,11 +206,12 @@ public:
 class AssignStatNode : public ASTNode
 {
 public:
-    AssignStatNode(IDNode* left, ExprNode* expr);
-    AssignStatNode(DotNode* left, ExprNode* expr);
+    AssignStatNode(ASTNode* left, ExprNode* expr);
 
     ASTNode* GetLeft();
     ExprNode* GetRight();
+
+    virtual std::string ToString(size_t indent = 0) override;
 };
 
 class IfStatNode : public ASTNode

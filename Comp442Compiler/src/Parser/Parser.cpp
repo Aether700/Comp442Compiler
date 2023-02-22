@@ -1,7 +1,5 @@
 #include "Parser.h"
-#include "../Core/Token.h"
 #include "../Lexer/Lexer.h"
-#include "../Core/Core.h"
 #include "../Core/Util.h"
 
 std::ostream& operator<<(std::ostream& stream, NonTerminal n)
@@ -248,6 +246,8 @@ StackableItem::StackableItem(TokenType t)
     : m_type(StackableType::TerminalItem), m_item(t) { }
 StackableItem::StackableItem(NonTerminal nonTerminal) 
     : m_type(StackableType::NonTerminalItem), m_item(nonTerminal) { }
+StackableItem::StackableItem(SemanticAction action)
+    : m_type(StackableType::SemanticActionItem), m_item(action) { }
 
 StackableItem::~StackableItem()
 {
@@ -259,6 +259,10 @@ StackableItem::~StackableItem()
 
     case StackableType::NonTerminalItem:
         m_item.m_nonTerminal.~NonTerminal();
+        break;
+
+    case StackableType::SemanticActionItem:
+        m_item.m_action.~SemanticAction();
         break;
 
     default:
@@ -281,8 +285,15 @@ NonTerminal StackableItem::GetNonTerminal() const
     return m_item.m_nonTerminal;
 }
 
+SemanticAction StackableItem::GetAction() const
+{
+    ASSERT(m_type == StackableType::SemanticActionItem);
+    return m_item.m_action;
+}
+
 StackableItem::Item::Item(TokenType t) : m_terminal(t) { }
 StackableItem::Item::Item(NonTerminal nonTerminal) : m_nonTerminal(nonTerminal) { }
+StackableItem::Item::Item(SemanticAction action) : m_action(action) { }
 StackableItem::Item::~Item() { }
 
 std::ostream& operator<<(std::ostream& stream, const StackableItem& item)
@@ -295,6 +306,10 @@ std::ostream& operator<<(std::ostream& stream, const StackableItem& item)
 
     case StackableType::TerminalItem:
         stream << '\'' << TokenTypeToStr(item.GetTerminal()) << '\'';
+        break;
+
+    case StackableType::SemanticActionItem:
+        // don't print semantic actions
         break;
 
     default:
@@ -861,12 +876,12 @@ void RuleManager::InitializeRules()
         TokenType::SemiColon }));
 
     // 40 SimpleStatement
-    m_rules.push_back(new Rule({ TokenType::ID, 
+    m_rules.push_back(new Rule({ TokenType::ID, SemanticAction::PushID, 
         NonTerminal::SimpleStatement2 }));
     
     // 41 SimpleStatement2
-    m_rules.push_back(new Rule({ NonTerminal::Indice, 
-        NonTerminal::SimpleStatement3 }));
+    m_rules.push_back(new Rule({ SemanticAction::PushStopNode, NonTerminal::Indice, 
+        SemanticAction::ConstructSimpleVar, NonTerminal::SimpleStatement3 }));
 
     // 42 SimpleStatement2
     m_rules.push_back(new Rule({ TokenType::OpenParanthese, 
@@ -876,7 +891,8 @@ void RuleManager::InitializeRules()
     m_rules.push_back(new Rule({ TokenType::Dot, NonTerminal::SimpleStatement }));
 
     // 44 SimpleStatement3
-    m_rules.push_back(new Rule({ TokenType::Assign, NonTerminal::Expr }));
+    m_rules.push_back(new Rule({ TokenType::Assign, NonTerminal::Expr, 
+        SemanticAction::ConstructAssignStat }));
 
     // 45 SimpleStatement4
     m_rules.push_back(new Rule({ TokenType::Dot, NonTerminal::SimpleStatement }));
@@ -904,10 +920,11 @@ void RuleManager::InitializeRules()
     m_rules.push_back(new Rule({ NonTerminal::ArithExpr, NonTerminal::Expr2 }));
 
     // 53 Expr2
-    m_rules.push_back(new Rule({ NonTerminal::RelOp, NonTerminal::ArithExpr }));
+    m_rules.push_back(new Rule({ NonTerminal::RelOp, NonTerminal::ArithExpr, 
+        SemanticAction::ConstructExpr }));
 
     // 54 Expr2
-    m_rules.push_back(new Rule({ }));
+    m_rules.push_back(new Rule({ SemanticAction::ConstructExpr }));
 
     // 55 RelExpr
     m_rules.push_back(new Rule({ NonTerminal::ArithExpr, 
@@ -918,7 +935,7 @@ void RuleManager::InitializeRules()
 
     // 57 ArithExpr2
     m_rules.push_back(new Rule({ NonTerminal::AddOp, NonTerminal::Term, 
-        NonTerminal::ArithExpr2 }));
+        SemanticAction::ConstructAddOp, NonTerminal::ArithExpr2 }));
 
     // 58 ArithExpr2
     m_rules.push_back(new Rule({ }));
@@ -935,7 +952,7 @@ void RuleManager::InitializeRules()
     
     // 62 Term2
     m_rules.push_back(new Rule({ NonTerminal::MultOp, 
-        NonTerminal::Factor, NonTerminal::Term2 }));
+        NonTerminal::Factor, SemanticAction::ConstructMultOp, NonTerminal::Term2 }));
 
     // 63 Term2
     m_rules.push_back(new Rule({ }));
@@ -944,10 +961,12 @@ void RuleManager::InitializeRules()
     m_rules.push_back(new Rule({ NonTerminal::VarOrFuncCall }));
 
     // 65 Factor
-    m_rules.push_back(new Rule({ TokenType::IntegerLiteral }));
+    m_rules.push_back(new Rule({ TokenType::IntegerLiteral, 
+        SemanticAction::ConstructIntLiteral }));
 
     // 66 Factor
-    m_rules.push_back(new Rule({ TokenType::FloatLiteral }));
+    m_rules.push_back(new Rule({ TokenType::FloatLiteral, 
+        SemanticAction::ConstructFloatLiteral }));
 
     // 67 Factor
     m_rules.push_back(new Rule({ TokenType::OpenParanthese, 
@@ -964,7 +983,8 @@ void RuleManager::InitializeRules()
     m_rules.push_back(new Rule({ TokenType::ID, NonTerminal::VarOrFuncCall2 }));
 
     // 71 VarOrFuncCall2
-    m_rules.push_back(new Rule({ NonTerminal::Indice, NonTerminal::VarOrFuncCall3 }));
+    m_rules.push_back(new Rule({ SemanticAction::PushStopNode, NonTerminal::Indice, 
+        NonTerminal::VarOrFuncCall3 }));
 
     // 72 VarOrFuncCall2
     m_rules.push_back(new Rule({ TokenType::OpenParanthese, 
@@ -980,7 +1000,8 @@ void RuleManager::InitializeRules()
     m_rules.push_back(new Rule({ TokenType::ID, NonTerminal::Variable2 }));
 
     // 76 Variable2
-    m_rules.push_back(new Rule({ NonTerminal::Indice, NonTerminal::Variable3 }));
+    m_rules.push_back(new Rule({ SemanticAction::PushStopNode, NonTerminal::Indice, 
+        NonTerminal::Variable3 }));
 
     // 77 Variable2
     m_rules.push_back(new Rule({ TokenType::OpenParanthese, 
@@ -998,7 +1019,7 @@ void RuleManager::InitializeRules()
         NonTerminal::ArithExpr, TokenType::CloseSquareBracket, NonTerminal::Indice }));
 
     // 81 Indice
-    m_rules.push_back(new Rule({ }));
+    m_rules.push_back(new Rule({ SemanticAction::ConstructDimensions }));
 
     // 82 ArraySize
     m_rules.push_back(new Rule({ TokenType::OpenSquareBracket, 
@@ -1061,40 +1082,40 @@ void RuleManager::InitializeRules()
     m_rules.push_back(new Rule({ }));
 
     // 100 RelOp
-    m_rules.push_back(new Rule({ TokenType::Equal }));
+    m_rules.push_back(new Rule({ TokenType::Equal, SemanticAction::PushOp }));
 
     // 101 RelOp
-    m_rules.push_back(new Rule({ TokenType::NotEqual }));
+    m_rules.push_back(new Rule({ TokenType::NotEqual, SemanticAction::PushOp }));
 
     // 102 RelOp
-    m_rules.push_back(new Rule({ TokenType::LessThan }));
+    m_rules.push_back(new Rule({ TokenType::LessThan, SemanticAction::PushOp }));
 
     // 103 RelOp
-    m_rules.push_back(new Rule({ TokenType::GreaterThan }));
+    m_rules.push_back(new Rule({ TokenType::GreaterThan, SemanticAction::PushOp }));
 
     // 104 RelOp
-    m_rules.push_back(new Rule({ TokenType::LessOrEqual }));
+    m_rules.push_back(new Rule({ TokenType::LessOrEqual, SemanticAction::PushOp }));
 
     // 105 RelOp
-    m_rules.push_back(new Rule({ TokenType::GreaterOrEqual }));
+    m_rules.push_back(new Rule({ TokenType::GreaterOrEqual, SemanticAction::PushOp }));
 
     // 106 AddOp
-    m_rules.push_back(new Rule({ TokenType::Plus }));
+    m_rules.push_back(new Rule({ TokenType::Plus, SemanticAction::PushOp }));
 
     // 107 AddOp
-    m_rules.push_back(new Rule({ TokenType::Minus }));
+    m_rules.push_back(new Rule({ TokenType::Minus, SemanticAction::PushOp }));
 
     // 108 AddOp
-    m_rules.push_back(new Rule({ TokenType::Or }));
+    m_rules.push_back(new Rule({ TokenType::Or, SemanticAction::PushOp }));
 
     // 109 MultOp
-    m_rules.push_back(new Rule({ TokenType::Multiply }));
+    m_rules.push_back(new Rule({ TokenType::Multiply, SemanticAction::PushOp }));
 
     // 110 MultOp
-    m_rules.push_back(new Rule({ TokenType::Divide }));
+    m_rules.push_back(new Rule({ TokenType::Divide, SemanticAction::PushOp }));
 
     // 111 MultOp
-    m_rules.push_back(new Rule({ TokenType::And }));
+    m_rules.push_back(new Rule({ TokenType::And, SemanticAction::PushOp }));
     
     ////////////////////////////////////////////////////////////////////////////
     // Error Cutoff ////////////////////////////////////////////////////////////
@@ -1357,6 +1378,7 @@ bool Parser::Parse(const std::string& filepath)
             if (currToken.GetTokenType() == top.GetTerminal())
             {
                 p.m_parsingStack.pop_front();
+                p.m_prevToken = currToken;
                 currToken = GetNextToken();
                 p.m_derivationFile << "\n"; // skip line since we read a terminal
             }
@@ -1385,11 +1407,19 @@ bool Parser::Parse(const std::string& filepath)
                 currToken = p.SkipError(currToken, top);
             }
         }
+        else if (top.GetType() == StackableType::SemanticActionItem)
+        {
+            p.ProcessSemanticAction(top.GetAction());
+        }
 
     }
 
 
     p.WriteErrorsToFile();
+
+    // temp will need to print program node eventually
+    p.m_astOutFile << p.m_semanticStack.front()->ToString();
+    ///////
 
     if (currToken.GetTokenType() != TokenType::EndOfFile || p.m_errorFound)
     {
@@ -1414,6 +1444,11 @@ Parser::~Parser()
     {
         delete pair.second;
     }
+
+    for (ASTNode* node : m_semanticStack)
+    {
+        delete node;
+    }
 }
 
 Parser& Parser::GetInstance()
@@ -1434,8 +1469,10 @@ void Parser::Reset(const std::string& filepath)
 
     p.m_derivationFile.close();
     p.m_errorFile.close();
+    p.m_astOutFile.close();
     p.m_derivationFile = std::ofstream(simpleName + ".outderivation");
     p.m_errorFile = std::ofstream(simpleName + ".outsyntaxerrors");
+    p.m_astOutFile = std::ofstream(simpleName + ".astout");
     p.m_derivationFile << NonTerminal::Start << "\n";
 
     p.m_errors.clear();
@@ -1805,6 +1842,151 @@ void Parser::PopNonTerminal()
 {
     m_parsingStack.pop_front();
     m_derivation.erase(m_derivation.begin() + m_nextNonTerminalIndex);
+}
+
+void Parser::ProcessSemanticAction(SemanticAction action)
+{
+    ASSERT(m_parsingStack.front().GetType() == StackableType::SemanticActionItem);
+    m_parsingStack.pop_front();
+    switch(action)
+    {
+    case SemanticAction::PushStopNode:
+        Push<StopNode>(); 
+        break;
+
+    case SemanticAction::ConstructIntLiteral:
+        ConstructIntLiteralAction();
+        break;
+
+    case SemanticAction::ConstructFloatLiteral:
+        ConstructFloatLiteralAction();
+        break;
+
+    case SemanticAction::PushID:
+        Push<IDNode>(m_prevToken.GetLexeme()); 
+        break;
+
+    case SemanticAction::PushOp:
+        Push<OperatorNode>(m_prevToken.GetLexeme()); 
+        break;
+
+    case SemanticAction::ConstructAssignStat:
+        ConstructAssignStatAction();
+        break;
+
+    case SemanticAction::ConstructExpr:
+        ConstructExprAction();
+        break;
+
+    case SemanticAction::ConstructAddOp:
+        ConstructBinaryOperatorNode<AddOpNode>();
+        break;
+
+    case SemanticAction::ConstructMultOp:
+        ConstructBinaryOperatorNode<MultOpNode>();
+        break;
+
+    case SemanticAction::ConstructDimensions:
+        ConstructDimensionsAction();
+        break;
+
+    case SemanticAction::ConstructSimpleVar:
+        ConstructSimpleVarAction();
+        break;
+
+    default:
+        DEBUG_BREAK();
+        break;
+    }
+}
+
+void Parser::ConstructIntLiteralAction()
+{
+    m_semanticStack.push_front(new LiteralNode(new IDNode(m_prevToken.GetLexeme()), 
+        new TypeNode("integer")));
+}
+
+void Parser::ConstructFloatLiteralAction()
+{
+    m_semanticStack.push_front(new LiteralNode(new IDNode(m_prevToken.GetLexeme()), 
+        new TypeNode("float")));
+}
+
+void Parser::ConstructExprAction()
+{
+    ASTNode* topNode = m_semanticStack.front();
+    m_semanticStack.pop_front();
+
+    if (dynamic_cast<LiteralNode*>(topNode) != nullptr)
+    {
+        m_semanticStack.push_front(new ExprNode((LiteralNode*)topNode));
+    }
+    else if (dynamic_cast<VarDeclNode*>(topNode) != nullptr)
+    {
+        m_semanticStack.push_front(new ExprNode((VarDeclNode*)topNode));
+    }
+    else if (dynamic_cast<DotNode*>(topNode) != nullptr)
+    {
+        m_semanticStack.push_front(new ExprNode((DotNode*)topNode));
+    }
+    else if (dynamic_cast<AddOpNode*>(topNode) != nullptr)
+    {
+        m_semanticStack.push_front(new ExprNode((AddOpNode*)topNode));
+    }
+    else if (dynamic_cast<MultOpNode*>(topNode) != nullptr)
+    {
+        m_semanticStack.push_front(new ExprNode((MultOpNode*)topNode));
+    }
+    else if (dynamic_cast<RelOpNode*>(topNode) != nullptr)
+    {
+        m_semanticStack.push_front(new ExprNode((RelOpNode*)topNode));
+    }
+    else
+    {
+        DEBUG_BREAK();
+    }
+}
+
+void Parser::ConstructAssignStatAction()
+{
+    ExprNode* right = dynamic_cast<ExprNode*>(m_semanticStack.front());
+    ASSERT(right != nullptr);
+    m_semanticStack.pop_front();
+
+    ASTNode* left = m_semanticStack.front();
+    m_semanticStack.pop_front();
+
+    m_semanticStack.push_front(new AssignStatNode(left, right));
+}
+
+void Parser::ConstructDimensionsAction()
+{
+    DimensionNode* dim = new DimensionNode();
+
+    ASTNode* topNode = m_semanticStack.front();
+    m_semanticStack.pop_front();
+    while(dynamic_cast<StopNode*>(topNode) == nullptr)
+    {
+        dim->AddDimension(topNode);
+        topNode = m_semanticStack.front();
+        m_semanticStack.pop_front();
+    }
+    delete topNode;
+
+    m_semanticStack.push_front(dim);
+}
+
+void Parser::ConstructSimpleVarAction()
+{
+    DimensionNode* dim = dynamic_cast<DimensionNode*>(m_semanticStack.front());
+    ASSERT(dim != nullptr);
+    m_semanticStack.pop_front();
+
+    IDNode* id = dynamic_cast<IDNode*>(m_semanticStack.front());
+    ASSERT(id != nullptr);
+    m_semanticStack.pop_front();
+
+    m_semanticStack.push_front(new VariableNode(id, dim));
 }
 
 void Parser::UpdateNextNonTerminalIndex()

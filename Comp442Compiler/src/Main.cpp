@@ -7,6 +7,8 @@
 #include "Parser/Parser.h"
 #include "Core/Util.h"
 
+//transform grammar into attribute grammar
+
 void ExitPrompt()
 {
 	std::cout << "\nPress enter to exit\n";
