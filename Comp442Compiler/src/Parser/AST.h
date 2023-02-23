@@ -18,6 +18,8 @@ public:
     ASTNode* GetParent();
     const ASTNode* GetParent() const;
 
+    size_t GetNumChild() const;
+
     // eventually will be abstract
     virtual std::string ToString(size_t indent = 0) { return ""; }
 
@@ -162,12 +164,7 @@ public:
 class ExprNode : public ASTNode
 {
 public:
-    ExprNode(LiteralNode* literal);
-    ExprNode(VarDeclNode* var);
-    ExprNode(DotNode* dot);
-    ExprNode(AddOpNode* op);
-    ExprNode(MultOpNode* op);
-    ExprNode(RelOpNode* op);
+    ExprNode(ASTNode* exprRoot);
 
     virtual std::string ToString(size_t indent = 0) override;
 };
@@ -232,26 +229,32 @@ public:
 class IfStatNode : public ASTNode
 {
 public:
-    IfStatNode(RelOpNode* condition, StatBlockNode* ifBranch, StatBlockNode* elseBranch);
+    IfStatNode(ExprNode* condition, StatBlockNode* ifBranch, StatBlockNode* elseBranch);
 
-    RelOpNode* GetCondition();
+    ExprNode* GetCondition();
     StatBlockNode* GetIfBranch();
     StatBlockNode* GetElseBranch();
+
+    virtual std::string ToString(size_t indent = 0) override;
 };
 
 class WhileStatNode : public ASTNode
 {
 public:
-    WhileStatNode(RelOpNode* condition, StatBlockNode* statBlock);
+    WhileStatNode(ExprNode* condition, StatBlockNode* statBlock);
 
-    RelOpNode* GetCondition();
+    ExprNode* GetCondition();
     StatBlockNode* GetStatBlock();
+
+    virtual std::string ToString(size_t indent = 0) override;
 };
 
 class AParamListNode : public ASTNode
 {
 public:
     void AddLoopingChild(ASTNode* param);
+
+    virtual std::string ToString(size_t indent = 0) override;
 };
 
 class FuncCallNode : public ASTNode
@@ -261,6 +264,8 @@ public:
 
     IDNode* GetID();
     AParamListNode* GetParameters();
+
+    virtual std::string ToString(size_t indent = 0) override;
 };
 
 class StatBlockNode : public ASTNode

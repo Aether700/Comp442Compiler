@@ -43,11 +43,15 @@ enum class SemanticAction
     ConstructExpr,
     ConstructAddOp,
     ConstructMultOp,
+    ConstructRelOp,
     ConstructDimensions,
     ConstructSimpleVar,
     ConstructVarDecl,
     ConstructStatBlock,
     ConstructAParams,
+    ConstructFuncCall,
+    ConstructIfStat,
+    ConstructWhileStat,
 };
 
 enum class NonTerminal
@@ -311,6 +315,9 @@ private:
     void ConstructAssignStatAction();
     void ConstructSimpleVarAction();
     void ConstructVarDeclAction();
+    void ConstructFuncCallAction();
+    void ConstructIfStatAction();
+    void ConstructWhileStatAction();
 
     template<typename NodeType, typename... Args>
     void Push(Args... args)
@@ -356,6 +363,7 @@ private:
     {
         ASTNode* top = m_semanticStack.front();
         m_semanticStack.pop_front();
+        auto s = top->ToString();
         NodeType* targetNode = dynamic_cast<NodeType*>(top);
         ASSERT(targetNode != nullptr);
         return targetNode;

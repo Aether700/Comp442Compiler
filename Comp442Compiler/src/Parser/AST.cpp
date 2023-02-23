@@ -16,6 +16,8 @@ ASTNode::~ASTNode()
 ASTNode* ASTNode::GetParent() { return m_parent; }
 const ASTNode* ASTNode::GetParent() const { return m_parent; }
 
+size_t ASTNode::GetNumChild() const { return m_children.size(); }
+
 void ASTNode::AddChild(ASTNode* child)
 {
     ASSERT(child != nullptr);
@@ -227,12 +229,7 @@ ASTNode* DotNode::GetRight()
 }
 
 // ExprNode ////////////////////////////////////////
-ExprNode::ExprNode(LiteralNode* literal) { AddChild(literal); }
-ExprNode::ExprNode(VarDeclNode* var) { AddChild(var); }
-ExprNode::ExprNode(DotNode* dot) { AddChild(dot); }
-ExprNode::ExprNode(AddOpNode* op) { AddChild(op); }
-ExprNode::ExprNode(MultOpNode* op) { AddChild(op); }
-ExprNode::ExprNode(RelOpNode* op) { AddChild(op); }
+ExprNode::ExprNode(ASTNode* exprRoot) { AddChild(exprRoot); }
 
 std::string ExprNode::ToString(size_t indent)
 {
@@ -305,32 +302,67 @@ std::string AssignStatNode::ToString(size_t indent)
 }
 
 // IfStatNode ////////////////////////////////////////////////////////////////////////
-IfStatNode::IfStatNode(RelOpNode* condition, StatBlockNode* ifBranch, StatBlockNode* elseBranch)
+IfStatNode::IfStatNode(ExprNode* condition, StatBlockNode* ifBranch, StatBlockNode* elseBranch)
 {
     AddChild(condition);
     AddChild(ifBranch);
     AddChild(elseBranch);
 }
 
-RelOpNode* IfStatNode::GetCondition() { return (RelOpNode*)*begin(); }
+ExprNode* IfStatNode::GetCondition() { return (ExprNode*)*begin(); }
 StatBlockNode* IfStatNode::GetIfBranch() { return (StatBlockNode*)*(++begin()); }
 StatBlockNode* IfStatNode::GetElseBranch() { return (StatBlockNode*)*(++(++begin())); }
 
+std::string IfStatNode::ToString(size_t indent)
+{
+    std::stringstream ss;
+    WriteIndentToStream(ss, indent);
+    ss << "IfStat\n";
+    ss << GetCondition()->ToString(indent + 1);
+    ss << GetIfBranch()->ToString(indent + 1);
+    ss << GetElseBranch()->ToString(indent + 1);
+
+    return ss.str();
+}
+
 // WhileStatNode //////////////////////////////////////////////////////////////////////
-WhileStatNode::WhileStatNode(RelOpNode* condition, StatBlockNode* statBlock)
+WhileStatNode::WhileStatNode(ExprNode* condition, StatBlockNode* statBlock)
 {
     AddChild(condition);
     AddChild(statBlock);
 }
 
-RelOpNode* WhileStatNode::GetCondition() { return (RelOpNode*)*begin(); }
+ExprNode* WhileStatNode::GetCondition() { return (ExprNode*)*begin(); }
 StatBlockNode* WhileStatNode::GetStatBlock() { return (StatBlockNode*)*(++begin()); }
 
-// AParamList //////////////////////////////////////////////
+std::string WhileStatNode::ToString(size_t indent)
+{
+    std::stringstream ss;
+    WriteIndentToStream(ss, indent);
+    ss << "WhileStat\n";
+    ss << GetCondition()->ToString(indent + 1);
+    ss << GetStatBlock()->ToString(indent + 1);
+
+    return ss.str();
+}
+
+// AParamListNode //////////////////////////////////////////////
 void AParamListNode::AddLoopingChild(ASTNode* param)
 {
     ASSERT(dynamic_cast<ExprNode*>(param) != nullptr);
-    AddChild(param);
+    AddChildFirst(param);
+}
+
+std::string AParamListNode::ToString(size_t indent)
+{
+    std::stringstream ss;
+    WriteIndentToStream(ss, indent);
+    ss << "AParams\n";
+    for (ASTNode* param : *this)
+    {
+        ss << param->ToString(indent + 1);
+    }
+    return ss.str();
 }
 
 // FuncCallNode ////////////////////////////////////////////// 
@@ -343,8 +375,19 @@ FuncCallNode::FuncCallNode(IDNode* id, AParamListNode* parameters)
 IDNode* FuncCallNode::GetID() { return (IDNode*)*begin(); }
 AParamListNode* FuncCallNode::GetParameters() { return (AParamListNode*)*(++begin()); }
 
+std::string FuncCallNode::ToString(size_t indent)
+{
+    std::stringstream ss;
+    WriteIndentToStream(ss, indent);
+    ss << "FuncCall\n";
+    ss << GetID()->ToString(indent + 1);
+    ss << GetParameters()->ToString(indent + 1);
+
+    return ss.str();
+}
+
 // StatBlockNode ///////////////////////////////////////////////////
-void StatBlockNode::AddLoopingChild(ASTNode* statement) { AddChild(statement); }
+void StatBlockNode::AddLoopingChild(ASTNode* statement) { AddChildFirst(statement); }
 
 std::string StatBlockNode::ToString(size_t indent)
 {
