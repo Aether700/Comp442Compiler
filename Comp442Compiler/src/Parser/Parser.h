@@ -52,6 +52,9 @@ enum class SemanticAction
     ConstructFuncCall,
     ConstructIfStat,
     ConstructWhileStat,
+    ConstructReadStat,
+    ConstructWriteStat,
+    ConstructReturnStat,
 };
 
 enum class NonTerminal
@@ -318,6 +321,9 @@ private:
     void ConstructFuncCallAction();
     void ConstructIfStatAction();
     void ConstructWhileStatAction();
+    void ConstructReadStatAction();
+    void ConstructWriteStatAction();
+    void ConstructReturnStatAction();
 
     template<typename NodeType, typename... Args>
     void Push(Args... args)

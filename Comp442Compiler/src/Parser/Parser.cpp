@@ -867,17 +867,17 @@ void RuleManager::InitializeRules()
     // 37 Statement
     m_rules.push_back(new Rule({ TokenType::Read, 
         TokenType::OpenParanthese, NonTerminal::Variable, TokenType::CloseParanthese, 
-        TokenType::SemiColon }));
+        SemanticAction::ConstructReadStat, TokenType::SemiColon }));
 
     // 38 Statement
     m_rules.push_back(new Rule({ TokenType::Write, 
         TokenType::OpenParanthese, NonTerminal::Expr, TokenType::CloseParanthese, 
-        TokenType::SemiColon }));
+        SemanticAction::ConstructWriteStat, TokenType::SemiColon }));
 
     // 39 Statement
     m_rules.push_back(new Rule({ TokenType::Return, 
         TokenType::OpenParanthese, NonTerminal::Expr, TokenType::CloseParanthese, 
-        TokenType::SemiColon }));
+        SemanticAction::ConstructReturnStat, TokenType::SemiColon }));
 
     // 40 SimpleStatement
     m_rules.push_back(new Rule({ TokenType::ID, SemanticAction::PushID, 
@@ -1009,16 +1009,17 @@ void RuleManager::InitializeRules()
     m_rules.push_back(new Rule({ }));
 
     // 75 Variable
-    m_rules.push_back(new Rule({ TokenType::ID, NonTerminal::Variable2 }));
+    m_rules.push_back(new Rule({ TokenType::ID, SemanticAction::PushID, 
+        NonTerminal::Variable2 }));
 
     // 76 Variable2
     m_rules.push_back(new Rule({ SemanticAction::PushStopNode, NonTerminal::Indice, 
-        NonTerminal::Variable3 }));
+        SemanticAction::ConstructSimpleVar, NonTerminal::Variable3 }));
 
     // 77 Variable2
     m_rules.push_back(new Rule({ TokenType::OpenParanthese, 
-        NonTerminal::AParams, TokenType::CloseParanthese, TokenType::Dot, 
-        NonTerminal::Variable }));
+        NonTerminal::AParams, TokenType::CloseParanthese, SemanticAction::ConstructFuncCall, 
+        TokenType::Dot, NonTerminal::Variable }));
 
     // 78 Variable3
     m_rules.push_back(new Rule({ TokenType::Dot, NonTerminal::Variable }));
@@ -1945,6 +1946,18 @@ void Parser::ProcessSemanticAction(SemanticAction action)
         ConstructWhileStatAction();
         break;
 
+    case SemanticAction::ConstructReadStat:
+        ConstructReadStatAction();
+        break;
+
+    case SemanticAction::ConstructWriteStat:
+        ConstructWriteStatAction();
+        break;
+
+    case SemanticAction::ConstructReturnStat:
+        ConstructReturnStatAction();
+        break;
+
     default:
         DEBUG_BREAK();
         break;
@@ -2029,6 +2042,24 @@ void Parser::ConstructWhileStatAction()
     StatBlockNode* loopBlock = PopTargetNodeFromSemanticStack<StatBlockNode>();
     ExprNode* condition = PopTargetNodeFromSemanticStack<ExprNode>();
     m_semanticStack.push_front(new WhileStatNode(condition, loopBlock));
+}
+
+void Parser::ConstructReadStatAction()
+{
+    VariableNode* var = PopTargetNodeFromSemanticStack<VariableNode>();
+    m_semanticStack.push_front(new ReadStatNode(var));
+}
+
+void Parser::ConstructWriteStatAction()
+{
+    ExprNode* expr = PopTargetNodeFromSemanticStack<ExprNode>();
+    m_semanticStack.push_front(new WriteStatNode(expr));
+}
+
+void Parser::ConstructReturnStatAction()
+{
+    ExprNode* expr = PopTargetNodeFromSemanticStack<ExprNode>();
+    m_semanticStack.push_front(new ReturnStatNode(expr));
 }
 
 void Parser::UpdateNextNonTerminalIndex()

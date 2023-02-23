@@ -182,6 +182,8 @@ class ReturnStatNode : public BaseLangStatNode
 {
 public:
     ReturnStatNode(ExprNode* expr);
+
+    virtual std::string ToString(size_t indent = 0) override;
 };
 
 class VariableNode : public ASTNode
@@ -207,12 +209,15 @@ public:
     ReadStatNode(VariableNode* var);
 
     VariableNode* GetVariable();
+
+    virtual std::string ToString(size_t indent = 0) override;
 };
 
 class WriteStatNode : public BaseLangStatNode
 {
 public:
     WriteStatNode(ExprNode* expr);
+    virtual std::string ToString(size_t indent = 0) override;
 };
 
 class AssignStatNode : public ASTNode

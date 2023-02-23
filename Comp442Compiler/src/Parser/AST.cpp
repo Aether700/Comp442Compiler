@@ -248,6 +248,16 @@ ExprNode* BaseLangStatNode::GetExpr() { return (ExprNode*)*begin(); }
 // ReturnStatNode ////////////////////////////////////////////////
 ReturnStatNode::ReturnStatNode(ExprNode* expr) : BaseLangStatNode(expr) { }
 
+std::string ReturnStatNode::ToString(size_t indent)
+{
+    std::stringstream ss;
+    WriteIndentToStream(ss, indent);
+    ss << "ReturnStat\n";
+    ss << GetExpr()->ToString(indent + 1);
+
+    return ss.str();
+}
+
 // VariableNode ///////////////////////////////////////////////////
 VariableNode::VariableNode(IDNode* var, DimensionNode* dimension) : m_dimension(dimension)
 { 
@@ -278,8 +288,28 @@ ReadStatNode::ReadStatNode(VariableNode* var) { AddChild(var); }
 
 VariableNode* ReadStatNode::GetVariable() { return (VariableNode*)*begin(); }
 
+std::string ReadStatNode::ToString(size_t indent)
+{
+    std::stringstream ss;
+    WriteIndentToStream(ss, indent);
+    ss << "ReadStat\n";
+    ss << GetVariable()->ToString(indent + 1);
+
+    return ss.str();
+}
+
 // WriteStatNode //////////////////////////////////////////////////////
 WriteStatNode::WriteStatNode(ExprNode* expr) : BaseLangStatNode(expr) { }
+
+std::string WriteStatNode::ToString(size_t indent)
+{
+    std::stringstream ss;
+    WriteIndentToStream(ss, indent);
+    ss << "WriteStat\n";
+    ss << GetExpr()->ToString(indent + 1);
+
+    return ss.str();
+}
 
 // AssignStatNode ///////////////////////////////////////////
 AssignStatNode::AssignStatNode(ASTNode* left, ExprNode* expr)

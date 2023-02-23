@@ -1,31 +1,7 @@
 StatBlock
-|  WhileStat
+|  ReturnStat
 |  |  Expr
-|  |  |  RelOp
-|  |  |  |  Literal
-|  |  |  |  <
-|  |  |  |  Literal
-|  |  StatBlock
-|  |  |  AssigStat
-|  |  |  |  Variable
-|  |  |  |  |  id
-|  |  |  |  |  Dimensions
-|  |  |  |  Expr
-|  |  |  |  |  AddOp
-|  |  |  |  |  |  Literal
-|  |  |  |  |  |  +
-|  |  |  |  |  |  Literal
-|  |  |  AssigStat
-|  |  |  |  Variable
-|  |  |  |  |  id
-|  |  |  |  |  Dimensions
-|  |  |  |  Expr
-|  |  |  |  |  MultOp
-|  |  |  |  |  |  Variable
-|  |  |  |  |  |  |  id
-|  |  |  |  |  |  |  Dimensions
-|  |  |  |  |  |  /
-|  |  |  |  |  |  AddOp
-|  |  |  |  |  |  |  Literal
-|  |  |  |  |  |  |  +
-|  |  |  |  |  |  |  Literal
+|  |  |  Variable
+|  |  |  |  id
+|  |  |  |  Dimensions
+|  |  |  |  |  Literal
