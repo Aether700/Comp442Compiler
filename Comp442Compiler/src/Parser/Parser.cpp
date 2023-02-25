@@ -736,10 +736,10 @@ void RuleManager::InitializeRules()
     m_rules.push_back(new Rule({ NonTerminal::FuncDef })); 
 
     // 5 ClassDecl
-    m_rules.push_back(new Rule({ TokenType::Class, TokenType::ID, 
+    m_rules.push_back(new Rule({ TokenType::Class, TokenType::ID, SemanticAction::PushID,
         NonTerminal::ClassDeclInheritance, TokenType::OpenCurlyBracket, 
-        NonTerminal::ClassDeclMembDeclRepetition, TokenType::CloseCurlyBracket, 
-        TokenType::SemiColon })); 
+        SemanticAction::PushStopNode, NonTerminal::ClassDeclMembDeclRepetition, 
+        TokenType::CloseCurlyBracket, TokenType::SemiColon })); 
 
     // 6 ClassDeclMembDeclRepetition
     m_rules.push_back(new Rule({ NonTerminal::Visibility, NonTerminal::MemberDecl, 
@@ -756,19 +756,20 @@ void RuleManager::InitializeRules()
     m_rules.push_back(new Rule({ }));
     
     // 10 ClassDeclInheritanceTail
-    m_rules.push_back(new Rule({ TokenType::Comma, TokenType::ID, NonTerminal::ClassDeclInheritanceTail }));
+    m_rules.push_back(new Rule({ TokenType::Comma, TokenType::ID, 
+        NonTerminal::ClassDeclInheritanceTail }));
 
     // 11 ClassDeclInheritanceTail
     m_rules.push_back(new Rule({ }));
 
     // 12 Visibility
-    m_rules.push_back(new Rule({ TokenType::Public }));
+    m_rules.push_back(new Rule({ TokenType::Public, SemanticAction::ConstructVisibility }));
 
     // 13 Visibility
-    m_rules.push_back(new Rule({ TokenType::Private }));
+    m_rules.push_back(new Rule({ TokenType::Private, SemanticAction::ConstructVisibility }));
 
     // 14 Visibility
-    m_rules.push_back(new Rule({ }));
+    m_rules.push_back(new Rule({ SemanticAction::ConstructDefaultVisibility }));
 
     // 15 MemberDecl
     m_rules.push_back(new Rule({ NonTerminal::MemberFuncDecl }));
@@ -789,23 +790,24 @@ void RuleManager::InitializeRules()
 
     // 19 MemberVarDecl
     m_rules.push_back(new Rule({ TokenType::Attribute, 
-        TokenType::ID, TokenType::Colon,  NonTerminal::Type, SemanticAction::PushStopNode,
-        NonTerminal::ArraySizeRepetition, TokenType::SemiColon }));
+        TokenType::ID, SemanticAction::PushID, TokenType::Colon,  NonTerminal::Type, 
+        SemanticAction::PushStopNode, NonTerminal::ArraySizeRepetition, 
+        SemanticAction::ConstructMemVar, TokenType::SemiColon }));
 
     // 20 FuncDef
     m_rules.push_back(new Rule({ NonTerminal::FuncHead, NonTerminal::FuncBody }));
 
     // 21 FuncHead
     m_rules.push_back(new Rule({ TokenType::Function, 
-        TokenType::ID, NonTerminal::FuncHead2 }));
+        TokenType::ID, SemanticAction::PushID, NonTerminal::FuncHead2 }));
     
     // 22 FuncHead2
     m_rules.push_back(new Rule({ TokenType::Scope, NonTerminal::FuncHead3 }));
 
     // 23 FuncHead2
-    m_rules.push_back(new Rule({ TokenType::OpenParanthese, 
-        NonTerminal::FParams, TokenType::CloseParanthese, TokenType::Arrow, 
-        NonTerminal::ReturnType }));
+    m_rules.push_back(new Rule({ TokenType::OpenParanthese, SemanticAction::PushStopNode,
+        NonTerminal::FParams, SemanticAction::ConstructFParams, TokenType::CloseParanthese, 
+        TokenType::Arrow, NonTerminal::ReturnType }));
     
     // 24 FuncHead3
     m_rules.push_back(new Rule({ TokenType::ID, 
@@ -819,7 +821,8 @@ void RuleManager::InitializeRules()
     // 26 FuncBody
     m_rules.push_back(new Rule({ TokenType::OpenCurlyBracket, 
         SemanticAction::PushStopNode, NonTerminal::LocalVarDeclOrStmtRepetition, 
-        SemanticAction::ConstructStatBlock, TokenType::CloseCurlyBracket }));
+        SemanticAction::ConstructStatBlock, TokenType::CloseCurlyBracket, 
+        SemanticAction::ConstructFuncDef }));
 
     // 27 LocalVarDeclOrStmtRepetition
     m_rules.push_back(new Rule({ NonTerminal::LocalVarDeclOrStmt, 
@@ -1000,12 +1003,13 @@ void RuleManager::InitializeRules()
         SemanticAction::ConstructVariable, NonTerminal::VarOrFuncCall3 }));
 
     // 72 VarOrFuncCall2
-    m_rules.push_back(new Rule({ TokenType::OpenParanthese, 
-        NonTerminal::AParams, TokenType::CloseParanthese, SemanticAction::ConstructFuncCall, 
-        NonTerminal::VarOrFuncCall3 }));
+    m_rules.push_back(new Rule({ TokenType::OpenParanthese, SemanticAction::PushStopNode,
+        NonTerminal::AParams, SemanticAction::ConstructAParams, TokenType::CloseParanthese, 
+        SemanticAction::ConstructFuncCall, NonTerminal::VarOrFuncCall3 }));
 
     // 73 VarOrFuncCall3
-    m_rules.push_back(new Rule({ TokenType::Dot, NonTerminal::VarOrFuncCall }));
+    m_rules.push_back(new Rule({ TokenType::Dot, SemanticAction::EncounteredDot, 
+        NonTerminal::VarOrFuncCall, SemanticAction::ConstructDotNode }));
 
     // 74 VarOrFuncCall3
     m_rules.push_back(new Rule({ }));
@@ -1071,9 +1075,10 @@ void RuleManager::InitializeRules()
     m_rules.push_back(new Rule({ TokenType::Void, SemanticAction::PushType }));
 
     // 92 FParams
-    m_rules.push_back(new Rule({ TokenType::ID, TokenType::Colon, 
+    m_rules.push_back(new Rule({ TokenType::ID, SemanticAction::PushID, TokenType::Colon, 
         NonTerminal::Type, SemanticAction::PushStopNode, 
-        NonTerminal::ArraySizeRepetition, NonTerminal::FParamsTail }));
+        NonTerminal::ArraySizeRepetition, SemanticAction::ConstructVarDecl, 
+        NonTerminal::FParamsTail }));
 
     // 93 FParams
     m_rules.push_back(new Rule({ }));
@@ -1086,8 +1091,9 @@ void RuleManager::InitializeRules()
 
     // 96 FParamsTail
     m_rules.push_back(new Rule({ TokenType::Comma, 
-        TokenType::ID, TokenType::Colon, NonTerminal::Type, SemanticAction::PushStopNode, 
-        NonTerminal::ArraySizeRepetition, NonTerminal::FParamsTail }));
+        TokenType::ID, SemanticAction::PushID, TokenType::Colon, NonTerminal::Type, 
+        SemanticAction::PushStopNode, NonTerminal::ArraySizeRepetition, 
+        SemanticAction::ConstructVarDecl, NonTerminal::FParamsTail }));
 
     // 97 FParamsTail
     m_rules.push_back(new Rule({ }));
@@ -1376,7 +1382,7 @@ ParsingErrorManager& ParsingErrorManager::GetInstance()
 }
 
 // Parser ////////////////////////////////////////////
-bool Parser::Parse(const std::string& filepath)
+ProgramNode* Parser::Parse(const std::string& filepath)
 {
     Reset(filepath);
 
@@ -1385,10 +1391,10 @@ bool Parser::Parse(const std::string& filepath)
     p.m_parsingStack.push_front(NonTerminal::Start);
 
     Token currToken = GetNextToken();
+    p.m_currProgramRoot = new ProgramNode();
     
     while (!(p.m_parsingStack.front().GetType() == StackableType::TerminalItem 
-        && p.m_parsingStack.front().GetTerminal() == TokenType::EndOfFile)
-        && currToken.GetTokenType() != TokenType::EndOfFile)
+        && p.m_parsingStack.front().GetTerminal() == TokenType::EndOfFile))
     {
         const StackableItem& top = p.m_parsingStack.front();
 
@@ -1406,6 +1412,10 @@ bool Parser::Parse(const std::string& filepath)
                 // use default error rule
                 RuleManager::GetRule(NullRule)->Apply(top, currToken);
                 p.m_errorFound = true;
+                if (currToken.GetTokenType() == TokenType::EndOfFile)
+                {
+                    break;
+                }
                 currToken = p.SkipError(currToken, top);
             }
         }
@@ -1435,24 +1445,28 @@ bool Parser::Parse(const std::string& filepath)
 
     p.WriteErrorsToFile();
 
-    // temp will need to print program node eventually
-    auto s = p.m_semanticStack.front()->ToString();
-    p.m_astOutFile << s;
-    ///////
-
     if (currToken.GetTokenType() != TokenType::EndOfFile || p.m_errorFound)
     {
-        return false;
+        delete p.m_currProgramRoot;
+        p.m_currProgramRoot = nullptr;
+        return nullptr;
     }
+
+    //p.m_astOutFile << p.m_currProgramRoot->ToString();
+    // temp
+    p.m_astOutFile << p.m_semanticStack.front()->ToString();
+    //
 
     // update derivation to remove all epsilon derivations
     p.RemoveNonTerminalsFromDerivation();
     p.WriteDerivationToFile();
     
-    return true;
+    ProgramNode* finalProgramRoot = p.m_currProgramRoot;
+    p.m_currProgramRoot = nullptr;
+    return finalProgramRoot;
 }
 
-Parser::Parser() 
+Parser::Parser() : m_currProgramRoot(nullptr)
 { 
     InitializeParsingTable(); 
 }
@@ -1886,6 +1900,14 @@ void Parser::ProcessSemanticAction(SemanticAction action)
         ConstructFloatLiteralAction();
         break;
 
+    case SemanticAction::ConstructVisibility:
+        ConstructVisibilityAction();
+        break;
+
+    case SemanticAction::ConstructDefaultVisibility:
+        ConstructDefaultVisibilityAction();
+        break;
+
     case SemanticAction::PushID:
         Push<IDNode>(m_prevToken.GetLexeme()); 
         break;
@@ -1938,8 +1960,16 @@ void Parser::ProcessSemanticAction(SemanticAction action)
         ConstructLoopingNode<StatBlockNode>();
         break;
 
+    case SemanticAction::ConstructFParams:
+        ConstructLoopingNode<FParamListNode>();
+        break;
+
     case SemanticAction::ConstructAParams:
         ConstructLoopingNode<AParamListNode>();
+        break;
+
+    case SemanticAction::ConstructFuncDef:
+        ConstructFuncDefAction();
         break;
 
     case SemanticAction::ConstructFuncCall:
@@ -1964,6 +1994,10 @@ void Parser::ProcessSemanticAction(SemanticAction action)
 
     case SemanticAction::ConstructReturnStat:
         ConstructReturnStatAction();
+        break;
+
+    case SemanticAction::ConstructMemVar:
+        ConstructMemVarAction();
         break;
 
     case SemanticAction::ConstructDotNode:
@@ -1993,6 +2027,16 @@ void Parser::ConstructFloatLiteralAction()
 {
     m_semanticStack.push_front(new LiteralNode(new IDNode(m_prevToken.GetLexeme()), 
         new TypeNode("float")));
+}
+
+void Parser::ConstructVisibilityAction()
+{
+    m_semanticStack.push_front(new VisibilityNode(m_prevToken.GetLexeme()));
+}
+
+void Parser::ConstructDefaultVisibilityAction()
+{
+    m_semanticStack.push_front(new DefaultVisibilityNode());
 }
 
 void Parser::ConstructExprAction()
@@ -2041,6 +2085,16 @@ void Parser::ConstructVarDeclAction()
     }
 }
 
+void Parser::ConstructFuncDefAction()
+{
+    StatBlockNode* body = PopTargetNodeFromSemanticStack<StatBlockNode>();
+    TypeNode* returnType = PopTargetNodeFromSemanticStack<TypeNode>();
+    FParamListNode* params = PopTargetNodeFromSemanticStack<FParamListNode>();
+    IDNode* id = PopTargetNodeFromSemanticStack<IDNode>();
+    m_currProgramRoot->GetFunctionList()->AddFunc(new FunctionDefNode(id, returnType, 
+        params, body));
+}
+
 void Parser::ConstructFuncCallAction()
 {
     AParamListNode* aparam = PopTargetNodeFromSemanticStack<AParamListNode>();
@@ -2079,6 +2133,53 @@ void Parser::ConstructReturnStatAction()
 {
     ExprNode* expr = PopTargetNodeFromSemanticStack<ExprNode>();
     m_semanticStack.push_front(new ReturnStatNode(expr));
+}
+
+void Parser::ConstructClassAction()
+{
+    /*
+    std::list<VarDeclNode*> memVar;
+    std::list<FunctionDefNode*> memFunc;
+
+    ASTNode* top = m_semanticStack.front();
+    m_semanticStack.pop_front();
+    while(dynamic_cast<StopNode*>(top) == nullptr)
+    {
+        if (dynamic_cast<VarDeclNode*>(top) != nullptr)
+        {
+            memVar.push_back((VarDeclNode*)top);
+        }
+        else if (dynamic_cast<FunctionDefNode*>(top) != nullptr)
+        {
+            memFunc.push_back((FunctionDefNode*)top);
+        }
+        else
+        {
+            DEBUG_BREAK();
+        }
+
+        top = m_semanticStack.front();
+        m_semanticStack.pop_front();
+    }
+    delete top;
+
+    // need to fetch inheritance list here
+    IDNode* id = PopTargetNodeFromSemanticStack<IDNode>();
+    ClassDefNode* classDef = new ClassDefNode(id);
+
+
+    m_currProgramRoot->GetClassList()->AddChild()
+    */
+}
+
+void Parser::ConstructMemVarAction()
+{
+    DimensionNode* dimension = PopTargetNodeFromSemanticStack<DimensionNode>();
+    TypeNode* type = PopTargetNodeFromSemanticStack<TypeNode>();
+    IDNode* id = PopTargetNodeFromSemanticStack<IDNode>();
+    VisibilityNode* visibility = PopTargetNodeFromSemanticStack<VisibilityNode>();
+
+    m_semanticStack.push_front(new MemVarNode(visibility, id, type, dimension));
 }
 
 bool Parser::ConstructDotNodeAction()

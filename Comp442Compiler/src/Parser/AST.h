@@ -288,7 +288,9 @@ public:
 class FParamListNode : public ASTNode
 {
 public:
-    void AddVarDecl(VarDeclNode* var);
+    void AddLoopingChild(ASTNode* param);
+
+    virtual std::string ToString(size_t indent = 0) override;
 };
 
 class FunctionDefNode : public ASTNode
@@ -300,31 +302,50 @@ public:
     IDNode* GetID();
     TypeNode* GetReturnType();
     FParamListNode* GetParameters();
-    StatBlockNode* GetStatBlock();
+    StatBlockNode* GetBody();
+
+    virtual std::string ToString(size_t indent = 0) override;
 };
 
-class MemberData
+class VisibilityNode : public ASTNode
 {
 public:
-    MemberData(const std::string& visibility);
+    VisibilityNode(const std::string& visibility);
 
     const std::string& GetVisibility() const;
+
+    virtual std::string ToString(size_t indent = 0) override;
 private:
     std::string m_visibility;
 };
 
-class MemVarNode : public VarDeclNode, public MemberData
+class DefaultVisibilityNode : public VisibilityNode 
 {
 public:
-    MemVarNode(const std::string& visibility, IDNode* id, 
-        TypeNode* type, DimensionNode* dimension);
+    DefaultVisibilityNode();
 };
 
-class MemFuncNode : public FunctionDefNode, public MemberData
+class MemVarNode : public VarDeclNode
 {
 public:
-    MemFuncNode(const std::string& visibility, IDNode* id, TypeNode* returnType, 
-        FParamListNode* parameters, StatBlockNode* statBlock);
+    MemVarNode(VisibilityNode* visibility, IDNode* id, 
+        TypeNode* type, DimensionNode* dimension);
+
+    VisibilityNode* GetVisibility();
+
+    virtual std::string ToString(size_t indent = 0) override;
+};
+
+class MemFuncDeclNode : public ASTNode
+{
+public:
+    MemFuncDeclNode(VisibilityNode* visibility, IDNode* id, TypeNode* returnType, 
+        FParamListNode* parameters);
+
+    VisibilityNode* GetVisibility();
+    IDNode* GetID();
+    TypeNode* GetReturnType();
+    FParamListNode* GetParameters();
 };
 
 class ClassDefNode : public ASTNode
@@ -334,15 +355,15 @@ public:
     ~ClassDefNode();
 
     void AddVarDecl(MemVarNode* var);
-    void AddFuncDecl(MemFuncNode* func);
+    void AddFuncDecl(MemFuncDeclNode* func);
 
     IDNode* GetID();
-    std::list<MemVarNode*>& GetVarDecl();
-    std::list<MemFuncNode*>& GetFuncDefNode();
+    std::list<MemVarNode*>& GetVarDecls();
+    std::list<MemFuncDeclNode*>& GetFuncDecls();
 
 private:
     std::list<MemVarNode*> m_varDeclarations;
-    std::list<MemFuncNode*> m_functionDefinitions;
+    std::list<MemFuncDeclNode*> m_functionDeclarations;
 };
 
 class ClassDefListNode : public ASTNode
@@ -355,6 +376,8 @@ class FunctionDefListNode : public ASTNode
 {
 public:
     void AddFunc(FunctionDefNode* funcDef);
+
+    virtual std::string ToString(size_t indent = 0) override;
 };
 
 class ProgramNode : public ASTNode
@@ -364,4 +387,6 @@ public:
 
     ClassDefListNode* GetClassList();
     FunctionDefListNode* GetFunctionList();
+
+    virtual std::string ToString(size_t indent = 0) override;
 };

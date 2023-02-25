@@ -36,6 +36,8 @@ enum class SemanticAction
     PushUnspecifiedDimensionNode,
     ConstructIntLiteral,
     ConstructFloatLiteral,
+    ConstructVisibility,
+    ConstructDefaultVisibility,
     ConstructAssignStat,
     PushID,
     PushOp,
@@ -49,7 +51,9 @@ enum class SemanticAction
     ConstructVariable,
     ConstructVarDecl,
     ConstructStatBlock,
+    ConstructFParams,
     ConstructAParams,
+    ConstructFuncDef,
     ConstructFuncCall,
     ConstructIfStat,
     ConstructWhileStat,
@@ -58,6 +62,8 @@ enum class SemanticAction
     ConstructReturnStat,
     ConstructDotNode,
     ConstructEncounteredDots,
+    ConstructClass,
+    ConstructMemVar,
 };
 
 enum class NonTerminal
@@ -294,7 +300,8 @@ class Parser
     friend class Rule;
     friend class ParsingErrorRule;
 public:
-    static bool Parse(const std::string& filepath);
+    // returns the root program node of the parsed program or nullptr if the program is not valid 
+    static ProgramNode* Parse(const std::string& filepath);
 private:
     Parser();
     ~Parser();
@@ -317,16 +324,21 @@ private:
     
     void ConstructIntLiteralAction();
     void ConstructFloatLiteralAction();
+    void ConstructVisibilityAction();
+    void ConstructDefaultVisibilityAction();
     void ConstructExprAction();
     void ConstructAssignStatAction();
     void ConstructVariableAction();
     void ConstructVarDeclAction();
+    void ConstructFuncDefAction();
     void ConstructFuncCallAction();
     void ConstructIfStatAction();
     void ConstructWhileStatAction();
     void ConstructReadStatAction();
     void ConstructWriteStatAction();
     void ConstructReturnStatAction();
+    void ConstructClassAction();
+    void ConstructMemVarAction();
 
     // Will only construct DotNode objects to push to the semantic stack if an associated dot 
     // symbol was encountered, 
@@ -390,6 +402,7 @@ private:
 
     std::unordered_map<NonTerminal, ParsingTableEntry*> m_parsingTable;
 
+    ProgramNode* m_currProgramRoot;
     Token m_prevToken;
     std::list<StackableItem> m_parsingStack; // front is top of stack
     std::list<ASTNode*> m_semanticStack;
