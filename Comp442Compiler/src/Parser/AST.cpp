@@ -65,7 +65,7 @@ std::string IDNode::ToString(size_t indent)
     ss << "id\n";
     WriteIndentToStream(ss, indent + 1);
     ss << GetID() << "\n";
-    
+
     return ss.str();
 }
 
@@ -155,6 +155,8 @@ std::string LiteralNode::ToString(size_t indent)
     std::stringstream ss;
     WriteIndentToStream(ss, indent);
     ss << "Literal\n";
+    WriteIndentToStream(ss, indent + 1);
+    ss << GetLexemeNode()->GetID() << "\n";
     ss << GetType()->ToString(indent + 1);
     return ss.str();
 }

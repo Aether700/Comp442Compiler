@@ -46,7 +46,7 @@ enum class SemanticAction
     ConstructMultOp,
     ConstructRelOp,
     ConstructDimensions,
-    ConstructSimpleVar,
+    ConstructVariable,
     ConstructVarDecl,
     ConstructStatBlock,
     ConstructAParams,
@@ -319,7 +319,7 @@ private:
     void ConstructFloatLiteralAction();
     void ConstructExprAction();
     void ConstructAssignStatAction();
-    void ConstructSimpleVarAction();
+    void ConstructVariableAction();
     void ConstructVarDeclAction();
     void ConstructFuncCallAction();
     void ConstructIfStatAction();

@@ -885,7 +885,7 @@ void RuleManager::InitializeRules()
     
     // 41 SimpleStatement2
     m_rules.push_back(new Rule({ SemanticAction::PushStopNode, NonTerminal::Indice, 
-        SemanticAction::ConstructSimpleVar, NonTerminal::SimpleStatement3 }));
+        SemanticAction::ConstructVariable, NonTerminal::SimpleStatement3 }));
 
     // 42 SimpleStatement2
     m_rules.push_back(new Rule({ TokenType::OpenParanthese, 
@@ -997,7 +997,7 @@ void RuleManager::InitializeRules()
 
     // 71 VarOrFuncCall2
     m_rules.push_back(new Rule({ SemanticAction::PushStopNode, NonTerminal::Indice, 
-        SemanticAction::ConstructSimpleVar, NonTerminal::VarOrFuncCall3 }));
+        SemanticAction::ConstructVariable, NonTerminal::VarOrFuncCall3 }));
 
     // 72 VarOrFuncCall2
     m_rules.push_back(new Rule({ TokenType::OpenParanthese, 
@@ -1016,7 +1016,7 @@ void RuleManager::InitializeRules()
 
     // 76 Variable2
     m_rules.push_back(new Rule({ SemanticAction::PushStopNode, NonTerminal::Indice, 
-        SemanticAction::ConstructSimpleVar, NonTerminal::Variable3 }));
+        SemanticAction::ConstructVariable, NonTerminal::Variable3 }));
 
     // 77 Variable2
     m_rules.push_back(new Rule({ TokenType::OpenParanthese, 
@@ -1926,8 +1926,8 @@ void Parser::ProcessSemanticAction(SemanticAction action)
         ConstructLoopingNode<DimensionNode>();
         break;
 
-    case SemanticAction::ConstructSimpleVar:
-        ConstructSimpleVarAction();
+    case SemanticAction::ConstructVariable:
+        ConstructVariableAction();
         break;
 
     case SemanticAction::ConstructVarDecl:
@@ -2012,7 +2012,7 @@ void Parser::ConstructAssignStatAction()
     m_semanticStack.push_front(new AssignStatNode(left, right));
 }
 
-void Parser::ConstructSimpleVarAction()
+void Parser::ConstructVariableAction()
 {
     DimensionNode* dim = PopTargetNodeFromSemanticStack<DimensionNode>();
     IDNode* id = PopTargetNodeFromSemanticStack<IDNode>();
