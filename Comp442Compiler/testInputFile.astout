@@ -1,7 +1,28 @@
 StatBlock
-|  ReturnStat
-|  |  Expr
+|  AssigStat
+|  |  Dot
 |  |  |  Variable
 |  |  |  |  id
+|  |  |  |  |  a
 |  |  |  |  Dimensions
-|  |  |  |  |  Literal
+|  |  |  Dot
+|  |  |  |  Variable
+|  |  |  |  |  id
+|  |  |  |  |  |  d
+|  |  |  |  |  Dimensions
+|  |  |  |  |  |  Literal
+|  |  |  |  |  |  |  TypeNode
+|  |  |  |  |  |  |  |  integer
+|  |  |  |  Dot
+|  |  |  |  |  FuncCall
+|  |  |  |  |  |  id
+|  |  |  |  |  |  |  myFunction
+|  |  |  |  |  |  AParams
+|  |  |  |  |  Variable
+|  |  |  |  |  |  id
+|  |  |  |  |  |  |  var
+|  |  |  |  |  |  Dimensions
+|  |  Expr
+|  |  |  Literal
+|  |  |  |  TypeNode
+|  |  |  |  |  integer

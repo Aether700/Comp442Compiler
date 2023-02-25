@@ -894,14 +894,16 @@ void RuleManager::InitializeRules()
         NonTerminal::SimpleStatement4 }));
 
     // 43 SimpleStatement3
-    m_rules.push_back(new Rule({ TokenType::Dot, NonTerminal::SimpleStatement }));
+    m_rules.push_back(new Rule({ TokenType::Dot, SemanticAction::EncounteredDot, 
+        NonTerminal::SimpleStatement, SemanticAction::ConstructDotNode }));
 
     // 44 SimpleStatement3
-    m_rules.push_back(new Rule({ TokenType::Assign, NonTerminal::Expr, 
-        SemanticAction::ConstructAssignStat }));
+    m_rules.push_back(new Rule({ TokenType::Assign, SemanticAction::ConstructEncounteredDots, 
+        NonTerminal::Expr, SemanticAction::ConstructAssignStat }));
 
     // 45 SimpleStatement4
-    m_rules.push_back(new Rule({ TokenType::Dot, NonTerminal::SimpleStatement }));
+    m_rules.push_back(new Rule({ TokenType::Dot, SemanticAction::EncounteredDot, 
+        NonTerminal::SimpleStatement, SemanticAction::ConstructDotNode }));
 
     // 46 SimpleStatement4
     m_rules.push_back(new Rule({ }));
@@ -1389,6 +1391,7 @@ bool Parser::Parse(const std::string& filepath)
         && currToken.GetTokenType() != TokenType::EndOfFile)
     {
         const StackableItem& top = p.m_parsingStack.front();
+
         if (top.GetType() == StackableType::TerminalItem)
         {
             if (currToken.GetTokenType() == top.GetTerminal())
@@ -1496,6 +1499,7 @@ void Parser::Reset(const std::string& filepath)
     p.m_derivation.emplace_back(NonTerminal::Start);
     p.m_derivation.emplace_back(TokenType::EndOfFile);
     p.m_nextNonTerminalIndex = 0;
+    p.m_numDotsEncountered = 0;
 }
 
 Token Parser::GetNextToken()
@@ -1894,6 +1898,10 @@ void Parser::ProcessSemanticAction(SemanticAction action)
         Push<TypeNode>(m_prevToken.GetLexeme()); 
         break;
 
+    case SemanticAction::EncounteredDot:
+        m_numDotsEncountered++;
+        break;
+
     case SemanticAction::ConstructAssignStat:
         ConstructAssignStatAction();
         break;
@@ -1956,6 +1964,17 @@ void Parser::ProcessSemanticAction(SemanticAction action)
 
     case SemanticAction::ConstructReturnStat:
         ConstructReturnStatAction();
+        break;
+
+    case SemanticAction::ConstructDotNode:
+        if (ConstructDotNodeAction())
+        {
+            m_numDotsEncountered--;
+        }
+        break;
+
+    case SemanticAction::ConstructEncounteredDots:
+        ConstructEncounteredDotsAction();
         break;
 
     default:
@@ -2060,6 +2079,32 @@ void Parser::ConstructReturnStatAction()
 {
     ExprNode* expr = PopTargetNodeFromSemanticStack<ExprNode>();
     m_semanticStack.push_front(new ReturnStatNode(expr));
+}
+
+bool Parser::ConstructDotNodeAction()
+{
+    if (m_numDotsEncountered == 0)
+    {
+        return false;
+    }
+
+    ASTNode* right = m_semanticStack.front();
+    m_semanticStack.pop_front();
+
+    ASTNode* left = m_semanticStack.front();
+    m_semanticStack.pop_front();
+
+    m_semanticStack.push_front(new DotNode(left, right));
+    return true;
+}
+
+void Parser::ConstructEncounteredDotsAction()
+{
+    while (m_numDotsEncountered > 0)
+    {
+        ConstructDotNodeAction();
+        m_numDotsEncountered--;
+    }
 }
 
 void Parser::UpdateNextNonTerminalIndex()

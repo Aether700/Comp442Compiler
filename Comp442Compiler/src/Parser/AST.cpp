@@ -63,6 +63,9 @@ std::string IDNode::ToString(size_t indent)
     std::stringstream ss;
     WriteIndentToStream(ss, indent);
     ss << "id\n";
+    WriteIndentToStream(ss, indent + 1);
+    ss << GetID() << "\n";
+    
     return ss.str();
 }
 
@@ -70,6 +73,17 @@ std::string IDNode::ToString(size_t indent)
 TypeNode::TypeNode(const std::string& type) : m_type(type) { }
 
 const std::string& TypeNode::GetType() const { return m_type; }
+
+std::string TypeNode::ToString(size_t indent)
+{
+    std::stringstream ss;
+    WriteIndentToStream(ss, indent);
+    ss << "TypeNode\n";
+    WriteIndentToStream(ss, indent + 1);
+    ss << GetType() << "\n"; 
+
+    return ss.str();
+}
 
 // OperatorNode ////////////////////////////////////////
 OperatorNode::OperatorNode(const std::string& op) : m_operator(op) { }
@@ -133,7 +147,7 @@ IDNode* LiteralNode::GetLexemeNode()
 
 TypeNode* LiteralNode::GetType()
 {
-    return (TypeNode*)*(begin()++);
+    return (TypeNode*)*(++begin());
 }
 
 std::string LiteralNode::ToString(size_t indent)
@@ -141,6 +155,7 @@ std::string LiteralNode::ToString(size_t indent)
     std::stringstream ss;
     WriteIndentToStream(ss, indent);
     ss << "Literal\n";
+    ss << GetType()->ToString(indent + 1);
     return ss.str();
 }
 
@@ -181,7 +196,7 @@ IDNode* VarDeclNode::GetID()
 
 TypeNode* VarDeclNode::GetType()
 {
-    return (TypeNode*)*(begin()++);
+    return (TypeNode*)*(++begin());
 }
 
 DimensionNode* VarDeclNode::GetDimension()
@@ -225,7 +240,19 @@ ASTNode* DotNode::GetLeft()
 
 ASTNode* DotNode::GetRight()
 {
-    return *(begin()++);
+    return *(++begin());
+}
+
+std::string DotNode::ToString(size_t indent)
+{
+    std::stringstream ss;
+    WriteIndentToStream(ss, indent);
+    ss << "Dot\n";
+    
+    ss << GetLeft()->ToString(indent + 1);
+    ss << GetRight()->ToString(indent + 1);
+
+    return ss.str();
 }
 
 // ExprNode ////////////////////////////////////////

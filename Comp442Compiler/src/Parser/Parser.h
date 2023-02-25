@@ -40,6 +40,7 @@ enum class SemanticAction
     PushID,
     PushOp,
     PushType,
+    EncounteredDot,
     ConstructExpr,
     ConstructAddOp,
     ConstructMultOp,
@@ -55,6 +56,8 @@ enum class SemanticAction
     ConstructReadStat,
     ConstructWriteStat,
     ConstructReturnStat,
+    ConstructDotNode,
+    ConstructEncounteredDots,
 };
 
 enum class NonTerminal
@@ -325,6 +328,12 @@ private:
     void ConstructWriteStatAction();
     void ConstructReturnStatAction();
 
+    // Will only construct DotNode objects to push to the semantic stack if an associated dot 
+    // symbol was encountered, 
+    // returns true if a dot node was constructed false otherwise.
+    bool ConstructDotNodeAction();
+    void ConstructEncounteredDotsAction();
+
     template<typename NodeType, typename... Args>
     void Push(Args... args)
     {
@@ -391,4 +400,5 @@ private:
     std::vector<StackableItem> m_derivation;
     size_t m_nextNonTerminalIndex;
     std::list<ParsingErrorData> m_errors;
+    size_t m_numDotsEncountered;
 };

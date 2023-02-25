@@ -8,6 +8,11 @@
 #include "Core/Util.h"
 
 //transform grammar into attribute grammar
+/*
+next nodes/semantic actions to do:
+ - DotNode
+ - FunctionDefNode
+*/
 
 
 

@@ -66,6 +66,8 @@ public:
     TypeNode(const std::string& type);
 
     const std::string& GetType() const;
+
+    virtual std::string ToString(size_t indent = 0) override;
 private:
     std::string m_type;
 };
@@ -159,6 +161,8 @@ public:
 
     ASTNode* GetLeft();
     ASTNode* GetRight();
+
+    virtual std::string ToString(size_t indent = 0) override;
 };
 
 class ExprNode : public ASTNode

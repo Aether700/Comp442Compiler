@@ -1,4 +1,4 @@
 function F() => integer
 {
-    return (x[3]);
+    a.d[5].myFunction().var = 5;
 }
