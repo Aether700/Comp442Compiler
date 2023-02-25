@@ -346,6 +346,19 @@ public:
     IDNode* GetID();
     TypeNode* GetReturnType();
     FParamListNode* GetParameters();
+
+    virtual std::string ToString(size_t indent = 0) override;
+};
+
+class ConstructorDeclNode : public ASTNode
+{
+public:
+    ConstructorDeclNode(VisibilityNode* visibility, FParamListNode* params);
+
+    VisibilityNode* GetVisibility();
+    FParamListNode* GetParams();
+
+    virtual std::string ToString(size_t indent = 0) override;
 };
 
 class ClassDefNode : public ASTNode
@@ -355,14 +368,19 @@ public:
     ~ClassDefNode();
 
     void AddVarDecl(MemVarNode* var);
+    void AddConstructor(ConstructorDeclNode* constructor);
     void AddFuncDecl(MemFuncDeclNode* func);
 
     IDNode* GetID();
     std::list<MemVarNode*>& GetVarDecls();
+    std::list<ConstructorDeclNode*>& GetConstructors();
     std::list<MemFuncDeclNode*>& GetFuncDecls();
+
+    virtual std::string ToString(size_t indent = 0) override;
 
 private:
     std::list<MemVarNode*> m_varDeclarations;
+    std::list<ConstructorDeclNode*> m_constructors;
     std::list<MemFuncDeclNode*> m_functionDeclarations;
 };
 
@@ -370,6 +388,8 @@ class ClassDefListNode : public ASTNode
 {
 public:
     void AddClass(ClassDefNode* classDef);
+
+    virtual std::string ToString(size_t indent = 0) override;
 };
 
 class FunctionDefListNode : public ASTNode

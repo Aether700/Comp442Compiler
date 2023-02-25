@@ -1,4 +1,8 @@
 class Test
 {
-    public attribute myVar : integer;
+    attribute m_x : integer;
+
+    public constructor : (x : integer);
+
+    public function setX : (x : integer) => void;
 };

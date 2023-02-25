@@ -64,6 +64,8 @@ enum class SemanticAction
     ConstructEncounteredDots,
     ConstructClass,
     ConstructMemVar,
+    ConstructMemFuncDecl,
+    ConstructConstructorDecl,
 };
 
 enum class NonTerminal
@@ -339,6 +341,8 @@ private:
     void ConstructReturnStatAction();
     void ConstructClassAction();
     void ConstructMemVarAction();
+    void ConstructMemFuncDeclAction();
+    void ConstructConstructorDeclAction();
 
     // Will only construct DotNode objects to push to the semantic stack if an associated dot 
     // symbol was encountered, 

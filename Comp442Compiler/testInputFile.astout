@@ -1,8 +1,38 @@
-MemVar
-|  Visibility
-|  |  public
-|  id
-|  |  myVar
-|  TypeNode
-|  |  integer
-|  Dimensions
+Program
+|  ClassDefList
+|  |  ClassDef
+|  |  |  id
+|  |  |  |  Test
+|  |  |  MemVar
+|  |  |  |  Visibility
+|  |  |  |  |  default
+|  |  |  |  id
+|  |  |  |  |  m_x
+|  |  |  |  TypeNode
+|  |  |  |  |  integer
+|  |  |  |  Dimensions
+|  |  |  Constructor
+|  |  |  |  Visibility
+|  |  |  |  |  public
+|  |  |  |  FParams
+|  |  |  |  |  VarDecl
+|  |  |  |  |  |  id
+|  |  |  |  |  |  |  x
+|  |  |  |  |  |  TypeNode
+|  |  |  |  |  |  |  integer
+|  |  |  |  |  |  Dimensions
+|  |  |  MemFuncDecl
+|  |  |  |  Visibility
+|  |  |  |  |  public
+|  |  |  |  id
+|  |  |  |  |  setX
+|  |  |  |  FParams
+|  |  |  |  |  VarDecl
+|  |  |  |  |  |  id
+|  |  |  |  |  |  |  x
+|  |  |  |  |  |  TypeNode
+|  |  |  |  |  |  |  integer
+|  |  |  |  |  |  Dimensions
+|  |  |  |  TypeNode
+|  |  |  |  |  void
+|  FuncDefList

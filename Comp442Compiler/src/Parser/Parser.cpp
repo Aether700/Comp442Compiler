@@ -739,7 +739,8 @@ void RuleManager::InitializeRules()
     m_rules.push_back(new Rule({ TokenType::Class, TokenType::ID, SemanticAction::PushID,
         NonTerminal::ClassDeclInheritance, TokenType::OpenCurlyBracket, 
         SemanticAction::PushStopNode, NonTerminal::ClassDeclMembDeclRepetition, 
-        TokenType::CloseCurlyBracket, TokenType::SemiColon })); 
+        TokenType::CloseCurlyBracket, SemanticAction::ConstructClass, 
+        TokenType::SemiColon })); 
 
     // 6 ClassDeclMembDeclRepetition
     m_rules.push_back(new Rule({ NonTerminal::Visibility, NonTerminal::MemberDecl, 
@@ -779,14 +780,17 @@ void RuleManager::InitializeRules()
 
     // 17 MemberFuncDecl
     m_rules.push_back(new Rule({ TokenType::Function, 
-        TokenType::ID, TokenType::Colon, TokenType::OpenParanthese, NonTerminal::FParams, 
+        TokenType::ID, SemanticAction::PushID, TokenType::Colon, TokenType::OpenParanthese, 
+        SemanticAction::PushStopNode, NonTerminal::FParams, SemanticAction::ConstructFParams, 
         TokenType::CloseParanthese, TokenType::Arrow, NonTerminal::ReturnType, 
-        TokenType::SemiColon }));
+        SemanticAction::ConstructMemFuncDecl, TokenType::SemiColon }));
 
     // 18 MemberFuncDecl
     m_rules.push_back(new Rule({ TokenType::Constructor, 
-        TokenType::Colon, TokenType::OpenParanthese, NonTerminal::FParams, 
-        TokenType::CloseParanthese, TokenType::SemiColon }));
+        TokenType::Colon, TokenType::OpenParanthese, SemanticAction::PushStopNode, 
+        NonTerminal::FParams, SemanticAction::ConstructFParams,
+        TokenType::CloseParanthese, SemanticAction::ConstructConstructorDecl, 
+        TokenType::SemiColon }));
 
     // 19 MemberVarDecl
     m_rules.push_back(new Rule({ TokenType::Attribute, 
@@ -1028,7 +1032,8 @@ void RuleManager::InitializeRules()
         TokenType::Dot, NonTerminal::Variable }));
 
     // 78 Variable3
-    m_rules.push_back(new Rule({ TokenType::Dot, NonTerminal::Variable }));
+    m_rules.push_back(new Rule({ TokenType::Dot, SemanticAction::EncounteredDot, 
+        NonTerminal::Variable, SemanticAction::ConstructDotNode }));
     
     // 79 Variable3
     m_rules.push_back(new Rule({ }));
@@ -1452,9 +1457,9 @@ ProgramNode* Parser::Parse(const std::string& filepath)
         return nullptr;
     }
 
-    //p.m_astOutFile << p.m_currProgramRoot->ToString();
+    p.m_astOutFile << p.m_currProgramRoot->ToString();
     // temp
-    p.m_astOutFile << p.m_semanticStack.front()->ToString();
+    //p.m_astOutFile << p.m_semanticStack.front()->ToString();
     //
 
     // update derivation to remove all epsilon derivations
@@ -1996,8 +2001,20 @@ void Parser::ProcessSemanticAction(SemanticAction action)
         ConstructReturnStatAction();
         break;
 
+    case SemanticAction::ConstructClass:
+        ConstructClassAction();
+        break;
+
     case SemanticAction::ConstructMemVar:
         ConstructMemVarAction();
+        break;
+
+    case SemanticAction::ConstructMemFuncDecl:
+        ConstructMemFuncDeclAction();
+        break;
+
+    case SemanticAction::ConstructConstructorDecl:
+        ConstructConstructorDeclAction();
         break;
 
     case SemanticAction::ConstructDotNode:
@@ -2137,21 +2154,25 @@ void Parser::ConstructReturnStatAction()
 
 void Parser::ConstructClassAction()
 {
-    /*
-    std::list<VarDeclNode*> memVar;
-    std::list<FunctionDefNode*> memFunc;
+    std::list<MemVarNode*> memVar;
+    std::list<ConstructorDeclNode*> constructors;
+    std::list<MemFuncDeclNode*> memFunc;
 
     ASTNode* top = m_semanticStack.front();
     m_semanticStack.pop_front();
     while(dynamic_cast<StopNode*>(top) == nullptr)
     {
-        if (dynamic_cast<VarDeclNode*>(top) != nullptr)
+        if (dynamic_cast<MemVarNode*>(top) != nullptr)
         {
-            memVar.push_back((VarDeclNode*)top);
+            memVar.push_back((MemVarNode*)top);
         }
-        else if (dynamic_cast<FunctionDefNode*>(top) != nullptr)
+        else if (dynamic_cast<ConstructorDeclNode*>(top) != nullptr)
         {
-            memFunc.push_back((FunctionDefNode*)top);
+            constructors.push_back((ConstructorDeclNode*)top);
+        }
+        else if (dynamic_cast<MemFuncDeclNode*>(top) != nullptr)
+        {
+            memFunc.push_back((MemFuncDeclNode*)top);
         }
         else
         {
@@ -2167,9 +2188,22 @@ void Parser::ConstructClassAction()
     IDNode* id = PopTargetNodeFromSemanticStack<IDNode>();
     ClassDefNode* classDef = new ClassDefNode(id);
 
+    for (MemVarNode* var : memVar)
+    {
+        classDef->AddVarDecl(var);
+    }
 
-    m_currProgramRoot->GetClassList()->AddChild()
-    */
+    for (ConstructorDeclNode* constructor : constructors)
+    {
+        classDef->AddConstructor(constructor);
+    }
+
+    for (MemFuncDeclNode* funcDecl : memFunc)
+    {
+        classDef->AddFuncDecl(funcDecl);
+    }
+
+    m_currProgramRoot->GetClassList()->AddClass(classDef);
 }
 
 void Parser::ConstructMemVarAction()
@@ -2180,6 +2214,23 @@ void Parser::ConstructMemVarAction()
     VisibilityNode* visibility = PopTargetNodeFromSemanticStack<VisibilityNode>();
 
     m_semanticStack.push_front(new MemVarNode(visibility, id, type, dimension));
+}
+
+void Parser::ConstructMemFuncDeclAction()
+{
+    TypeNode* returnType = PopTargetNodeFromSemanticStack<TypeNode>();
+    FParamListNode* params = PopTargetNodeFromSemanticStack<FParamListNode>();
+    IDNode* id = PopTargetNodeFromSemanticStack<IDNode>();
+    VisibilityNode* visibility = PopTargetNodeFromSemanticStack<VisibilityNode>();
+
+    m_semanticStack.push_front(new MemFuncDeclNode(visibility, id, returnType, params));
+}
+
+void Parser::ConstructConstructorDeclAction()
+{
+    FParamListNode* params = PopTargetNodeFromSemanticStack<FParamListNode>();
+    VisibilityNode* visibility = PopTargetNodeFromSemanticStack<VisibilityNode>();
+    m_semanticStack.push_front(new ConstructorDeclNode(visibility, params));
 }
 
 bool Parser::ConstructDotNodeAction()

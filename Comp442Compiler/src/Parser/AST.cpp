@@ -582,6 +582,41 @@ FParamListNode* MemFuncDeclNode::GetParameters()
     return (FParamListNode*)*(++(++(++begin())));
 }
 
+std::string MemFuncDeclNode::ToString(size_t indent)
+{
+    std::stringstream ss;
+    WriteIndentToStream(ss, indent);
+    ss << "MemFuncDecl\n";
+    ss << GetVisibility()->ToString(indent + 1);
+    ss << GetID()->ToString(indent + 1);
+    ss << GetParameters()->ToString(indent + 1);
+    ss << GetReturnType()->ToString(indent + 1);
+
+    return ss.str();
+}
+
+
+// ConstructorDeclNode ////////////////////////////////////////////////////
+ConstructorDeclNode::ConstructorDeclNode(VisibilityNode* visibility, FParamListNode* params) 
+{
+    AddChild(visibility); 
+    AddChild(params);
+}
+
+VisibilityNode* ConstructorDeclNode::GetVisibility() { return (VisibilityNode*)*begin(); }
+
+FParamListNode* ConstructorDeclNode::GetParams() { return (FParamListNode*)*(++begin()); }
+
+std::string ConstructorDeclNode::ToString(size_t indent)
+{
+    std::stringstream ss;
+    WriteIndentToStream(ss, indent);
+    ss << "ConstructorDecl\n";
+    ss << GetVisibility()->ToString(indent + 1);
+    ss << GetParams()->ToString(indent + 1);
+
+    return ss.str();
+}
 
 // ClassDefNode //////////////////////////////////////////////////////////////
 ClassDefNode::ClassDefNode(IDNode* id)
@@ -605,18 +640,61 @@ ClassDefNode::~ClassDefNode()
 IDNode* ClassDefNode::GetID() { return (IDNode*)*begin(); }
 void ClassDefNode::AddVarDecl(MemVarNode* var) { m_varDeclarations.push_back(var); }
 
+void ClassDefNode::AddConstructor(ConstructorDeclNode* constructor) 
+{ 
+    m_constructors.push_back(constructor); 
+}
+
 void ClassDefNode::AddFuncDecl(MemFuncDeclNode* func) 
 { 
     m_functionDeclarations.push_back(func); 
 }
 
 std::list<MemVarNode*>& ClassDefNode::GetVarDecls() { return m_varDeclarations; }
+std::list<ConstructorDeclNode*>& ClassDefNode::GetConstructors() { return m_constructors; }
 std::list<MemFuncDeclNode*>& ClassDefNode::GetFuncDecls() { return m_functionDeclarations; }
+
+std::string ClassDefNode::ToString(size_t indent)
+{
+    std::stringstream ss;
+    WriteIndentToStream(ss, indent);
+    ss << "ClassDef\n";
+    ss << GetID()->ToString(indent + 1);
+    for (MemVarNode* memVar : m_varDeclarations)
+    {
+        ss << memVar->ToString(indent + 1);
+    }
+
+    for (ConstructorDeclNode* constructor : m_constructors)
+    {
+        ss << constructor->ToString(indent + 1);
+    }
+
+    for (MemFuncDeclNode* memFunc : m_functionDeclarations)
+    {
+        ss << memFunc->ToString(indent + 1);
+    }
+
+    return ss.str();
+}
 
 // ClassDefListNode ////////////////////////////////////////////////////////////
 void ClassDefListNode::AddClass(ClassDefNode* classDef)
 {
     AddChild(classDef);
+}
+
+std::string ClassDefListNode::ToString(size_t indent) 
+{
+    std::stringstream ss;
+    WriteIndentToStream(ss, indent);
+    ss << "ClassDefList\n";
+    for (ASTNode* classDef : *this)
+    {
+        ss << classDef->ToString(indent + 1);
+    }
+
+    return ss.str();
 }
 
 // FunctionDefListNode //////////////////////////////////////////////////////
