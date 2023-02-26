@@ -1,8 +1,4 @@
-class Test
+function freeFunc() => void
 {
-    attribute m_x : integer;
-
-    public constructor : (x : integer);
-
-    public function setX : (x : integer) => void;
-};
+    x = someFunc(3, 4, y);    
+}

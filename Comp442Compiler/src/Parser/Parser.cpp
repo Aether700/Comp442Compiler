@@ -750,18 +750,19 @@ void RuleManager::InitializeRules()
     m_rules.push_back(new Rule({ }));
 
     // 8 ClassDeclInheritance
-    m_rules.push_back(new Rule({ TokenType::IsA, TokenType::ID, 
-        NonTerminal::ClassDeclInheritanceTail }));
+    m_rules.push_back(new Rule({ SemanticAction::PushStopNode, TokenType::IsA, 
+        TokenType::ID, SemanticAction::PushID, NonTerminal::ClassDeclInheritanceTail }));
 
     // 9 ClassDeclInheritance
-    m_rules.push_back(new Rule({ }));
+    m_rules.push_back(new Rule({ SemanticAction::PushStopNode, 
+        SemanticAction::ConstructInheritanceList }));
     
     // 10 ClassDeclInheritanceTail
-    m_rules.push_back(new Rule({ TokenType::Comma, TokenType::ID, 
+    m_rules.push_back(new Rule({ TokenType::Comma, TokenType::ID, SemanticAction::PushID,
         NonTerminal::ClassDeclInheritanceTail }));
 
     // 11 ClassDeclInheritanceTail
-    m_rules.push_back(new Rule({ }));
+    m_rules.push_back(new Rule({ SemanticAction::ConstructInheritanceList }));
 
     // 12 Visibility
     m_rules.push_back(new Rule({ TokenType::Public, SemanticAction::ConstructVisibility }));
@@ -811,16 +812,19 @@ void RuleManager::InitializeRules()
     // 23 FuncHead2
     m_rules.push_back(new Rule({ TokenType::OpenParanthese, SemanticAction::PushStopNode,
         NonTerminal::FParams, SemanticAction::ConstructFParams, TokenType::CloseParanthese, 
-        TokenType::Arrow, NonTerminal::ReturnType }));
+        TokenType::Arrow, NonTerminal::ReturnType, SemanticAction::PushFreeFuncMarker }));
     
     // 24 FuncHead3
-    m_rules.push_back(new Rule({ TokenType::ID, 
-        TokenType::OpenParanthese, NonTerminal::FParams, TokenType::CloseParanthese, 
-        TokenType::Arrow, NonTerminal::ReturnType }));
+    m_rules.push_back(new Rule({ TokenType::ID, SemanticAction::PushID,
+        TokenType::OpenParanthese, SemanticAction::PushStopNode, NonTerminal::FParams, 
+        SemanticAction::ConstructFParams, TokenType::CloseParanthese, 
+        TokenType::Arrow, NonTerminal::ReturnType, SemanticAction::PushMemFuncMarker }));
 
     // 25 FuncHead3
     m_rules.push_back(new Rule({ TokenType::Constructor, 
-        TokenType::OpenParanthese, NonTerminal::FParams, TokenType::CloseParanthese }));
+        TokenType::OpenParanthese, SemanticAction::PushStopNode, NonTerminal::FParams, 
+        SemanticAction::ConstructFParams, TokenType::CloseParanthese, 
+        SemanticAction::PushConstructorMarker }));
 
     // 26 FuncBody
     m_rules.push_back(new Rule({ TokenType::OpenCurlyBracket, 
@@ -960,10 +964,10 @@ void RuleManager::InitializeRules()
     m_rules.push_back(new Rule({ }));
 
     // 59 Sign
-    m_rules.push_back(new Rule({ TokenType::Plus }));
+    m_rules.push_back(new Rule({ TokenType::Plus, SemanticAction::PushSign }));
 
     // 60 Sign
-    m_rules.push_back(new Rule({ TokenType::Minus }));
+    m_rules.push_back(new Rule({ TokenType::Minus, SemanticAction::PushSign }));
 
     // 61 Term
     m_rules.push_back(new Rule({ NonTerminal::Factor, 
@@ -992,11 +996,12 @@ void RuleManager::InitializeRules()
         NonTerminal::ArithExpr, TokenType::CloseParanthese }));
 
     // 68 Factor
-    m_rules.push_back(new Rule({ TokenType::Not, NonTerminal::Factor }));
+    m_rules.push_back(new Rule({ TokenType::Not, SemanticAction::PushNot, 
+        NonTerminal::Factor, SemanticAction::ConstructModifiedExpr }));
 
     // 69 Factor
     m_rules.push_back(new Rule({ NonTerminal::Sign, 
-        NonTerminal::Factor }));
+        NonTerminal::Factor, SemanticAction::ConstructModifiedExpr }));
 
     // 70 VarOrFuncCall
     m_rules.push_back(new Rule({ TokenType::ID, SemanticAction::PushID, 
@@ -1028,7 +1033,8 @@ void RuleManager::InitializeRules()
 
     // 77 Variable2
     m_rules.push_back(new Rule({ TokenType::OpenParanthese, 
-        NonTerminal::AParams, TokenType::CloseParanthese, SemanticAction::ConstructFuncCall, 
+        SemanticAction::PushStopNode, NonTerminal::AParams, SemanticAction::ConstructAParams, 
+        TokenType::CloseParanthese, SemanticAction::ConstructFuncCall, 
         TokenType::Dot, NonTerminal::Variable }));
 
     // 78 Variable3
@@ -1458,9 +1464,6 @@ ProgramNode* Parser::Parse(const std::string& filepath)
     }
 
     p.m_astOutFile << p.m_currProgramRoot->ToString();
-    // temp
-    //p.m_astOutFile << p.m_semanticStack.front()->ToString();
-    //
 
     // update derivation to remove all epsilon derivations
     p.RemoveNonTerminalsFromDerivation();
@@ -1887,6 +1890,13 @@ void Parser::ProcessSemanticAction(SemanticAction action)
 {
     ASSERT(m_parsingStack.front().GetType() == StackableType::SemanticActionItem);
     m_parsingStack.pop_front();
+
+    // do not process semantic actions for invalid programs
+    if (m_errorFound)
+    {
+        return;
+    }
+
     switch(action)
     {
     case SemanticAction::PushStopNode:
@@ -1921,8 +1931,28 @@ void Parser::ProcessSemanticAction(SemanticAction action)
         Push<OperatorNode>(m_prevToken.GetLexeme()); 
         break;
 
+    case SemanticAction::PushSign:
+        Push<SignNode>(m_prevToken.GetLexeme()); 
+        break;
+
+    case SemanticAction::PushNot:
+        Push<NotNode>(); 
+        break;
+
     case SemanticAction::PushType:
         Push<TypeNode>(m_prevToken.GetLexeme()); 
+        break;
+
+    case SemanticAction::PushFreeFuncMarker:
+        Push<FreeFuncMarkerNode>(); 
+        break;
+
+    case SemanticAction::PushMemFuncMarker:
+        Push<MemFuncMarkerNode>(); 
+        break;
+
+    case SemanticAction::PushConstructorMarker:
+        Push<ConstructorMarkerNode>(); 
         break;
 
     case SemanticAction::EncounteredDot:
@@ -1935,6 +1965,10 @@ void Parser::ProcessSemanticAction(SemanticAction action)
 
     case SemanticAction::ConstructExpr:
         ConstructExprAction();
+        break;
+
+    case SemanticAction::ConstructModifiedExpr:
+        ConstructModifiedExprAction();
         break;
 
     case SemanticAction::ConstructAddOp:
@@ -2028,6 +2062,10 @@ void Parser::ProcessSemanticAction(SemanticAction action)
         ConstructEncounteredDotsAction();
         break;
 
+    case SemanticAction::ConstructInheritanceList:
+        ConstructLoopingNode<InheritanceListNode>();
+        break;
+
     default:
         DEBUG_BREAK();
         break;
@@ -2061,6 +2099,17 @@ void Parser::ConstructExprAction()
     ASTNode* topNode = m_semanticStack.front();
     m_semanticStack.pop_front();
     m_semanticStack.push_front(new ExprNode(topNode));
+}
+
+void Parser::ConstructModifiedExprAction()
+{
+    ASTNode* expr = m_semanticStack.front();
+    m_semanticStack.pop_front();
+
+    ASTNode* modifier = m_semanticStack.front();
+    m_semanticStack.pop_front();
+
+    m_semanticStack.push_front(new ModifiedExpr(modifier, expr));
 }
 
 void Parser::ConstructAssignStatAction()
@@ -2105,11 +2154,54 @@ void Parser::ConstructVarDeclAction()
 void Parser::ConstructFuncDefAction()
 {
     StatBlockNode* body = PopTargetNodeFromSemanticStack<StatBlockNode>();
+    ASTNode* marker = m_semanticStack.front();
+    m_semanticStack.pop_front();
+    
+    if (dynamic_cast<FreeFuncMarkerNode*>(marker) != nullptr)
+    {
+        ConstructFreeFuncDefAction(body);
+    }
+    else if (dynamic_cast<MemFuncMarkerNode*>(marker) != nullptr)
+    {
+        ConstructMemFuncDefAction(body);
+    }
+    else if (dynamic_cast<ConstructorMarkerNode*>(marker) != nullptr)
+    {
+        ConstructConstructorDefAction(body);
+    }
+    else
+    {
+        DEBUG_BREAK();
+    }
+    delete marker;
+}
+
+void Parser::ConstructFreeFuncDefAction(StatBlockNode* body)
+{
     TypeNode* returnType = PopTargetNodeFromSemanticStack<TypeNode>();
     FParamListNode* params = PopTargetNodeFromSemanticStack<FParamListNode>();
     IDNode* id = PopTargetNodeFromSemanticStack<IDNode>();
     m_currProgramRoot->GetFunctionList()->AddFunc(new FunctionDefNode(id, returnType, 
         params, body));
+}
+
+void Parser::ConstructMemFuncDefAction(StatBlockNode* body)
+{
+    TypeNode* returnType = PopTargetNodeFromSemanticStack<TypeNode>();
+    FParamListNode* params = PopTargetNodeFromSemanticStack<FParamListNode>();
+    IDNode* id = PopTargetNodeFromSemanticStack<IDNode>();
+    IDNode* classID = PopTargetNodeFromSemanticStack<IDNode>();
+
+    m_currProgramRoot->GetFunctionList()->AddFunc(new MemFuncDefNode(classID, id, 
+        returnType, params, body));
+}
+
+void Parser::ConstructConstructorDefAction(StatBlockNode* body)
+{
+    FParamListNode* params = PopTargetNodeFromSemanticStack<FParamListNode>();
+    IDNode* classID = PopTargetNodeFromSemanticStack<IDNode>();
+    m_currProgramRoot->GetFunctionList()->AddFunc(
+        new ConstructorDefNode(classID, params, body));
 }
 
 void Parser::ConstructFuncCallAction()
@@ -2184,9 +2276,10 @@ void Parser::ConstructClassAction()
     }
     delete top;
 
-    // need to fetch inheritance list here
+    InheritanceListNode* inheritanceList = PopTargetNodeFromSemanticStack
+        <InheritanceListNode>();
     IDNode* id = PopTargetNodeFromSemanticStack<IDNode>();
-    ClassDefNode* classDef = new ClassDefNode(id);
+    ClassDefNode* classDef = new ClassDefNode(id, inheritanceList);
 
     for (MemVarNode* var : memVar)
     {

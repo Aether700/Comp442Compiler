@@ -1,63 +1,78 @@
 <Start>
 -> <ClassDeclOrFuncDefRepetition> 'EOF' 
 -> <ClassDeclOrFuncDef> <ClassDeclOrFuncDefRepetition> 'EOF' 
--> <ClassDecl> <ClassDeclOrFuncDefRepetition> 'EOF' 
--> 'class' 'id'  <ClassDeclInheritance> '{'  <ClassDeclMembDeclRepetition> '}'  ';' <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> <FuncDef> <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> <FuncHead> <FuncBody> <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  <FuncHead2> <FuncBody> <ClassDeclOrFuncDefRepetition> 'EOF' 
 
 
--> 'class' 'id'  '{'  <ClassDeclMembDeclRepetition> '}'  ';' <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '('  <FParams>  ')' '=>' <ReturnType>  <FuncBody> <ClassDeclOrFuncDefRepetition> 'EOF' 
 
--> 'class' 'id'  '{'  <Visibility> <MemberDecl> <ClassDeclMembDeclRepetition> '}'  ';' <ClassDeclOrFuncDefRepetition> 'EOF' 
--> 'class' 'id'  '{'   <MemberDecl> <ClassDeclMembDeclRepetition> '}'  ';' <ClassDeclOrFuncDefRepetition> 'EOF' 
--> 'class' 'id'  '{'   <MemberVarDecl> <ClassDeclMembDeclRepetition> '}'  ';' <ClassDeclOrFuncDefRepetition> 'EOF' 
--> 'class' 'id'  '{'   'attribute' 'id'  ':' <Type>  <ArraySizeRepetition>  ';' <ClassDeclMembDeclRepetition> '}'  ';' <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '('   ')' '=>' <ReturnType>  <FuncBody> <ClassDeclOrFuncDefRepetition> 'EOF' 
 
 
+-> 'function' 'id'  '('   ')' '=>' 'void'   <FuncBody> <ClassDeclOrFuncDefRepetition> 'EOF' 
 
--> 'class' 'id'  '{'   'attribute' 'id'  ':' 'integer'   <ArraySizeRepetition>  ';' <ClassDeclMembDeclRepetition> '}'  ';' <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
 
--> 'class' 'id'  '{'   'attribute' 'id'  ':' 'integer'     ';' <ClassDeclMembDeclRepetition> '}'  ';' <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  <LocalVarDeclOrStmt> <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  <Statement> <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  <SimpleStatement> ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'id'  <SimpleStatement2> ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
 
--> 'class' 'id'  '{'   'attribute' 'id'  ':' 'integer'     ';' <Visibility> <MemberDecl> <ClassDeclMembDeclRepetition> '}'  ';' <ClassDeclOrFuncDefRepetition> 'EOF' 
--> 'class' 'id'  '{'   'attribute' 'id'  ':' 'integer'     ';' 'public'  <MemberDecl> <ClassDeclMembDeclRepetition> '}'  ';' <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'id'   <Indice>  <SimpleStatement3> ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'id'     <SimpleStatement3> ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'id'     '='  <Expr>  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
 
--> 'class' 'id'  '{'   'attribute' 'id'  ':' 'integer'     ';' 'public'  <MemberFuncDecl> <ClassDeclMembDeclRepetition> '}'  ';' <ClassDeclOrFuncDefRepetition> 'EOF' 
--> 'class' 'id'  '{'   'attribute' 'id'  ':' 'integer'     ';' 'public'  'constructor' ':' '('  <FParams>  ')'  ';' <ClassDeclMembDeclRepetition> '}'  ';' <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'id'     '='  <ArithExpr> <Expr2>  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'id'     '='  <Term> <ArithExpr2> <Expr2>  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'id'     '='  <Factor> <Term2> <ArithExpr2> <Expr2>  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'id'     '='  <VarOrFuncCall> <Term2> <ArithExpr2> <Expr2>  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'id'     '='  'id'  <VarOrFuncCall2> <Term2> <ArithExpr2> <Expr2>  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
 
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'id'     '='  'id'  '('  <AParams>  ')'  <VarOrFuncCall3> <Term2> <ArithExpr2> <Expr2>  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
 
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'id'     '='  'id'  '('  <Expr> <AParamsTail>  ')'  <VarOrFuncCall3> <Term2> <ArithExpr2> <Expr2>  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'id'     '='  'id'  '('  <ArithExpr> <Expr2> <AParamsTail>  ')'  <VarOrFuncCall3> <Term2> <ArithExpr2> <Expr2>  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'id'     '='  'id'  '('  <Term> <ArithExpr2> <Expr2> <AParamsTail>  ')'  <VarOrFuncCall3> <Term2> <ArithExpr2> <Expr2>  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'id'     '='  'id'  '('  <Factor> <Term2> <ArithExpr2> <Expr2> <AParamsTail>  ')'  <VarOrFuncCall3> <Term2> <ArithExpr2> <Expr2>  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'id'     '='  'id'  '('  'integer literal'  <Term2> <ArithExpr2> <Expr2> <AParamsTail>  ')'  <VarOrFuncCall3> <Term2> <ArithExpr2> <Expr2>  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
 
--> 'class' 'id'  '{'   'attribute' 'id'  ':' 'integer'     ';' 'public'  'constructor' ':' '('  'id'  ':' <Type>  <ArraySizeRepetition>  <FParamsTail>  ')'  ';' <ClassDeclMembDeclRepetition> '}'  ';' <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'id'     '='  'id'  '('  'integer literal'  <ArithExpr2> <Expr2> <AParamsTail>  ')'  <VarOrFuncCall3> <Term2> <ArithExpr2> <Expr2>  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'id'     '='  'id'  '('  'integer literal'  <Expr2> <AParamsTail>  ')'  <VarOrFuncCall3> <Term2> <ArithExpr2> <Expr2>  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'id'     '='  'id'  '('  'integer literal'   <AParamsTail>  ')'  <VarOrFuncCall3> <Term2> <ArithExpr2> <Expr2>  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'id'     '='  'id'  '('  'integer literal'   ',' <Expr> <AParamsTail>  ')'  <VarOrFuncCall3> <Term2> <ArithExpr2> <Expr2>  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
 
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'id'     '='  'id'  '('  'integer literal'   ',' <ArithExpr> <Expr2> <AParamsTail>  ')'  <VarOrFuncCall3> <Term2> <ArithExpr2> <Expr2>  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'id'     '='  'id'  '('  'integer literal'   ',' <Term> <ArithExpr2> <Expr2> <AParamsTail>  ')'  <VarOrFuncCall3> <Term2> <ArithExpr2> <Expr2>  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'id'     '='  'id'  '('  'integer literal'   ',' <Factor> <Term2> <ArithExpr2> <Expr2> <AParamsTail>  ')'  <VarOrFuncCall3> <Term2> <ArithExpr2> <Expr2>  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'id'     '='  'id'  '('  'integer literal'   ',' 'integer literal'  <Term2> <ArithExpr2> <Expr2> <AParamsTail>  ')'  <VarOrFuncCall3> <Term2> <ArithExpr2> <Expr2>  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
 
--> 'class' 'id'  '{'   'attribute' 'id'  ':' 'integer'     ';' 'public'  'constructor' ':' '('  'id'  ':' 'integer'   <ArraySizeRepetition>  <FParamsTail>  ')'  ';' <ClassDeclMembDeclRepetition> '}'  ';' <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'id'     '='  'id'  '('  'integer literal'   ',' 'integer literal'  <ArithExpr2> <Expr2> <AParamsTail>  ')'  <VarOrFuncCall3> <Term2> <ArithExpr2> <Expr2>  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'id'     '='  'id'  '('  'integer literal'   ',' 'integer literal'  <Expr2> <AParamsTail>  ')'  <VarOrFuncCall3> <Term2> <ArithExpr2> <Expr2>  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'id'     '='  'id'  '('  'integer literal'   ',' 'integer literal'   <AParamsTail>  ')'  <VarOrFuncCall3> <Term2> <ArithExpr2> <Expr2>  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'id'     '='  'id'  '('  'integer literal'   ',' 'integer literal'   ',' <Expr> <AParamsTail>  ')'  <VarOrFuncCall3> <Term2> <ArithExpr2> <Expr2>  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
 
--> 'class' 'id'  '{'   'attribute' 'id'  ':' 'integer'     ';' 'public'  'constructor' ':' '('  'id'  ':' 'integer'     <FParamsTail>  ')'  ';' <ClassDeclMembDeclRepetition> '}'  ';' <ClassDeclOrFuncDefRepetition> 'EOF' 
--> 'class' 'id'  '{'   'attribute' 'id'  ':' 'integer'     ';' 'public'  'constructor' ':' '('  'id'  ':' 'integer'      ')'  ';' <ClassDeclMembDeclRepetition> '}'  ';' <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'id'     '='  'id'  '('  'integer literal'   ',' 'integer literal'   ',' <ArithExpr> <Expr2> <AParamsTail>  ')'  <VarOrFuncCall3> <Term2> <ArithExpr2> <Expr2>  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'id'     '='  'id'  '('  'integer literal'   ',' 'integer literal'   ',' <Term> <ArithExpr2> <Expr2> <AParamsTail>  ')'  <VarOrFuncCall3> <Term2> <ArithExpr2> <Expr2>  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'id'     '='  'id'  '('  'integer literal'   ',' 'integer literal'   ',' <Factor> <Term2> <ArithExpr2> <Expr2> <AParamsTail>  ')'  <VarOrFuncCall3> <Term2> <ArithExpr2> <Expr2>  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'id'     '='  'id'  '('  'integer literal'   ',' 'integer literal'   ',' <VarOrFuncCall> <Term2> <ArithExpr2> <Expr2> <AParamsTail>  ')'  <VarOrFuncCall3> <Term2> <ArithExpr2> <Expr2>  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'id'     '='  'id'  '('  'integer literal'   ',' 'integer literal'   ',' 'id'  <VarOrFuncCall2> <Term2> <ArithExpr2> <Expr2> <AParamsTail>  ')'  <VarOrFuncCall3> <Term2> <ArithExpr2> <Expr2>  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
 
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'id'     '='  'id'  '('  'integer literal'   ',' 'integer literal'   ',' 'id'   <Indice>  <VarOrFuncCall3> <Term2> <ArithExpr2> <Expr2> <AParamsTail>  ')'  <VarOrFuncCall3> <Term2> <ArithExpr2> <Expr2>  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'id'     '='  'id'  '('  'integer literal'   ',' 'integer literal'   ',' 'id'     <VarOrFuncCall3> <Term2> <ArithExpr2> <Expr2> <AParamsTail>  ')'  <VarOrFuncCall3> <Term2> <ArithExpr2> <Expr2>  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'id'     '='  'id'  '('  'integer literal'   ',' 'integer literal'   ',' 'id'     <Term2> <ArithExpr2> <Expr2> <AParamsTail>  ')'  <VarOrFuncCall3> <Term2> <ArithExpr2> <Expr2>  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'id'     '='  'id'  '('  'integer literal'   ',' 'integer literal'   ',' 'id'     <ArithExpr2> <Expr2> <AParamsTail>  ')'  <VarOrFuncCall3> <Term2> <ArithExpr2> <Expr2>  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'id'     '='  'id'  '('  'integer literal'   ',' 'integer literal'   ',' 'id'     <Expr2> <AParamsTail>  ')'  <VarOrFuncCall3> <Term2> <ArithExpr2> <Expr2>  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'id'     '='  'id'  '('  'integer literal'   ',' 'integer literal'   ',' 'id'      <AParamsTail>  ')'  <VarOrFuncCall3> <Term2> <ArithExpr2> <Expr2>  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'id'     '='  'id'  '('  'integer literal'   ',' 'integer literal'   ',' 'id'       ')'  <VarOrFuncCall3> <Term2> <ArithExpr2> <Expr2>  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
 
--> 'class' 'id'  '{'   'attribute' 'id'  ':' 'integer'     ';' 'public'  'constructor' ':' '('  'id'  ':' 'integer'      ')'  ';' <Visibility> <MemberDecl> <ClassDeclMembDeclRepetition> '}'  ';' <ClassDeclOrFuncDefRepetition> 'EOF' 
--> 'class' 'id'  '{'   'attribute' 'id'  ':' 'integer'     ';' 'public'  'constructor' ':' '('  'id'  ':' 'integer'      ')'  ';' 'public'  <MemberDecl> <ClassDeclMembDeclRepetition> '}'  ';' <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'id'     '='  'id'  '('  'integer literal'   ',' 'integer literal'   ',' 'id'       ')'  <Term2> <ArithExpr2> <Expr2>  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'id'     '='  'id'  '('  'integer literal'   ',' 'integer literal'   ',' 'id'       ')'  <ArithExpr2> <Expr2>  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'id'     '='  'id'  '('  'integer literal'   ',' 'integer literal'   ',' 'id'       ')'  <Expr2>  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'id'     '='  'id'  '('  'integer literal'   ',' 'integer literal'   ',' 'id'       ')'    ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
 
--> 'class' 'id'  '{'   'attribute' 'id'  ':' 'integer'     ';' 'public'  'constructor' ':' '('  'id'  ':' 'integer'      ')'  ';' 'public'  <MemberFuncDecl> <ClassDeclMembDeclRepetition> '}'  ';' <ClassDeclOrFuncDefRepetition> 'EOF' 
--> 'class' 'id'  '{'   'attribute' 'id'  ':' 'integer'     ';' 'public'  'constructor' ':' '('  'id'  ':' 'integer'      ')'  ';' 'public'  'function' 'id'  ':' '('  <FParams>  ')' '=>' <ReturnType>  ';' <ClassDeclMembDeclRepetition> '}'  ';' <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'id'     '='  'id'  '('  'integer literal'   ',' 'integer literal'   ',' 'id'       ')'    ';'  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
 
-
-
-
--> 'class' 'id'  '{'   'attribute' 'id'  ':' 'integer'     ';' 'public'  'constructor' ':' '('  'id'  ':' 'integer'      ')'  ';' 'public'  'function' 'id'  ':' '('  'id'  ':' <Type>  <ArraySizeRepetition>  <FParamsTail>  ')' '=>' <ReturnType>  ';' <ClassDeclMembDeclRepetition> '}'  ';' <ClassDeclOrFuncDefRepetition> 'EOF' 
-
-
--> 'class' 'id'  '{'   'attribute' 'id'  ':' 'integer'     ';' 'public'  'constructor' ':' '('  'id'  ':' 'integer'      ')'  ';' 'public'  'function' 'id'  ':' '('  'id'  ':' 'integer'   <ArraySizeRepetition>  <FParamsTail>  ')' '=>' <ReturnType>  ';' <ClassDeclMembDeclRepetition> '}'  ';' <ClassDeclOrFuncDefRepetition> 'EOF' 
-
--> 'class' 'id'  '{'   'attribute' 'id'  ':' 'integer'     ';' 'public'  'constructor' ':' '('  'id'  ':' 'integer'      ')'  ';' 'public'  'function' 'id'  ':' '('  'id'  ':' 'integer'     <FParamsTail>  ')' '=>' <ReturnType>  ';' <ClassDeclMembDeclRepetition> '}'  ';' <ClassDeclOrFuncDefRepetition> 'EOF' 
--> 'class' 'id'  '{'   'attribute' 'id'  ':' 'integer'     ';' 'public'  'constructor' ':' '('  'id'  ':' 'integer'      ')'  ';' 'public'  'function' 'id'  ':' '('  'id'  ':' 'integer'      ')' '=>' <ReturnType>  ';' <ClassDeclMembDeclRepetition> '}'  ';' <ClassDeclOrFuncDefRepetition> 'EOF' 
-
-
--> 'class' 'id'  '{'   'attribute' 'id'  ':' 'integer'     ';' 'public'  'constructor' ':' '('  'id'  ':' 'integer'      ')'  ';' 'public'  'function' 'id'  ':' '('  'id'  ':' 'integer'      ')' '=>' 'void'   ';' <ClassDeclMembDeclRepetition> '}'  ';' <ClassDeclOrFuncDefRepetition> 'EOF' 
-
-
--> 'class' 'id'  '{'   'attribute' 'id'  ':' 'integer'     ';' 'public'  'constructor' ':' '('  'id'  ':' 'integer'      ')'  ';' 'public'  'function' 'id'  ':' '('  'id'  ':' 'integer'      ')' '=>' 'void'   ';' '}'  ';' <ClassDeclOrFuncDefRepetition> 'EOF' 
-
-
--> 'class' 'id'  '{'   'attribute' 'id'  ':' 'integer'     ';' 'public'  'constructor' ':' '('  'id'  ':' 'integer'      ')'  ';' 'public'  'function' 'id'  ':' '('  'id'  ':' 'integer'      ')' '=>' 'void'   ';' '}'  ';' 'EOF' 
--> 'class' 'id'  '{'   'attribute' 'id'  ':' 'integer'     ';' 'public'  'constructor' ':' '('  'id'  ':' 'integer'      ')'  ';' 'public'  'function' 'id'  ':' '('  'id'  ':' 'integer'      ')' '=>' 'void'   ';' '}'  ';' 'EOF' 
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'id'     '='  'id'  '('  'integer literal'   ',' 'integer literal'   ',' 'id'       ')'    ';'  '}'  'EOF' 
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'id'     '='  'id'  '('  'integer literal'   ',' 'integer literal'   ',' 'id'       ')'    ';'  '}'  'EOF' 

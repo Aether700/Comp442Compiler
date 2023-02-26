@@ -7,14 +7,7 @@
 #include "Parser/Parser.h"
 #include "Core/Util.h"
 
-//transform grammar into attribute grammar
-/*nodes left to do
-- InheritanceList
-- MemFuncDef (not decl def)
-- have expr/values include "not" and signs (make a factor node?)
-*/
-
-do inheritance list next then follow list above
+test ast generation more
 
 void ExitPrompt()
 {

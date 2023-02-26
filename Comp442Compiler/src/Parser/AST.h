@@ -9,6 +9,7 @@ class AParamListNode;
 
 class ASTNode
 {
+    friend class ClassDefNode;
 public:
     using Iterator = std::list<ASTNode*>::iterator;
 
@@ -39,6 +40,11 @@ private:
 
 // serves as stop point when looping
 class StopNode : public ASTNode { };
+
+// used to differentiate between free functions, member functions and constructors
+class FreeFuncMarkerNode : public ASTNode { };
+class MemFuncMarkerNode : public ASTNode { };
+class ConstructorMarkerNode : public ASTNode { };
 
 // serves as a marker when an array size is not specified
 class UnspecificedDimensionNode : public ASTNode 
@@ -169,6 +175,43 @@ class ExprNode : public ASTNode
 {
 public:
     ExprNode(ASTNode* exprRoot);
+
+    virtual std::string ToString(size_t indent = 0) override;
+
+protected:
+    ExprNode();
+
+private:
+    std::string m_sign;
+};
+
+class SignNode : public ASTNode
+{
+public:
+    SignNode(const std::string& sign);
+
+    const std::string& GetSign();
+
+    virtual std::string ToString(size_t indent = 0) override;
+
+private:
+    std::string m_sign;
+};
+
+class NotNode : public ASTNode 
+{
+public:
+    virtual std::string ToString(size_t indent = 0) override;
+};
+
+// represents an expression being modified by a modifier such as a sign or the "not" keyword
+class ModifiedExpr : public ExprNode
+{
+public:
+    ModifiedExpr(ASTNode* modifier, ASTNode* expr);
+
+    ASTNode* GetModifier();
+    ASTNode* GetExpr();
 
     virtual std::string ToString(size_t indent = 0) override;
 };
@@ -350,6 +393,17 @@ public:
     virtual std::string ToString(size_t indent = 0) override;
 };
 
+class MemFuncDefNode : public FunctionDefNode
+{
+public:
+    MemFuncDefNode(IDNode* classID, IDNode* id, TypeNode* returnType, 
+        FParamListNode* parameters, StatBlockNode* statBlock);
+
+    IDNode* GetClassID();
+
+    virtual std::string ToString(size_t indent = 0) override;
+};
+
 class ConstructorDeclNode : public ASTNode
 {
 public:
@@ -361,10 +415,25 @@ public:
     virtual std::string ToString(size_t indent = 0) override;
 };
 
+class ConstructorDefNode : public FunctionDefNode
+{
+public:
+    ConstructorDefNode(IDNode* classID, FParamListNode* params, StatBlockNode* body);
+    virtual std::string ToString(size_t indent = 0) override;
+};
+
+class InheritanceListNode : public ASTNode
+{
+public:
+    void AddLoopingChild(ASTNode* id);
+
+    virtual std::string ToString(size_t indent = 0) override;
+};
+
 class ClassDefNode : public ASTNode
 {
 public:
-    ClassDefNode(IDNode* id);
+    ClassDefNode(IDNode* id, InheritanceListNode* inheritanceList);
     ~ClassDefNode();
 
     void AddVarDecl(MemVarNode* var);
@@ -372,6 +441,7 @@ public:
     void AddFuncDecl(MemFuncDeclNode* func);
 
     IDNode* GetID();
+    InheritanceListNode* GetInheritanceList();
     std::list<MemVarNode*>& GetVarDecls();
     std::list<ConstructorDeclNode*>& GetConstructors();
     std::list<MemFuncDeclNode*>& GetFuncDecls();
@@ -379,6 +449,7 @@ public:
     virtual std::string ToString(size_t indent = 0) override;
 
 private:
+
     std::list<MemVarNode*> m_varDeclarations;
     std::list<ConstructorDeclNode*> m_constructors;
     std::list<MemFuncDeclNode*> m_functionDeclarations;

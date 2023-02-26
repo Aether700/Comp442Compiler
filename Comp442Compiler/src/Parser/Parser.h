@@ -40,10 +40,17 @@ enum class SemanticAction
     ConstructDefaultVisibility,
     ConstructAssignStat,
     PushID,
+    PushSign,
+    PushNot,
     PushOp,
     PushType,
+    PushFreeFuncMarker,
+    PushMemFuncMarker,
+    PushConstructorMarker,
     EncounteredDot,
     ConstructExpr,
+    ConstructModifiedExpr,
+    ConstructSign,
     ConstructAddOp,
     ConstructMultOp,
     ConstructRelOp,
@@ -66,6 +73,7 @@ enum class SemanticAction
     ConstructMemVar,
     ConstructMemFuncDecl,
     ConstructConstructorDecl,
+    ConstructInheritanceList,
 };
 
 enum class NonTerminal
@@ -329,10 +337,14 @@ private:
     void ConstructVisibilityAction();
     void ConstructDefaultVisibilityAction();
     void ConstructExprAction();
+    void ConstructModifiedExprAction();
     void ConstructAssignStatAction();
     void ConstructVariableAction();
     void ConstructVarDeclAction();
     void ConstructFuncDefAction();
+    void ConstructFreeFuncDefAction(StatBlockNode* body);
+    void ConstructMemFuncDefAction(StatBlockNode* body);
+    void ConstructConstructorDefAction(StatBlockNode* body);
     void ConstructFuncCallAction();
     void ConstructIfStatAction();
     void ConstructWhileStatAction();
@@ -394,7 +406,6 @@ private:
     {
         ASTNode* top = m_semanticStack.front();
         m_semanticStack.pop_front();
-        auto s = top->ToString();
         NodeType* targetNode = dynamic_cast<NodeType*>(top);
         ASSERT(targetNode != nullptr);
         return targetNode;

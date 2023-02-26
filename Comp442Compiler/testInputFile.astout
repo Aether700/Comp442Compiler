@@ -1,38 +1,35 @@
 Program
 |  ClassDefList
-|  |  ClassDef
-|  |  |  id
-|  |  |  |  Test
-|  |  |  MemVar
-|  |  |  |  Visibility
-|  |  |  |  |  default
-|  |  |  |  id
-|  |  |  |  |  m_x
-|  |  |  |  TypeNode
-|  |  |  |  |  integer
-|  |  |  |  Dimensions
-|  |  |  Constructor
-|  |  |  |  Visibility
-|  |  |  |  |  public
-|  |  |  |  FParams
-|  |  |  |  |  VarDecl
-|  |  |  |  |  |  id
-|  |  |  |  |  |  |  x
-|  |  |  |  |  |  TypeNode
-|  |  |  |  |  |  |  integer
-|  |  |  |  |  |  Dimensions
-|  |  |  MemFuncDecl
-|  |  |  |  Visibility
-|  |  |  |  |  public
-|  |  |  |  id
-|  |  |  |  |  setX
-|  |  |  |  FParams
-|  |  |  |  |  VarDecl
-|  |  |  |  |  |  id
-|  |  |  |  |  |  |  x
-|  |  |  |  |  |  TypeNode
-|  |  |  |  |  |  |  integer
-|  |  |  |  |  |  Dimensions
-|  |  |  |  TypeNode
-|  |  |  |  |  void
 |  FuncDefList
+|  |  FuncDef
+|  |  |  id
+|  |  |  |  freeFunc
+|  |  |  TypeNode
+|  |  |  |  void
+|  |  |  FParams
+|  |  |  StatBlock
+|  |  |  |  AssigStat
+|  |  |  |  |  Variable
+|  |  |  |  |  |  id
+|  |  |  |  |  |  |  x
+|  |  |  |  |  |  Dimensions
+|  |  |  |  |  Expr
+|  |  |  |  |  |  FuncCall
+|  |  |  |  |  |  |  id
+|  |  |  |  |  |  |  |  someFunc
+|  |  |  |  |  |  |  AParams
+|  |  |  |  |  |  |  |  Expr
+|  |  |  |  |  |  |  |  |  Literal
+|  |  |  |  |  |  |  |  |  |  3
+|  |  |  |  |  |  |  |  |  |  TypeNode
+|  |  |  |  |  |  |  |  |  |  |  integer
+|  |  |  |  |  |  |  |  Expr
+|  |  |  |  |  |  |  |  |  Literal
+|  |  |  |  |  |  |  |  |  |  4
+|  |  |  |  |  |  |  |  |  |  TypeNode
+|  |  |  |  |  |  |  |  |  |  |  integer
+|  |  |  |  |  |  |  |  Expr
+|  |  |  |  |  |  |  |  |  Variable
+|  |  |  |  |  |  |  |  |  |  id
+|  |  |  |  |  |  |  |  |  |  |  y
+|  |  |  |  |  |  |  |  |  |  Dimensions
