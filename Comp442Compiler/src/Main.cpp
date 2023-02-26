@@ -7,7 +7,7 @@
 #include "Parser/Parser.h"
 #include "Core/Util.h"
 
-test ast generation more
+//test ast generation more
 
 void ExitPrompt()
 {

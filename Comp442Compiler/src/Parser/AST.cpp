@@ -43,6 +43,9 @@ void ASTNode::WriteIndentToStream(std::stringstream& ss, size_t indent)
 ASTNode::Iterator ASTNode::begin() { return m_children.begin(); }
 ASTNode::Iterator ASTNode::end() { return m_children.end(); }
 
+// EmptyNodeBase ////////////////////////////////////////////////////////////
+std::string EmptyNodeBase::ToString(size_t indent) { return ""; };
+
 // UnspecificedDimensionNode //////////////////////////////////////////
 std::string UnspecificedDimensionNode::ToString(size_t indent)
 {

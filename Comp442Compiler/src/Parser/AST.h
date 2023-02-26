@@ -21,8 +21,7 @@ public:
 
     size_t GetNumChild() const;
 
-    // eventually will be abstract
-    virtual std::string ToString(size_t indent = 0) { return ""; }
+    virtual std::string ToString(size_t indent = 0) = 0;
 
     ASTNode::Iterator begin();
     ASTNode::Iterator end();
@@ -38,13 +37,19 @@ private:
     std::list<ASTNode*> m_children;
 };
 
+class EmptyNodeBase : public ASTNode 
+{
+public:
+    virtual std::string ToString(size_t indent = 0) override;
+};
+
 // serves as stop point when looping
-class StopNode : public ASTNode { };
+class StopNode : public EmptyNodeBase { };
 
 // used to differentiate between free functions, member functions and constructors
-class FreeFuncMarkerNode : public ASTNode { };
-class MemFuncMarkerNode : public ASTNode { };
-class ConstructorMarkerNode : public ASTNode { };
+class FreeFuncMarkerNode : public EmptyNodeBase { };
+class MemFuncMarkerNode : public EmptyNodeBase { };
+class ConstructorMarkerNode : public EmptyNodeBase { };
 
 // serves as a marker when an array size is not specified
 class UnspecificedDimensionNode : public ASTNode 
