@@ -60,6 +60,7 @@ private:
     ASTNode* m_parent;
 };
 
+// represent an empty node used only during the construction of the AST
 class EmptyNodeBase : public ASTNode 
 {
 public:
@@ -127,7 +128,8 @@ private:
 class BaseBinaryOperator : public ASTNodeBase
 {
 public:
-    BaseBinaryOperator(const std::string& name, ASTNode* left, OperatorNode* op, ASTNode* right);
+    BaseBinaryOperator(const std::string& name, ASTNode* left, 
+        OperatorNode* op, ASTNode* right);
 
     ASTNode* GetLeft();
     OperatorNode* GetOperator();
@@ -143,7 +145,6 @@ class AddOpNode : public BaseBinaryOperator
 {
 public:
     AddOpNode(ASTNode* left, OperatorNode* op, ASTNode* right);
-
 };
 
 class MultOpNode : public BaseBinaryOperator
@@ -229,7 +230,7 @@ private:
     std::string m_sign;
 };
 
-class NotNode : public EmptyNodeBase 
+class NotNode : public LeafNode 
 {
 public:
     virtual std::string ToString(size_t indent = 0) override;
@@ -268,17 +269,11 @@ class VariableNode : public ASTNodeBase
 {
 public:
     VariableNode(IDNode* var, DimensionNode* dimension);
-    VariableNode(DotNode* var);
 
-    ASTNode* GetVariable();
-    
-    // can be nullptr
+    ASTNode* GetVariable();    
     DimensionNode* GetDimension();
 
     virtual std::string ToString(size_t indent = 0) override;
-
-private:
-    DimensionNode* m_dimension;
 };
 
 class ReadStatNode : public ASTNodeBase
@@ -389,6 +384,7 @@ public:
     const std::string& GetVisibility() const;
 
     virtual std::string ToString(size_t indent = 0) override;
+    
 private:
     std::string m_visibility;
 };

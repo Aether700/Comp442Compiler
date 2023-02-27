@@ -349,16 +349,14 @@ std::string ReturnStatNode::ToString(size_t indent)
 }
 
 // VariableNode ///////////////////////////////////////////////////
-VariableNode::VariableNode(IDNode* var, DimensionNode* dimension) : m_dimension(dimension)
+VariableNode::VariableNode(IDNode* var, DimensionNode* dimension)
 { 
     AddChild(var); 
     AddChild(dimension);
 }
 
-VariableNode::VariableNode(DotNode* var) : m_dimension(nullptr) { AddChild(var); }
-
 ASTNode* VariableNode::GetVariable() { return GetChild(0); }
-DimensionNode* VariableNode::GetDimension() { return m_dimension; }
+DimensionNode* VariableNode::GetDimension() { return (DimensionNode*)GetChild(1); }
 
 std::string VariableNode::ToString(size_t indent)
 {
@@ -366,10 +364,7 @@ std::string VariableNode::ToString(size_t indent)
     WriteIndentToStream(ss, indent);
     ss << "Variable\n";
     ss << GetVariable()->ToString(indent + 1);
-    if (GetDimension() != nullptr)
-    {
-        ss << GetDimension()->ToString(indent + 1);
-    }
+    ss << GetDimension()->ToString(indent + 1);
     return ss.str();
 }
 
