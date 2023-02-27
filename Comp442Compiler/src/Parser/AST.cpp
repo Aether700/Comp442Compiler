@@ -304,7 +304,7 @@ std::string NotNode::ToString(size_t indent)
 {
     std::stringstream ss;
     WriteIndentToStream(ss, indent);
-    ss << "Not\n";
+    ss << "not\n";
 
     return ss.str();
 }
@@ -369,9 +369,9 @@ std::string VariableNode::ToString(size_t indent)
 }
 
 // ReadStatNode //////////////////////////////////////////////////
-ReadStatNode::ReadStatNode(VariableNode* var) { AddChild(var); }
+ReadStatNode::ReadStatNode(ASTNode* var) { AddChild(var); }
 
-VariableNode* ReadStatNode::GetVariable() { return (VariableNode*)GetChild(0); }
+ASTNode* ReadStatNode::GetVariable() { return GetChild(0); }
 
 std::string ReadStatNode::ToString(size_t indent)
 {
@@ -764,19 +764,19 @@ InheritanceListNode* ClassDefNode::GetInheritanceList()
 
 void ClassDefNode::AddVarDecl(MemVarNode* var) 
 {
-    m_varDeclarations.push_back(var);
+    m_varDeclarations.push_front(var);
     var->SetParent(this);
 }
 
 void ClassDefNode::AddConstructor(ConstructorDeclNode* constructor) 
 { 
-    m_constructors.push_back(constructor); 
+    m_constructors.push_front(constructor); 
     constructor->SetParent(this);
 }
 
 void ClassDefNode::AddFuncDecl(MemFuncDeclNode* func) 
 { 
-    m_functionDeclarations.push_back(func); 
+    m_functionDeclarations.push_front(func); 
     func->SetParent(this);
 }
 

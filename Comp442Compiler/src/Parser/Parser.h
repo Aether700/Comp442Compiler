@@ -406,6 +406,7 @@ private:
     {
         ASTNode* top = m_semanticStack.front();
         m_semanticStack.pop_front();
+        auto s = top->ToString();
         NodeType* targetNode = dynamic_cast<NodeType*>(top);
         ASSERT(targetNode != nullptr);
         return targetNode;

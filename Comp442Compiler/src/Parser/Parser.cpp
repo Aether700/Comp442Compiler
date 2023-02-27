@@ -1035,7 +1035,8 @@ void RuleManager::InitializeRules()
     m_rules.push_back(new Rule({ TokenType::OpenParanthese, 
         SemanticAction::PushStopNode, NonTerminal::AParams, SemanticAction::ConstructAParams, 
         TokenType::CloseParanthese, SemanticAction::ConstructFuncCall, 
-        TokenType::Dot, NonTerminal::Variable }));
+        TokenType::Dot, SemanticAction::EncounteredDot, NonTerminal::Variable, 
+        SemanticAction::ConstructDotNode }));
 
     // 78 Variable3
     m_rules.push_back(new Rule({ TokenType::Dot, SemanticAction::EncounteredDot, 
@@ -2228,7 +2229,8 @@ void Parser::ConstructWhileStatAction()
 
 void Parser::ConstructReadStatAction()
 {
-    VariableNode* var = PopTargetNodeFromSemanticStack<VariableNode>();
+    ASTNode* var = m_semanticStack.front();
+    m_semanticStack.pop_front();
     m_semanticStack.push_front(new ReadStatNode(var));
 }
 

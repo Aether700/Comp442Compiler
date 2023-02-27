@@ -1,11 +1,9 @@
 Program
 |  ClassDefList
 |  FuncDefList
-|  |  FuncDef
-|  |  |  id
-|  |  |  |  freeFunc
+|  |  ConstructorDef
 |  |  |  TypeNode
-|  |  |  |  void
+|  |  |  |  MyObj
 |  |  |  FParams
 |  |  |  StatBlock
 |  |  |  |  AssigStat
@@ -14,22 +12,43 @@ Program
 |  |  |  |  |  |  |  x
 |  |  |  |  |  |  Dimensions
 |  |  |  |  |  Expr
-|  |  |  |  |  |  FuncCall
-|  |  |  |  |  |  |  id
-|  |  |  |  |  |  |  |  someFunc
-|  |  |  |  |  |  |  AParams
-|  |  |  |  |  |  |  |  Expr
-|  |  |  |  |  |  |  |  |  Literal
-|  |  |  |  |  |  |  |  |  |  3
-|  |  |  |  |  |  |  |  |  |  TypeNode
-|  |  |  |  |  |  |  |  |  |  |  integer
-|  |  |  |  |  |  |  |  Expr
-|  |  |  |  |  |  |  |  |  Literal
-|  |  |  |  |  |  |  |  |  |  4
-|  |  |  |  |  |  |  |  |  |  TypeNode
-|  |  |  |  |  |  |  |  |  |  |  integer
-|  |  |  |  |  |  |  |  Expr
+|  |  |  |  |  |  RelOp
+|  |  |  |  |  |  |  AddOp
+|  |  |  |  |  |  |  |  MultOp
 |  |  |  |  |  |  |  |  |  Variable
 |  |  |  |  |  |  |  |  |  |  id
-|  |  |  |  |  |  |  |  |  |  |  y
+|  |  |  |  |  |  |  |  |  |  |  b
+|  |  |  |  |  |  |  |  |  |  Dimensions
+|  |  |  |  |  |  |  |  |  and
+|  |  |  |  |  |  |  |  |  Variable
+|  |  |  |  |  |  |  |  |  |  id
+|  |  |  |  |  |  |  |  |  |  |  x
+|  |  |  |  |  |  |  |  |  |  Dimensions
+|  |  |  |  |  |  |  |  or
+|  |  |  |  |  |  |  |  MultOp
+|  |  |  |  |  |  |  |  |  ModifiedExpr
+|  |  |  |  |  |  |  |  |  |  not
+|  |  |  |  |  |  |  |  |  |  Variable
+|  |  |  |  |  |  |  |  |  |  |  id
+|  |  |  |  |  |  |  |  |  |  |  |  b
+|  |  |  |  |  |  |  |  |  |  |  Dimensions
+|  |  |  |  |  |  |  |  |  and
+|  |  |  |  |  |  |  |  |  ModifiedExpr
+|  |  |  |  |  |  |  |  |  |  not
+|  |  |  |  |  |  |  |  |  |  Variable
+|  |  |  |  |  |  |  |  |  |  |  id
+|  |  |  |  |  |  |  |  |  |  |  |  c
+|  |  |  |  |  |  |  |  |  |  |  Dimensions
+|  |  |  |  |  |  |  <>
+|  |  |  |  |  |  |  MultOp
+|  |  |  |  |  |  |  |  Variable
+|  |  |  |  |  |  |  |  |  id
+|  |  |  |  |  |  |  |  |  |  a
+|  |  |  |  |  |  |  |  |  Dimensions
+|  |  |  |  |  |  |  |  and
+|  |  |  |  |  |  |  |  ModifiedExpr
+|  |  |  |  |  |  |  |  |  not
+|  |  |  |  |  |  |  |  |  Variable
+|  |  |  |  |  |  |  |  |  |  id
+|  |  |  |  |  |  |  |  |  |  |  b
 |  |  |  |  |  |  |  |  |  |  Dimensions

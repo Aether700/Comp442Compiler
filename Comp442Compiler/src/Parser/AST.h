@@ -279,9 +279,9 @@ public:
 class ReadStatNode : public ASTNodeBase
 {
 public:
-    ReadStatNode(VariableNode* var);
+    ReadStatNode(ASTNode* var);
 
-    VariableNode* GetVariable();
+    ASTNode* GetVariable();
 
     virtual std::string ToString(size_t indent = 0) override;
 };

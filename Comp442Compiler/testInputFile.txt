@@ -1,4 +1,4 @@
-function freeFunc() => void
+function MyObj::constructor()
 {
-    x = someFunc(3, 4, y);    
+    x = b and x or not b and not c <> a and not b;
 }
