@@ -9,37 +9,66 @@ class AParamListNode;
 
 class ASTNode
 {
-    friend class ClassDefNode;
 public:
-    using Iterator = std::list<ASTNode*>::iterator;
-
-    ASTNode();
     virtual ~ASTNode();
 
-    ASTNode* GetParent();
-    const ASTNode* GetParent() const;
+    virtual ASTNode* GetParent() = 0;
+    virtual const ASTNode* GetParent() const = 0;
+    virtual void SetParent(ASTNode* parent) = 0;
 
-    size_t GetNumChild() const;
+    virtual size_t GetNumChild() const = 0;
 
     virtual std::string ToString(size_t indent = 0) = 0;
+};
 
-    ASTNode::Iterator begin();
-    ASTNode::Iterator end();
+class ASTNodeBase : public ASTNode
+{
+public:
+    ASTNodeBase();
+    virtual ~ASTNodeBase();
+
+    virtual ASTNode* GetParent() override;
+    virtual const ASTNode* GetParent() const override;
+    virtual void SetParent(ASTNode* parent) override;
+
+    virtual size_t GetNumChild() const override;
 
 protected:
-    void AddChild(ASTNode* child);
-    void AddChildFirst(ASTNode* child);
+    void AddChild(ASTNode* n);
+    void AddChildFirst(ASTNode* n);
 
-    void WriteIndentToStream(std::stringstream& ss, size_t indent);
+    ASTNode* GetChild(size_t index);
+    std::list<ASTNode*>& GetChildren();
 
 private:
     ASTNode* m_parent;
     std::list<ASTNode*> m_children;
 };
 
+class LeafNode : public ASTNode
+{
+public:
+    LeafNode();
+
+    virtual ASTNode* GetParent() override;
+    virtual const ASTNode* GetParent() const override;
+    virtual void SetParent(ASTNode* parent) override;
+
+    virtual size_t GetNumChild() const override;
+
+private:
+    ASTNode* m_parent;
+};
+
 class EmptyNodeBase : public ASTNode 
 {
 public:
+    virtual ASTNode* GetParent() override;
+    virtual const ASTNode* GetParent() const override;
+    virtual void SetParent(ASTNode* parent) override;
+
+    virtual size_t GetNumChild() const override;
+
     virtual std::string ToString(size_t indent = 0) override;
 };
 
@@ -52,13 +81,13 @@ class MemFuncMarkerNode : public EmptyNodeBase { };
 class ConstructorMarkerNode : public EmptyNodeBase { };
 
 // serves as a marker when an array size is not specified
-class UnspecificedDimensionNode : public ASTNode 
+class UnspecificedDimensionNode : public LeafNode 
 { 
 public:
     virtual std::string ToString(size_t indent = 0) override;
 };
 
-class IDNode : public ASTNode
+class IDNode : public LeafNode
 {
 public:
     IDNode(const std::string& id);
@@ -71,7 +100,7 @@ private:
     std::string m_id;
 };
 
-class TypeNode : public ASTNode
+class TypeNode : public LeafNode
 {
 public:
     TypeNode(const std::string& type);
@@ -83,7 +112,7 @@ private:
     std::string m_type;
 };
 
-class OperatorNode : public ASTNode
+class OperatorNode : public ASTNodeBase
 {
 public:
     OperatorNode(const std::string& op);
@@ -95,7 +124,7 @@ private:
     std::string m_operator;
 };
 
-class BaseBinaryOperator : public ASTNode
+class BaseBinaryOperator : public ASTNodeBase
 {
 public:
     BaseBinaryOperator(const std::string& name, ASTNode* left, OperatorNode* op, ASTNode* right);
@@ -129,7 +158,7 @@ public:
     RelOpNode(ASTNode* left, OperatorNode* op, ASTNode* right);
 };
 
-class LiteralNode : public ASTNode
+class LiteralNode : public ASTNodeBase
 {
 public:
     LiteralNode(IDNode* lexeme, TypeNode* type);
@@ -140,7 +169,7 @@ public:
     virtual std::string ToString(size_t indent = 0) override;
 };
 
-class DimensionNode : public ASTNode
+class DimensionNode : public ASTNodeBase
 {
 public: 
     void AddLoopingChild(ASTNode* dimension);
@@ -148,7 +177,7 @@ public:
     virtual std::string ToString(size_t indent = 0) override;
 };
 
-class VarDeclNode : public ASTNode
+class VarDeclNode : public ASTNodeBase
 {
 public:
     VarDeclNode(IDNode* id, TypeNode* type, DimensionNode* dimension);
@@ -160,12 +189,9 @@ public:
     AParamListNode* GetParamList();
 
     virtual std::string ToString(size_t indent = 0) override;
-
-private:
-    ASTNode* GetThirdNode();
 };
 
-class DotNode : public ASTNode
+class DotNode : public ASTNodeBase
 {
 public:
     DotNode(ASTNode* leftSide, ASTNode* rightSide);
@@ -176,7 +202,7 @@ public:
     virtual std::string ToString(size_t indent = 0) override;
 };
 
-class ExprNode : public ASTNode
+class ExprNode : public ASTNodeBase
 {
 public:
     ExprNode(ASTNode* exprRoot);
@@ -190,7 +216,7 @@ private:
     std::string m_sign;
 };
 
-class SignNode : public ASTNode
+class SignNode : public LeafNode
 {
 public:
     SignNode(const std::string& sign);
@@ -203,7 +229,7 @@ private:
     std::string m_sign;
 };
 
-class NotNode : public ASTNode 
+class NotNode : public EmptyNodeBase 
 {
 public:
     virtual std::string ToString(size_t indent = 0) override;
@@ -222,7 +248,7 @@ public:
 };
 
 // base node of simple statements provided by the language such as return or write
-class BaseLangStatNode : public ASTNode
+class BaseLangStatNode : public ASTNodeBase
 {
 public:
     BaseLangStatNode(ExprNode* expr);
@@ -238,7 +264,7 @@ public:
     virtual std::string ToString(size_t indent = 0) override;
 };
 
-class VariableNode : public ASTNode
+class VariableNode : public ASTNodeBase
 {
 public:
     VariableNode(IDNode* var, DimensionNode* dimension);
@@ -255,7 +281,7 @@ private:
     DimensionNode* m_dimension;
 };
 
-class ReadStatNode : public ASTNode
+class ReadStatNode : public ASTNodeBase
 {
 public:
     ReadStatNode(VariableNode* var);
@@ -272,7 +298,7 @@ public:
     virtual std::string ToString(size_t indent = 0) override;
 };
 
-class AssignStatNode : public ASTNode
+class AssignStatNode : public ASTNodeBase
 {
 public:
     AssignStatNode(ASTNode* left, ExprNode* expr);
@@ -283,7 +309,7 @@ public:
     virtual std::string ToString(size_t indent = 0) override;
 };
 
-class IfStatNode : public ASTNode
+class IfStatNode : public ASTNodeBase
 {
 public:
     IfStatNode(ExprNode* condition, StatBlockNode* ifBranch, StatBlockNode* elseBranch);
@@ -295,7 +321,7 @@ public:
     virtual std::string ToString(size_t indent = 0) override;
 };
 
-class WhileStatNode : public ASTNode
+class WhileStatNode : public ASTNodeBase
 {
 public:
     WhileStatNode(ExprNode* condition, StatBlockNode* statBlock);
@@ -306,7 +332,7 @@ public:
     virtual std::string ToString(size_t indent = 0) override;
 };
 
-class AParamListNode : public ASTNode
+class AParamListNode : public ASTNodeBase
 {
 public:
     void AddLoopingChild(ASTNode* param);
@@ -314,7 +340,7 @@ public:
     virtual std::string ToString(size_t indent = 0) override;
 };
 
-class FuncCallNode : public ASTNode
+class FuncCallNode : public ASTNodeBase
 {
 public:
     FuncCallNode(IDNode* id, AParamListNode* parameters);
@@ -325,7 +351,7 @@ public:
     virtual std::string ToString(size_t indent = 0) override;
 };
 
-class StatBlockNode : public ASTNode
+class StatBlockNode : public ASTNodeBase
 {
 public:
     void AddLoopingChild(ASTNode* statement);
@@ -333,7 +359,7 @@ public:
     virtual std::string ToString(size_t indent = 0) override;
 };
 
-class FParamListNode : public ASTNode
+class FParamListNode : public ASTNodeBase
 {
 public:
     void AddLoopingChild(ASTNode* param);
@@ -341,7 +367,7 @@ public:
     virtual std::string ToString(size_t indent = 0) override;
 };
 
-class FunctionDefNode : public ASTNode
+class FunctionDefNode : public ASTNodeBase
 {
 public:
     FunctionDefNode(IDNode* id, TypeNode* returnType, FParamListNode* parameters,  
@@ -355,7 +381,7 @@ public:
     virtual std::string ToString(size_t indent = 0) override;
 };
 
-class VisibilityNode : public ASTNode
+class VisibilityNode : public LeafNode
 {
 public:
     VisibilityNode(const std::string& visibility);
@@ -384,7 +410,7 @@ public:
     virtual std::string ToString(size_t indent = 0) override;
 };
 
-class MemFuncDeclNode : public ASTNode
+class MemFuncDeclNode : public ASTNodeBase
 {
 public:
     MemFuncDeclNode(VisibilityNode* visibility, IDNode* id, TypeNode* returnType, 
@@ -409,7 +435,7 @@ public:
     virtual std::string ToString(size_t indent = 0) override;
 };
 
-class ConstructorDeclNode : public ASTNode
+class ConstructorDeclNode : public ASTNodeBase
 {
 public:
     ConstructorDeclNode(VisibilityNode* visibility, FParamListNode* params);
@@ -427,7 +453,7 @@ public:
     virtual std::string ToString(size_t indent = 0) override;
 };
 
-class InheritanceListNode : public ASTNode
+class InheritanceListNode : public ASTNodeBase
 {
 public:
     void AddLoopingChild(ASTNode* id);
@@ -435,7 +461,7 @@ public:
     virtual std::string ToString(size_t indent = 0) override;
 };
 
-class ClassDefNode : public ASTNode
+class ClassDefNode : public ASTNodeBase
 {
 public:
     ClassDefNode(IDNode* id, InheritanceListNode* inheritanceList);
@@ -460,7 +486,7 @@ private:
     std::list<MemFuncDeclNode*> m_functionDeclarations;
 };
 
-class ClassDefListNode : public ASTNode
+class ClassDefListNode : public ASTNodeBase
 {
 public:
     void AddClass(ClassDefNode* classDef);
@@ -468,7 +494,7 @@ public:
     virtual std::string ToString(size_t indent = 0) override;
 };
 
-class FunctionDefListNode : public ASTNode
+class FunctionDefListNode : public ASTNodeBase
 {
 public:
     void AddFunc(FunctionDefNode* funcDef);
@@ -476,7 +502,7 @@ public:
     virtual std::string ToString(size_t indent = 0) override;
 };
 
-class ProgramNode : public ASTNode
+class ProgramNode : public ASTNodeBase
 {
 public:
     ProgramNode();

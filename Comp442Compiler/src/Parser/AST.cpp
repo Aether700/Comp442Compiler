@@ -1,38 +1,8 @@
 #include "AST.h"
 #include "../Core/Core.h"
 
-
-// ASTNode ////////////////////////////////////////
-ASTNode::ASTNode() : m_parent(nullptr) { }
-
-ASTNode::~ASTNode()
-{
-    for (ASTNode* child : m_children)
-    {
-        delete child;
-    }
-}
-    
-ASTNode* ASTNode::GetParent() { return m_parent; }
-const ASTNode* ASTNode::GetParent() const { return m_parent; }
-
-size_t ASTNode::GetNumChild() const { return m_children.size(); }
-
-void ASTNode::AddChild(ASTNode* child)
-{
-    ASSERT(child != nullptr);
-    m_children.push_back(child);
-    child->m_parent = this;
-}
-
-void ASTNode::AddChildFirst(ASTNode* child)
-{
-    ASSERT(child != nullptr);
-    m_children.push_front(child);
-    child->m_parent = this;
-}
-
-void ASTNode::WriteIndentToStream(std::stringstream& ss, size_t indent)
+// Helpers /////////////////////////////////////////////////
+void WriteIndentToStream(std::stringstream& ss, size_t indent)
 {
     for (size_t i = 0; i < indent; i++)
     {
@@ -40,10 +10,67 @@ void ASTNode::WriteIndentToStream(std::stringstream& ss, size_t indent)
     }
 }
 
-ASTNode::Iterator ASTNode::begin() { return m_children.begin(); }
-ASTNode::Iterator ASTNode::end() { return m_children.end(); }
+// ASTNode //////////////////////////////////////////////////
+ASTNode::~ASTNode() { }
+
+// ASTNodeBase ///////////////////////////////////////////
+
+ASTNodeBase::ASTNodeBase() : m_parent(nullptr) { }
+
+ASTNodeBase::~ASTNodeBase()
+{
+    for (ASTNode* child : m_children)
+    {
+        delete child;
+    }
+}
+
+ASTNode* ASTNodeBase::GetParent() { return m_parent; }
+const ASTNode* ASTNodeBase::GetParent() const { return m_parent; }
+void ASTNodeBase::SetParent(ASTNode* parent) { m_parent = parent; }
+
+size_t ASTNodeBase::GetNumChild() const { return m_children.size(); }
+
+void ASTNodeBase::AddChild(ASTNode* child)
+{
+    ASSERT(child != nullptr);
+    m_children.push_back(child);
+    child->SetParent(this);
+}
+
+void ASTNodeBase::AddChildFirst(ASTNode* child)
+{
+    ASSERT(child != nullptr);
+    m_children.push_front(child);
+    child->SetParent(this);
+}
+
+ASTNode* ASTNodeBase::GetChild(size_t index)
+{
+    auto it = m_children.begin();
+    for (size_t i = 0; i < index; i++)
+    {
+        it++;
+    }
+    return *it;
+}
+
+std::list<ASTNode*>& ASTNodeBase::GetChildren() { return m_children; }
+
+// LeafNode ////////////////////////////////////////////////////////////////
+LeafNode::LeafNode() : m_parent(nullptr) { }
+
+ASTNode* LeafNode::GetParent() { return m_parent; }
+const ASTNode* LeafNode::GetParent() const { return m_parent; }
+void LeafNode::SetParent(ASTNode* parent) { m_parent = parent; };
+size_t LeafNode::GetNumChild() const { return 0; }
 
 // EmptyNodeBase ////////////////////////////////////////////////////////////
+ASTNode* EmptyNodeBase::GetParent() { return nullptr; }
+const ASTNode* EmptyNodeBase::GetParent() const { return nullptr; }
+void EmptyNodeBase::SetParent(ASTNode* parent) { }
+
+size_t EmptyNodeBase::GetNumChild() const { return 0; }
 std::string EmptyNodeBase::ToString(size_t indent) { return ""; };
 
 // UnspecificedDimensionNode //////////////////////////////////////////
@@ -109,9 +136,9 @@ BaseBinaryOperator::BaseBinaryOperator(const std::string& name, ASTNode* left,
     AddChild(right);
 }
 
-ASTNode* BaseBinaryOperator::GetLeft() { return *begin(); }
-OperatorNode* BaseBinaryOperator::GetOperator() { return (OperatorNode*)*(++begin()); }
-ASTNode* BaseBinaryOperator::GetRight() { return *(++(++begin())); }
+ASTNode* BaseBinaryOperator::GetLeft() { return GetChild(0); }
+OperatorNode* BaseBinaryOperator::GetOperator() { return (OperatorNode*)GetChild(1); }
+ASTNode* BaseBinaryOperator::GetRight() { return GetChild(2); }
 
 std::string BaseBinaryOperator::ToString(size_t indent)
 {
@@ -143,15 +170,9 @@ LiteralNode::LiteralNode(IDNode* lexeme, TypeNode* type)
     AddChild(type);
 }
 
-IDNode* LiteralNode::GetLexemeNode()
-{
-    return (IDNode*)*begin();
-}
+IDNode* LiteralNode::GetLexemeNode() { return (IDNode*)GetChild(0); }
 
-TypeNode* LiteralNode::GetType()
-{
-    return (TypeNode*)*(++begin());
-}
+TypeNode* LiteralNode::GetType() { return (TypeNode*)GetChild(1); }
 
 std::string LiteralNode::ToString(size_t indent)
 {
@@ -172,7 +193,7 @@ std::string DimensionNode::ToString(size_t indent)
     std::stringstream ss;
     WriteIndentToStream(ss, indent);
     ss << "Dimensions\n";
-    for (ASTNode* dimension : *this)
+    for (ASTNode* dimension : GetChildren())
     {
         ss << dimension->ToString(indent + 1);
     }
@@ -196,22 +217,22 @@ VarDeclNode::VarDeclNode(IDNode* id, TypeNode* type, AParamListNode* param)
 
 IDNode* VarDeclNode::GetID()
 {
-    return (IDNode*)*begin();
+    return (IDNode*)GetChild(0);
 }
 
 TypeNode* VarDeclNode::GetType()
 {
-    return (TypeNode*)*(++begin());
+    return (TypeNode*)GetChild(1);
 }
 
 DimensionNode* VarDeclNode::GetDimension()
 {
-    return dynamic_cast<DimensionNode*>(GetThirdNode());
+    return dynamic_cast<DimensionNode*>(GetChild(2));
 }
 
 AParamListNode* VarDeclNode::GetParamList()
 {
-    return dynamic_cast<AParamListNode*>(GetThirdNode());
+    return dynamic_cast<AParamListNode*>(GetChild(2));
 }
 
 std::string VarDeclNode::ToString(size_t indent)
@@ -221,14 +242,9 @@ std::string VarDeclNode::ToString(size_t indent)
     ss << "VarDecl\n";
     ss << GetID()->ToString(indent + 1);
     ss << GetType()->ToString(indent + 1);
-    ss << GetThirdNode()->ToString(indent + 1);
+    ss << GetChild(2)->ToString(indent + 1);
 
     return ss.str();
-}
-
-ASTNode* VarDeclNode::GetThirdNode()
-{
-    return *(++(++(begin())));
 }
 
 // DotNode ////////////////////////////////////////////////////////
@@ -238,22 +254,15 @@ DotNode::DotNode(ASTNode* leftSide, ASTNode* rightSide)
     AddChild(rightSide);
 }
 
-ASTNode* DotNode::GetLeft()
-{
-    return *begin();
-}
+ASTNode* DotNode::GetLeft() { return GetChild(0); }
 
-ASTNode* DotNode::GetRight()
-{
-    return *(++begin());
-}
+ASTNode* DotNode::GetRight() { return GetChild(1); }
 
 std::string DotNode::ToString(size_t indent)
 {
     std::stringstream ss;
     WriteIndentToStream(ss, indent);
     ss << "Dot\n";
-    
     ss << GetLeft()->ToString(indent + 1);
     ss << GetRight()->ToString(indent + 1);
 
@@ -270,7 +279,7 @@ std::string ExprNode::ToString(size_t indent)
     std::stringstream ss;
     WriteIndentToStream(ss, indent);
     ss << "Expr\n";
-    ss << (*begin())->ToString(indent + 1);
+    ss << GetChild(0)->ToString(indent + 1);
     return ss.str();
 }
 
@@ -307,8 +316,8 @@ ModifiedExpr::ModifiedExpr(ASTNode* modifier, ASTNode* expr)
     AddChild(expr);
 }
 
-ASTNode* ModifiedExpr::GetModifier() { return *begin(); }
-ASTNode* ModifiedExpr::GetExpr() { return *(++begin()); }
+ASTNode* ModifiedExpr::GetModifier() { return GetChild(0); }
+ASTNode* ModifiedExpr::GetExpr() { return GetChild(1); }
 
 std::string ModifiedExpr::ToString(size_t indent)
 {
@@ -324,7 +333,7 @@ std::string ModifiedExpr::ToString(size_t indent)
 // BaseLangStatNode //////////////////////////////////
 BaseLangStatNode::BaseLangStatNode(ExprNode* expr) { AddChild(expr); }
 
-ExprNode* BaseLangStatNode::GetExpr() { return (ExprNode*)*begin(); }
+ExprNode* BaseLangStatNode::GetExpr() { return (ExprNode*)GetChild(0); }
 
 // ReturnStatNode ////////////////////////////////////////////////
 ReturnStatNode::ReturnStatNode(ExprNode* expr) : BaseLangStatNode(expr) { }
@@ -348,7 +357,7 @@ VariableNode::VariableNode(IDNode* var, DimensionNode* dimension) : m_dimension(
 
 VariableNode::VariableNode(DotNode* var) : m_dimension(nullptr) { AddChild(var); }
 
-ASTNode* VariableNode::GetVariable() { return *begin(); }
+ASTNode* VariableNode::GetVariable() { return GetChild(0); }
 DimensionNode* VariableNode::GetDimension() { return m_dimension; }
 
 std::string VariableNode::ToString(size_t indent)
@@ -367,7 +376,7 @@ std::string VariableNode::ToString(size_t indent)
 // ReadStatNode //////////////////////////////////////////////////
 ReadStatNode::ReadStatNode(VariableNode* var) { AddChild(var); }
 
-VariableNode* ReadStatNode::GetVariable() { return (VariableNode*)*begin(); }
+VariableNode* ReadStatNode::GetVariable() { return (VariableNode*)GetChild(0); }
 
 std::string ReadStatNode::ToString(size_t indent)
 {
@@ -399,8 +408,8 @@ AssignStatNode::AssignStatNode(ASTNode* left, ExprNode* expr)
     AddChild(expr);
 }
 
-ASTNode* AssignStatNode::GetLeft() { return *begin(); }
-ExprNode* AssignStatNode::GetRight() { return (ExprNode*)*(++begin()); }
+ASTNode* AssignStatNode::GetLeft() { return GetChild(0); }
+ExprNode* AssignStatNode::GetRight() { return (ExprNode*)GetChild(1); }
 
 std::string AssignStatNode::ToString(size_t indent)
 {
@@ -420,9 +429,9 @@ IfStatNode::IfStatNode(ExprNode* condition, StatBlockNode* ifBranch, StatBlockNo
     AddChild(elseBranch);
 }
 
-ExprNode* IfStatNode::GetCondition() { return (ExprNode*)*begin(); }
-StatBlockNode* IfStatNode::GetIfBranch() { return (StatBlockNode*)*(++begin()); }
-StatBlockNode* IfStatNode::GetElseBranch() { return (StatBlockNode*)*(++(++begin())); }
+ExprNode* IfStatNode::GetCondition() { return (ExprNode*)GetChild(0); }
+StatBlockNode* IfStatNode::GetIfBranch() { return (StatBlockNode*)GetChild(1); }
+StatBlockNode* IfStatNode::GetElseBranch() { return (StatBlockNode*)GetChild(2); }
 
 std::string IfStatNode::ToString(size_t indent)
 {
@@ -443,8 +452,8 @@ WhileStatNode::WhileStatNode(ExprNode* condition, StatBlockNode* statBlock)
     AddChild(statBlock);
 }
 
-ExprNode* WhileStatNode::GetCondition() { return (ExprNode*)*begin(); }
-StatBlockNode* WhileStatNode::GetStatBlock() { return (StatBlockNode*)*(++begin()); }
+ExprNode* WhileStatNode::GetCondition() { return (ExprNode*)GetChild(0); }
+StatBlockNode* WhileStatNode::GetStatBlock() { return (StatBlockNode*)GetChild(1); }
 
 std::string WhileStatNode::ToString(size_t indent)
 {
@@ -469,7 +478,7 @@ std::string AParamListNode::ToString(size_t indent)
     std::stringstream ss;
     WriteIndentToStream(ss, indent);
     ss << "AParams\n";
-    for (ASTNode* param : *this)
+    for (ASTNode* param : GetChildren())
     {
         ss << param->ToString(indent + 1);
     }
@@ -483,8 +492,8 @@ FuncCallNode::FuncCallNode(IDNode* id, AParamListNode* parameters)
     AddChild(parameters);
 }
 
-IDNode* FuncCallNode::GetID() { return (IDNode*)*begin(); }
-AParamListNode* FuncCallNode::GetParameters() { return (AParamListNode*)*(++begin()); }
+IDNode* FuncCallNode::GetID() { return (IDNode*)GetChild(0); }
+AParamListNode* FuncCallNode::GetParameters() { return (AParamListNode*)GetChild(1); }
 
 std::string FuncCallNode::ToString(size_t indent)
 {
@@ -505,7 +514,7 @@ std::string StatBlockNode::ToString(size_t indent)
     std::stringstream ss;
     WriteIndentToStream(ss, indent);
     ss << "StatBlock\n";
-    for (ASTNode* statement : *this)
+    for (ASTNode* statement : GetChildren())
     {
         ss << statement->ToString(indent + 1);
     }
@@ -523,7 +532,7 @@ std::string FParamListNode::ToString(size_t indent)
     std::stringstream ss;
     WriteIndentToStream(ss, indent);
     ss << "FParams\n";
-    for (ASTNode* param : *this)
+    for (ASTNode* param : GetChildren())
     {
         ss << param->ToString(indent + 1);
     }
@@ -541,10 +550,10 @@ FunctionDefNode::FunctionDefNode(IDNode* id, TypeNode* returnType, FParamListNod
     AddChild(statBlock);
 }
 
-IDNode* FunctionDefNode::GetID() { return (IDNode*)*begin(); }
-TypeNode* FunctionDefNode::GetReturnType() { return (TypeNode*)*(++begin()); }
-FParamListNode* FunctionDefNode::GetParameters() { return (FParamListNode*)*(++(++begin())); }
-StatBlockNode* FunctionDefNode::GetBody() { return (StatBlockNode*)*(++(++(++begin()))); }
+IDNode* FunctionDefNode::GetID() { return (IDNode*)GetChild(0); }
+TypeNode* FunctionDefNode::GetReturnType() { return (TypeNode*)GetChild(1); }
+FParamListNode* FunctionDefNode::GetParameters() { return (FParamListNode*)GetChild(2); }
+StatBlockNode* FunctionDefNode::GetBody() { return (StatBlockNode*)GetChild(3); }
 
 std::string FunctionDefNode::ToString(size_t indent)
 {
@@ -588,7 +597,7 @@ MemVarNode::MemVarNode(VisibilityNode* visibility, IDNode* id,
 
 VisibilityNode* MemVarNode::GetVisibility()
 {
-    return (VisibilityNode*)*(++(++(++(begin()))));
+    return (VisibilityNode*)GetChild(3);
 }
 
 std::string MemVarNode::ToString(size_t indent)
@@ -616,22 +625,22 @@ MemFuncDeclNode::MemFuncDeclNode(VisibilityNode* visibility, IDNode* id, TypeNod
 
 VisibilityNode* MemFuncDeclNode::GetVisibility()
 {
-    return (VisibilityNode*)*begin();
+    return (VisibilityNode*)GetChild(0);
 }
 
 IDNode* MemFuncDeclNode::GetID()
 {
-    return (IDNode*)*(++begin());
+    return (IDNode*)GetChild(1);
 }
 
 TypeNode* MemFuncDeclNode::GetReturnType()
 {
-    return (TypeNode*)*(++(++begin()));
+    return (TypeNode*)GetChild(2);
 }
 
 FParamListNode* MemFuncDeclNode::GetParameters()
 {
-    return (FParamListNode*)*(++(++(++begin())));
+    return (FParamListNode*)GetChild(3);
 }
 
 std::string MemFuncDeclNode::ToString(size_t indent)
@@ -655,7 +664,7 @@ MemFuncDefNode::MemFuncDefNode(IDNode* classID, IDNode* id, TypeNode* returnType
     AddChild(classID);
 }
 
-IDNode* MemFuncDefNode::GetClassID() { return (IDNode*)*(++(++(++(++begin())))); }
+IDNode* MemFuncDefNode::GetClassID() { return (IDNode*)GetChild(4); }
 
 std::string MemFuncDefNode::ToString(size_t indent)
 {
@@ -678,9 +687,9 @@ ConstructorDeclNode::ConstructorDeclNode(VisibilityNode* visibility, FParamListN
     AddChild(params);
 }
 
-VisibilityNode* ConstructorDeclNode::GetVisibility() { return (VisibilityNode*)*begin(); }
+VisibilityNode* ConstructorDeclNode::GetVisibility() { return (VisibilityNode*)GetChild(0); }
 
-FParamListNode* ConstructorDeclNode::GetParams() { return (FParamListNode*)*(++begin()); }
+FParamListNode* ConstructorDeclNode::GetParams() { return (FParamListNode*)GetChild(1); }
 
 std::string ConstructorDeclNode::ToString(size_t indent)
 {
@@ -718,7 +727,7 @@ std::string InheritanceListNode::ToString(size_t indent)
     std::stringstream ss;
     WriteIndentToStream(ss, indent);
     ss << "InheritanceList\n";
-    for (ASTNode* id : *this)
+    for (ASTNode* id : GetChildren())
     {
         ss << id->ToString(indent + 1);
     }
@@ -751,29 +760,29 @@ ClassDefNode::~ClassDefNode()
     }
 }
 
-IDNode* ClassDefNode::GetID() { return (IDNode*)*begin(); }
+IDNode* ClassDefNode::GetID() { return (IDNode*)GetChild(0); }
 
 InheritanceListNode* ClassDefNode::GetInheritanceList() 
 { 
-    return (InheritanceListNode*)*(++begin()); 
+    return (InheritanceListNode*)GetChild(1); 
 }
 
 void ClassDefNode::AddVarDecl(MemVarNode* var) 
 {
     m_varDeclarations.push_back(var);
-    var->m_parent = this;
+    var->SetParent(this);
 }
 
 void ClassDefNode::AddConstructor(ConstructorDeclNode* constructor) 
 { 
     m_constructors.push_back(constructor); 
-    constructor->m_parent = this;
+    constructor->SetParent(this);
 }
 
 void ClassDefNode::AddFuncDecl(MemFuncDeclNode* func) 
 { 
     m_functionDeclarations.push_back(func); 
-    func->m_parent = this;
+    func->SetParent(this);
 }
 
 std::list<MemVarNode*>& ClassDefNode::GetVarDecls() { return m_varDeclarations; }
@@ -816,7 +825,7 @@ std::string ClassDefListNode::ToString(size_t indent)
     std::stringstream ss;
     WriteIndentToStream(ss, indent);
     ss << "ClassDefList\n";
-    for (ASTNode* classDef : *this)
+    for (ASTNode* classDef : GetChildren())
     {
         ss << classDef->ToString(indent + 1);
     }
@@ -835,7 +844,7 @@ std::string FunctionDefListNode::ToString(size_t indent)
     std::stringstream ss;
     WriteIndentToStream(ss, indent);
     ss << "FuncDefList\n";
-    for (ASTNode* funcDef : *this)
+    for (ASTNode* funcDef : GetChildren())
     {
         ss << funcDef->ToString(indent + 1);
     }
@@ -852,12 +861,12 @@ ProgramNode::ProgramNode()
 
 ClassDefListNode* ProgramNode::GetClassList()
 {
-    return (ClassDefListNode*)*begin();
+    return (ClassDefListNode*)GetChild(0);
 }
 
 FunctionDefListNode* ProgramNode::GetFunctionList()
 {
-    return (FunctionDefListNode*)*(++begin());
+    return (FunctionDefListNode*)GetChild(1);
 }
 
 std::string ProgramNode::ToString(size_t indent)
