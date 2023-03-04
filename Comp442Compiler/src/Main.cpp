@@ -7,6 +7,16 @@
 #include "Parser/Parser.h"
 #include "Core/Util.h"
 
+class VisitorImpl : public Visitor
+{
+public:
+	size_t numIDVisited = 0;
+	void Visit(IDNode* element) override 
+	{
+		std::cout << "visited id \"" << element->GetID().GetLexeme() << "\"\n";
+		numIDVisited++;
+	}
+};
 
 void ExitPrompt()
 {
@@ -25,6 +35,9 @@ int main(int argc, char* argv[])
 	
 	ProgramNode* program = Parser::Parse(path);
 	std::cout << (program != nullptr) << "\n";
+	VisitorImpl* v = new VisitorImpl();
+	program->AcceptVisit(v);
+	std::cout << "visited " << v->numIDVisited << " IDNodes\n";
 	delete program;
 #else
 	std::string directoryPath = "TestFiles";
