@@ -1925,15 +1925,15 @@ void Parser::ProcessSemanticAction(SemanticAction action)
         break;
 
     case SemanticAction::PushID:
-        Push<IDNode>(m_prevToken.GetLexeme()); 
+        Push<IDNode>(m_prevToken); 
         break;
 
     case SemanticAction::PushOp:
-        Push<OperatorNode>(m_prevToken.GetLexeme()); 
+        Push<OperatorNode>(m_prevToken); 
         break;
 
     case SemanticAction::PushSign:
-        Push<SignNode>(m_prevToken.GetLexeme()); 
+        Push<SignNode>(m_prevToken); 
         break;
 
     case SemanticAction::PushNot:
@@ -1941,7 +1941,7 @@ void Parser::ProcessSemanticAction(SemanticAction action)
         break;
 
     case SemanticAction::PushType:
-        Push<TypeNode>(m_prevToken.GetLexeme()); 
+        Push<TypeNode>(m_prevToken); 
         break;
 
     case SemanticAction::PushFreeFuncMarker:
@@ -2075,14 +2075,14 @@ void Parser::ProcessSemanticAction(SemanticAction action)
 
 void Parser::ConstructIntLiteralAction()
 {
-    m_semanticStack.push_front(new LiteralNode(new IDNode(m_prevToken.GetLexeme()), 
-        new TypeNode("integer")));
+    m_semanticStack.push_front(new LiteralNode(new IDNode(m_prevToken), 
+        new TypeNode(Token("integer",TokenType::IntegerKeyword, SIZE_MAX))));
 }
 
 void Parser::ConstructFloatLiteralAction()
 {
-    m_semanticStack.push_front(new LiteralNode(new IDNode(m_prevToken.GetLexeme()), 
-        new TypeNode("float")));
+    m_semanticStack.push_front(new LiteralNode(new IDNode(m_prevToken), 
+        new TypeNode(Token("float", TokenType::FloatKeyword, SIZE_MAX))));
 }
 
 void Parser::ConstructVisibilityAction()

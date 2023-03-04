@@ -3,6 +3,8 @@
 #include <string>
 #include <sstream>
 
+#include "../Core/Token.h"
+
 class StatBlockNode;
 class ExprNode;
 class AParamListNode;
@@ -91,38 +93,38 @@ public:
 class IDNode : public LeafNode
 {
 public:
-    IDNode(const std::string& id);
+    IDNode(const Token& id);
 
-    const std::string& GetID() const;
+    const Token& GetID() const;
 
     virtual std::string ToString(size_t indent = 0) override;
 
 private:
-    std::string m_id;
+    Token m_id;
 };
 
 class TypeNode : public LeafNode
 {
 public:
-    TypeNode(const std::string& type);
+    TypeNode(const Token& type);
 
-    const std::string& GetType() const;
+    const Token& GetType() const;
 
     virtual std::string ToString(size_t indent = 0) override;
 private:
-    std::string m_type;
+    Token m_type;
 };
 
-class OperatorNode : public ASTNodeBase
+class OperatorNode : public LeafNode
 {
 public:
-    OperatorNode(const std::string& op);
-    const std::string& GetOperator() const;
+    OperatorNode(const Token& op);
+    const Token& GetOperator() const;
 
     virtual std::string ToString(size_t indent = 0) override;
 
 private:
-    std::string m_operator;
+    Token m_operator;
 };
 
 class BaseBinaryOperator : public ASTNodeBase
@@ -220,14 +222,14 @@ private:
 class SignNode : public LeafNode
 {
 public:
-    SignNode(const std::string& sign);
+    SignNode(const Token& sign);
 
-    const std::string& GetSign();
+    const Token& GetSign();
 
     virtual std::string ToString(size_t indent = 0) override;
 
 private:
-    std::string m_sign;
+    Token m_sign;
 };
 
 class NotNode : public LeafNode 

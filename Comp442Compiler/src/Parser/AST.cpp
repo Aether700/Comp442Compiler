@@ -84,9 +84,9 @@ std::string UnspecificedDimensionNode::ToString(size_t indent)
 }
 
 // IDNode ////////////////////////////////////////////////////////
-IDNode::IDNode(const std::string& id) : m_id(id) { }
+IDNode::IDNode(const Token& id) : m_id(id) { }
 
-const std::string& IDNode::GetID() const { return m_id; }
+const Token& IDNode::GetID() const { return m_id; }
 
 std::string IDNode::ToString(size_t indent)
 {
@@ -94,15 +94,15 @@ std::string IDNode::ToString(size_t indent)
     WriteIndentToStream(ss, indent);
     ss << "id\n";
     WriteIndentToStream(ss, indent + 1);
-    ss << GetID() << "\n";
+    ss << GetID().GetLexeme() << "\n";
 
     return ss.str();
 }
 
 // TypeNode //////////////////////////////////////////////////////
-TypeNode::TypeNode(const std::string& type) : m_type(type) { }
+TypeNode::TypeNode(const Token& type) : m_type(type) { }
 
-const std::string& TypeNode::GetType() const { return m_type; }
+const Token& TypeNode::GetType() const { return m_type; }
 
 std::string TypeNode::ToString(size_t indent)
 {
@@ -110,20 +110,20 @@ std::string TypeNode::ToString(size_t indent)
     WriteIndentToStream(ss, indent);
     ss << "TypeNode\n";
     WriteIndentToStream(ss, indent + 1);
-    ss << GetType() << "\n"; 
+    ss << GetType().GetLexeme() << "\n"; 
 
     return ss.str();
 }
 
 // OperatorNode ////////////////////////////////////////
-OperatorNode::OperatorNode(const std::string& op) : m_operator(op) { }
-const std::string& OperatorNode::GetOperator() const { return m_operator; }
+OperatorNode::OperatorNode(const Token& op) : m_operator(op) { }
+const Token& OperatorNode::GetOperator() const { return m_operator; }
 
 std::string OperatorNode::ToString(size_t indent)
 {
     std::stringstream ss;
     WriteIndentToStream(ss, indent);
-    ss << m_operator <<"\n";
+    ss << m_operator.GetLexeme() <<"\n";
     return ss.str();
 }
 
@@ -180,7 +180,7 @@ std::string LiteralNode::ToString(size_t indent)
     WriteIndentToStream(ss, indent);
     ss << "Literal\n";
     WriteIndentToStream(ss, indent + 1);
-    ss << GetLexemeNode()->GetID() << "\n";
+    ss << GetLexemeNode()->GetID().GetLexeme() << "\n";
     ss << GetType()->ToString(indent + 1);
     return ss.str();
 }
@@ -284,9 +284,9 @@ std::string ExprNode::ToString(size_t indent)
 }
 
 // SignNode ////////////////////////////////////////////
-SignNode::SignNode(const std::string& sign) : m_sign(sign) { }
+SignNode::SignNode(const Token& sign) : m_sign(sign) { }
 
-const std::string& SignNode::GetSign() { return m_sign; }
+const Token& SignNode::GetSign() { return m_sign; }
 
 std::string SignNode::ToString(size_t indent)
 {
@@ -294,7 +294,7 @@ std::string SignNode::ToString(size_t indent)
     WriteIndentToStream(ss, indent);
     ss << "Sign\n";
     WriteIndentToStream(ss, indent + 1);
-    ss << m_sign << "\n";
+    ss << m_sign.GetLexeme() << "\n";
 
     return ss.str();
 }
