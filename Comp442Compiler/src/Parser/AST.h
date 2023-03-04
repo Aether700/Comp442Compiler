@@ -3,13 +3,14 @@
 #include <string>
 #include <sstream>
 
+#include "Visitor.h"
 #include "../Core/Token.h"
 
 class StatBlockNode;
 class ExprNode;
 class AParamListNode;
 
-class ASTNode
+class ASTNode : public IVisitableElement
 {
 public:
     virtual ~ASTNode();
@@ -42,6 +43,8 @@ protected:
     ASTNode* GetChild(size_t index);
     std::list<ASTNode*>& GetChildren();
 
+    void ChildrenAcceptVisit(Visitor* visitor);
+
 private:
     ASTNode* m_parent;
     std::list<ASTNode*> m_children;
@@ -73,6 +76,8 @@ public:
     virtual size_t GetNumChild() const override;
 
     virtual std::string ToString(size_t indent = 0) override;
+
+    virtual void AcceptVisit(Visitor* visitor) override;
 };
 
 // serves as stop point when looping
@@ -88,6 +93,7 @@ class UnspecificedDimensionNode : public LeafNode
 { 
 public:
     virtual std::string ToString(size_t indent = 0) override;
+    virtual void AcceptVisit(Visitor* visitor) override;
 };
 
 class IDNode : public LeafNode
@@ -98,7 +104,7 @@ public:
     const Token& GetID() const;
 
     virtual std::string ToString(size_t indent = 0) override;
-
+    virtual void AcceptVisit(Visitor* visitor) override;
 private:
     Token m_id;
 };
@@ -111,6 +117,7 @@ public:
     const Token& GetType() const;
 
     virtual std::string ToString(size_t indent = 0) override;
+    virtual void AcceptVisit(Visitor* visitor) override;
 private:
     Token m_type;
 };
@@ -122,6 +129,7 @@ public:
     const Token& GetOperator() const;
 
     virtual std::string ToString(size_t indent = 0) override;
+    virtual void AcceptVisit(Visitor* visitor) override;
 
 private:
     Token m_operator;
@@ -147,18 +155,24 @@ class AddOpNode : public BaseBinaryOperator
 {
 public:
     AddOpNode(ASTNode* left, OperatorNode* op, ASTNode* right);
+
+    virtual void AcceptVisit(Visitor* visitor) override;
 };
 
 class MultOpNode : public BaseBinaryOperator
 {
 public:
     MultOpNode(ASTNode* left, OperatorNode* op, ASTNode* right);
+
+    virtual void AcceptVisit(Visitor* visitor) override;
 };
 
 class RelOpNode : public BaseBinaryOperator
 {
 public:
     RelOpNode(ASTNode* left, OperatorNode* op, ASTNode* right);
+
+    virtual void AcceptVisit(Visitor* visitor) override;
 };
 
 class LiteralNode : public ASTNodeBase
@@ -170,6 +184,7 @@ public:
     TypeNode* GetType();
 
     virtual std::string ToString(size_t indent = 0) override;
+    virtual void AcceptVisit(Visitor* visitor) override;
 };
 
 class DimensionNode : public ASTNodeBase
@@ -178,6 +193,7 @@ public:
     void AddLoopingChild(ASTNode* dimension);
 
     virtual std::string ToString(size_t indent = 0) override;
+    virtual void AcceptVisit(Visitor* visitor) override;
 };
 
 class VarDeclNode : public ASTNodeBase
@@ -192,6 +208,7 @@ public:
     AParamListNode* GetParamList();
 
     virtual std::string ToString(size_t indent = 0) override;
+    virtual void AcceptVisit(Visitor* visitor) override;
 };
 
 class DotNode : public ASTNodeBase
@@ -203,6 +220,7 @@ public:
     ASTNode* GetRight();
 
     virtual std::string ToString(size_t indent = 0) override;
+    virtual void AcceptVisit(Visitor* visitor) override;
 };
 
 class ExprNode : public ASTNodeBase
@@ -211,6 +229,7 @@ public:
     ExprNode(ASTNode* exprRoot);
 
     virtual std::string ToString(size_t indent = 0) override;
+    virtual void AcceptVisit(Visitor* visitor) override;
 
 protected:
     ExprNode();
@@ -227,6 +246,7 @@ public:
     const Token& GetSign();
 
     virtual std::string ToString(size_t indent = 0) override;
+    virtual void AcceptVisit(Visitor* visitor) override;
 
 private:
     Token m_sign;
@@ -236,6 +256,7 @@ class NotNode : public LeafNode
 {
 public:
     virtual std::string ToString(size_t indent = 0) override;
+    virtual void AcceptVisit(Visitor* visitor) override;
 };
 
 // represents an expression being modified by a modifier such as a sign or the "not" keyword
@@ -248,6 +269,7 @@ public:
     ASTNode* GetExpr();
 
     virtual std::string ToString(size_t indent = 0) override;
+    virtual void AcceptVisit(Visitor* visitor) override;
 };
 
 // base node of simple statements provided by the language such as return or write
@@ -265,6 +287,7 @@ public:
     ReturnStatNode(ExprNode* expr);
 
     virtual std::string ToString(size_t indent = 0) override;
+    virtual void AcceptVisit(Visitor* visitor) override;
 };
 
 class VariableNode : public ASTNodeBase
@@ -276,6 +299,7 @@ public:
     DimensionNode* GetDimension();
 
     virtual std::string ToString(size_t indent = 0) override;
+    virtual void AcceptVisit(Visitor* visitor) override;
 };
 
 class ReadStatNode : public ASTNodeBase
@@ -286,6 +310,7 @@ public:
     ASTNode* GetVariable();
 
     virtual std::string ToString(size_t indent = 0) override;
+    virtual void AcceptVisit(Visitor* visitor) override;
 };
 
 class WriteStatNode : public BaseLangStatNode
@@ -293,6 +318,7 @@ class WriteStatNode : public BaseLangStatNode
 public:
     WriteStatNode(ExprNode* expr);
     virtual std::string ToString(size_t indent = 0) override;
+    virtual void AcceptVisit(Visitor* visitor) override;
 };
 
 class AssignStatNode : public ASTNodeBase
@@ -304,6 +330,7 @@ public:
     ExprNode* GetRight();
 
     virtual std::string ToString(size_t indent = 0) override;
+    virtual void AcceptVisit(Visitor* visitor) override;
 };
 
 class IfStatNode : public ASTNodeBase
@@ -316,6 +343,7 @@ public:
     StatBlockNode* GetElseBranch();
 
     virtual std::string ToString(size_t indent = 0) override;
+    virtual void AcceptVisit(Visitor* visitor) override;
 };
 
 class WhileStatNode : public ASTNodeBase
@@ -327,6 +355,7 @@ public:
     StatBlockNode* GetStatBlock();
 
     virtual std::string ToString(size_t indent = 0) override;
+    virtual void AcceptVisit(Visitor* visitor) override;
 };
 
 class AParamListNode : public ASTNodeBase
@@ -335,6 +364,7 @@ public:
     void AddLoopingChild(ASTNode* param);
 
     virtual std::string ToString(size_t indent = 0) override;
+    virtual void AcceptVisit(Visitor* visitor) override;
 };
 
 class FuncCallNode : public ASTNodeBase
@@ -346,6 +376,7 @@ public:
     AParamListNode* GetParameters();
 
     virtual std::string ToString(size_t indent = 0) override;
+    virtual void AcceptVisit(Visitor* visitor) override;
 };
 
 class StatBlockNode : public ASTNodeBase
@@ -354,6 +385,7 @@ public:
     void AddLoopingChild(ASTNode* statement);
 
     virtual std::string ToString(size_t indent = 0) override;
+    virtual void AcceptVisit(Visitor* visitor) override;
 };
 
 class FParamListNode : public ASTNodeBase
@@ -362,6 +394,7 @@ public:
     void AddLoopingChild(ASTNode* param);
 
     virtual std::string ToString(size_t indent = 0) override;
+    virtual void AcceptVisit(Visitor* visitor) override;
 };
 
 class FunctionDefNode : public ASTNodeBase
@@ -376,6 +409,7 @@ public:
     StatBlockNode* GetBody();
 
     virtual std::string ToString(size_t indent = 0) override;
+    virtual void AcceptVisit(Visitor* visitor) override;
 };
 
 class VisibilityNode : public LeafNode
@@ -386,6 +420,7 @@ public:
     const std::string& GetVisibility() const;
 
     virtual std::string ToString(size_t indent = 0) override;
+    virtual void AcceptVisit(Visitor* visitor) override;
     
 private:
     std::string m_visibility;
@@ -395,6 +430,8 @@ class DefaultVisibilityNode : public VisibilityNode
 {
 public:
     DefaultVisibilityNode();
+
+    virtual void AcceptVisit(Visitor* visitor) override;
 };
 
 class MemVarNode : public VarDeclNode
@@ -406,6 +443,7 @@ public:
     VisibilityNode* GetVisibility();
 
     virtual std::string ToString(size_t indent = 0) override;
+    virtual void AcceptVisit(Visitor* visitor) override;
 };
 
 class MemFuncDeclNode : public ASTNodeBase
@@ -420,6 +458,7 @@ public:
     FParamListNode* GetParameters();
 
     virtual std::string ToString(size_t indent = 0) override;
+    virtual void AcceptVisit(Visitor* visitor) override;
 };
 
 class MemFuncDefNode : public FunctionDefNode
@@ -431,6 +470,7 @@ public:
     IDNode* GetClassID();
 
     virtual std::string ToString(size_t indent = 0) override;
+    virtual void AcceptVisit(Visitor* visitor) override;
 };
 
 class ConstructorDeclNode : public ASTNodeBase
@@ -442,13 +482,16 @@ public:
     FParamListNode* GetParams();
 
     virtual std::string ToString(size_t indent = 0) override;
+    virtual void AcceptVisit(Visitor* visitor) override;
 };
 
 class ConstructorDefNode : public FunctionDefNode
 {
 public:
     ConstructorDefNode(IDNode* classID, FParamListNode* params, StatBlockNode* body);
+
     virtual std::string ToString(size_t indent = 0) override;
+    virtual void AcceptVisit(Visitor* visitor) override;
 };
 
 class InheritanceListNode : public ASTNodeBase
@@ -457,6 +500,7 @@ public:
     void AddLoopingChild(ASTNode* id);
 
     virtual std::string ToString(size_t indent = 0) override;
+    virtual void AcceptVisit(Visitor* visitor) override;
 };
 
 class ClassDefNode : public ASTNodeBase
@@ -476,9 +520,9 @@ public:
     std::list<MemFuncDeclNode*>& GetFuncDecls();
 
     virtual std::string ToString(size_t indent = 0) override;
+    virtual void AcceptVisit(Visitor* visitor) override;
 
 private:
-
     std::list<MemVarNode*> m_varDeclarations;
     std::list<ConstructorDeclNode*> m_constructors;
     std::list<MemFuncDeclNode*> m_functionDeclarations;
@@ -490,6 +534,7 @@ public:
     void AddClass(ClassDefNode* classDef);
 
     virtual std::string ToString(size_t indent = 0) override;
+    virtual void AcceptVisit(Visitor* visitor) override;
 };
 
 class FunctionDefListNode : public ASTNodeBase
@@ -498,6 +543,7 @@ public:
     void AddFunc(FunctionDefNode* funcDef);
 
     virtual std::string ToString(size_t indent = 0) override;
+    virtual void AcceptVisit(Visitor* visitor) override;
 };
 
 class ProgramNode : public ASTNodeBase
@@ -509,4 +555,5 @@ public:
     FunctionDefListNode* GetFunctionList();
 
     virtual std::string ToString(size_t indent = 0) override;
+    virtual void AcceptVisit(Visitor* visitor) override;
 };
