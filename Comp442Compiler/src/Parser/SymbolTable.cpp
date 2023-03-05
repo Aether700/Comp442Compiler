@@ -11,16 +11,16 @@ std::ostream& operator<<(std::ostream& stream, SymbolTableEntryKind kind)
         stream << "class";
         break;
 
-    case SymbolTableEntryKind::Function:
-        stream << "function";
+    case SymbolTableEntryKind::FreeFunction:
+        stream << "free function";
         break;
 
     case SymbolTableEntryKind::Parameter:
         stream << "parameter";
         break;
 
-    case SymbolTableEntryKind::Variable:
-        stream << "variable";
+    case SymbolTableEntryKind::LocalVariable:
+        stream << "local variable";
         break;
 
     default:

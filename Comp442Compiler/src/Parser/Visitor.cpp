@@ -39,7 +39,7 @@ SymbolTableAssembler::~SymbolTableAssembler()
 void SymbolTableAssembler::Visit(VarDeclNode* element)
 {
     SymbolTableEntry* entry = new SymbolTableEntry(element->GetID()->GetID().GetLexeme(),
-        SymbolTableEntryKind::Variable, VarDeclToTypeStr(element));
+        SymbolTableEntryKind::LocalVariable, VarDeclToTypeStr(element));
 
     m_stack.push_front(entry);
 }
@@ -78,15 +78,25 @@ void SymbolTableAssembler::Visit(FunctionDefNode* element)
     }
 
     SymbolTable* functionTable = new SymbolTable();
+    std::list<SymbolTableEntry*> entriesToKeep;
     for (SymbolTableEntry* entry : m_stack)
     {
-        functionTable->AddEntry(entry);
+        if (entry->GetKind() == SymbolTableEntryKind::LocalVariable 
+            || entry->GetKind() == SymbolTableEntryKind::Parameter)
+        {
+            functionTable->AddEntry(entry);
+        }
+        else
+        {
+            entriesToKeep.push_back(entry);
+        }
     }
 
     m_stack.clear();
+    m_stack = entriesToKeep;
 
     SymbolTableEntry* entry = new SymbolTableEntry(element->GetID()->GetID().GetLexeme(), 
-        SymbolTableEntryKind::Function, typeStr.str(), functionTable);
+        SymbolTableEntryKind::FreeFunction, typeStr.str(), functionTable);
 
     m_stack.push_front(entry);
 }

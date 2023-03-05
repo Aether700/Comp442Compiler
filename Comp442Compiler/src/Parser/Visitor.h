@@ -42,8 +42,8 @@ public:
     virtual void Visit(FParamNode* element) override;
     virtual void Visit(FunctionDefNode* element) override;
 
-    // temp
-    SymbolTableEntry* GetLast() { return m_stack.front(); }
+    // temp for debugging
+    auto& GetEntries() { return m_stack; }
     //
 
 private:

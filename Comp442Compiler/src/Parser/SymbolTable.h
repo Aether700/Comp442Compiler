@@ -7,8 +7,8 @@ class SymbolTable;
 
 enum class SymbolTableEntryKind
 {
-    Variable,
-    Function,
+    LocalVariable,
+    FreeFunction,
     Class,
     Parameter
 };

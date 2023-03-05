@@ -36,11 +36,25 @@ int main(int argc, char* argv[])
 	ProgramNode* program = Parser::Parse(path);
 	std::cout << (program != nullptr) << "\n";
 
+	if (program == nullptr)
+	{
+		return 1;
+	}
 	SymbolTableAssembler* assembler = new SymbolTableAssembler();
 	program->AcceptVisit(assembler);
-	for (SymbolTableEntry* entry : *assembler->GetLast()->GetSubTable())
+	for (SymbolTableEntry* entry : assembler->GetEntries())
 	{
 		std::cout << *entry << "\n";
+		if (entry->GetSubTable() != nullptr)
+		{
+			std::cout << "\n";
+			for (SymbolTableEntry* entry2 : *entry->GetSubTable())
+			{
+				std::cout << *entry2 << "\n";
+			}
+
+			std::cout << "\n";
+		}
 	}
 
 	delete program;
