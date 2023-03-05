@@ -6,7 +6,24 @@ Program
 |  |  |  |  freeFunc
 |  |  |  TypeNode
 |  |  |  |  void
-|  |  |  FParams
+|  |  |  FParamList
+|  |  |  |  FParam
+|  |  |  |  |  id
+|  |  |  |  |  |  x
+|  |  |  |  |  TypeNode
+|  |  |  |  |  |  integer
+|  |  |  |  |  Dimensions
+|  |  |  |  |  |  Literal
+|  |  |  |  |  |  |  3
+|  |  |  |  |  |  |  TypeNode
+|  |  |  |  |  |  |  |  integer
+|  |  |  |  FParam
+|  |  |  |  |  id
+|  |  |  |  |  |  y
+|  |  |  |  |  TypeNode
+|  |  |  |  |  |  float
+|  |  |  |  |  Dimensions
+|  |  |  |  |  |  UnspecifiedArrDimension
 |  |  |  StatBlock
 |  |  |  |  Dot
 |  |  |  |  |  Variable

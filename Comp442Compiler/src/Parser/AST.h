@@ -356,6 +356,14 @@ public:
     virtual std::string ToString(size_t indent = 0) override;
 };
 
+class FParamNode : public VarDeclNode
+{
+public:
+    FParamNode(IDNode* id, TypeNode* type, DimensionNode* dimension);
+
+    virtual std::string ToString(size_t indent = 0) override;
+};
+
 class FParamListNode : public ASTNodeBase
 {
 public:

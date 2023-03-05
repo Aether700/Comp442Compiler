@@ -1089,7 +1089,7 @@ void RuleManager::InitializeRules()
     // 92 FParams
     m_rules.push_back(new Rule({ TokenType::ID, SemanticAction::PushID, TokenType::Colon, 
         NonTerminal::Type, SemanticAction::PushStopNode, 
-        NonTerminal::ArraySizeRepetition, SemanticAction::ConstructVarDecl, 
+        NonTerminal::ArraySizeRepetition, SemanticAction::ConstructFParam, 
         NonTerminal::FParamsTail }));
 
     // 93 FParams
@@ -1105,7 +1105,7 @@ void RuleManager::InitializeRules()
     m_rules.push_back(new Rule({ TokenType::Comma, 
         TokenType::ID, SemanticAction::PushID, TokenType::Colon, NonTerminal::Type, 
         SemanticAction::PushStopNode, NonTerminal::ArraySizeRepetition, 
-        SemanticAction::ConstructVarDecl, NonTerminal::FParamsTail }));
+        SemanticAction::ConstructFParam, NonTerminal::FParamsTail }));
 
     // 97 FParamsTail
     m_rules.push_back(new Rule({ }));
@@ -2000,6 +2000,10 @@ void Parser::ProcessSemanticAction(SemanticAction action)
         ConstructLoopingNode<StatBlockNode>();
         break;
 
+    case SemanticAction::ConstructFParam:
+        ConstructFParamAction();
+        break;
+
     case SemanticAction::ConstructFParams:
         ConstructLoopingNode<FParamListNode>();
         break;
@@ -2150,6 +2154,15 @@ void Parser::ConstructVarDeclAction()
     {
         DEBUG_BREAK();
     }
+}
+
+void Parser::ConstructFParamAction()
+{
+    DimensionNode* dimension = PopTargetNodeFromSemanticStack<DimensionNode>();
+    TypeNode* type = PopTargetNodeFromSemanticStack<TypeNode>();
+    IDNode* id = PopTargetNodeFromSemanticStack<IDNode>();
+
+    m_semanticStack.push_front(new FParamNode(id, type, dimension));
 }
 
 void Parser::ConstructFuncDefAction()

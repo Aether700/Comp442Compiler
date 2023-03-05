@@ -516,6 +516,22 @@ std::string StatBlockNode::ToString(size_t indent)
     return ss.str();
 }
 
+// FParamNode //////////////////////////////////////////////////
+FParamNode::FParamNode(IDNode* id, TypeNode* type, DimensionNode* dimension)
+    : VarDeclNode(id, type, dimension) { }
+
+std::string FParamNode::ToString(size_t indent)
+{
+    std::stringstream ss;
+    WriteIndentToStream(ss, indent);
+    ss << "FParam\n";
+    ss << GetID()->ToString(indent + 1);
+    ss << GetType()->ToString(indent + 1);
+    ss << GetChild(2)->ToString(indent + 1);
+
+    return ss.str();
+}
+
 // FParamListNode //////////////////////////////////////////
 void FParamListNode::AddLoopingChild(ASTNode* param)
 {
@@ -526,7 +542,7 @@ std::string FParamListNode::ToString(size_t indent)
 {
     std::stringstream ss;
     WriteIndentToStream(ss, indent);
-    ss << "FParams\n";
+    ss << "FParamList\n";
     for (ASTNode* param : GetChildren())
     {
         ss << param->ToString(indent + 1);

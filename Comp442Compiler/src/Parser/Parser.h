@@ -58,6 +58,7 @@ enum class SemanticAction
     ConstructVariable,
     ConstructVarDecl,
     ConstructStatBlock,
+    ConstructFParam,
     ConstructFParams,
     ConstructAParams,
     ConstructFuncDef,
@@ -341,6 +342,7 @@ private:
     void ConstructAssignStatAction();
     void ConstructVariableAction();
     void ConstructVarDeclAction();
+    void ConstructFParamAction();
     void ConstructFuncDefAction();
     void ConstructFreeFuncDefAction(StatBlockNode* body);
     void ConstructMemFuncDefAction(StatBlockNode* body);
