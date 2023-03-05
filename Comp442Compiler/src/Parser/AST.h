@@ -50,6 +50,13 @@ private:
     std::list<ASTNode*> m_children;
 };
 
+class IterableNode : public ASTNodeBase
+{
+public:
+    std::list<ASTNode*>::iterator begin();
+    std::list<ASTNode*>::iterator end();
+};
+
 class LeafNode : public ASTNode
 {
 public:
@@ -187,7 +194,7 @@ public:
     virtual void AcceptVisit(Visitor* visitor) override;
 };
 
-class DimensionNode : public ASTNodeBase
+class DimensionNode : public IterableNode
 {
 public: 
     void AddLoopingChild(ASTNode* dimension);
@@ -388,7 +395,7 @@ public:
     virtual void AcceptVisit(Visitor* visitor) override;
 };
 
-class FParamListNode : public ASTNodeBase
+class FParamListNode : public IterableNode
 {
 public:
     void AddLoopingChild(ASTNode* param);

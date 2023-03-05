@@ -1,8 +1,38 @@
 #include "SymbolTable.h"
+#include "../Core/Core.h"
+
+// SymbolTableEntryKind ////////////////////////////////////////////////////////
+
+std::ostream& operator<<(std::ostream& stream, SymbolTableEntryKind kind)
+{
+    switch(kind)
+    {
+    case SymbolTableEntryKind::Class:
+        stream << "class";
+        break;
+
+    case SymbolTableEntryKind::Function:
+        stream << "function";
+        break;
+
+    case SymbolTableEntryKind::Parameter:
+        stream << "parameter";
+        break;
+
+    case SymbolTableEntryKind::Variable:
+        stream << "variable";
+        break;
+
+    default:
+        DEBUG_BREAK();
+        break;
+    }
+    return stream;
+}
 
 // SymbolTableEntry //////////////////////////////////////////
 
-SymbolTableEntry::SymbolTableEntry(const std::string& name, const std::string& kind, 
+SymbolTableEntry::SymbolTableEntry(const std::string& name, SymbolTableEntryKind kind, 
     const std::string& type, SymbolTable* subTable) 
     : m_name(name), m_kind(kind), m_type(type), m_subTable(subTable) { }
 
@@ -12,15 +42,27 @@ SymbolTableEntry::~SymbolTableEntry()
 }
 
 const std::string& SymbolTableEntry::GetName() const { return m_name; }
-const std::string& SymbolTableEntry::GetKind() const { return m_kind; }
+SymbolTableEntryKind SymbolTableEntry::GetKind() const { return m_kind; }
 const std::string& SymbolTableEntry::GetType() const { return m_type; }
 SymbolTable* SymbolTableEntry::GetSubTable() { return m_subTable; }
 const SymbolTable* SymbolTableEntry::GetSubTable() const { return m_subTable; }
 
+std::ostream& operator<<(std::ostream& stream, const SymbolTableEntry& entry)
+{
+    stream << entry.GetName() << " " << entry.GetKind() << " " << entry.GetType();
+    return stream;
+}
 
 // SymbolTable ////////////////////////////////////////////////////////////////////
-void SymbolTable::AddEntry(const std::string& name, const std::string& kind, 
-    const std::string& type, SymbolTable* subTable)
+SymbolTable::~SymbolTable()
 {
-    m_entries.emplace_front(name, kind, type, subTable);
+    for (SymbolTableEntry* entry : m_entries)
+    {
+        delete entry;
+    }
 }
+
+void SymbolTable::AddEntry(SymbolTableEntry* entry) { m_entries.push_front(entry); }
+
+SymbolTable::TableIterator SymbolTable::begin() { return m_entries.begin(); }
+SymbolTable::TableIterator SymbolTable::end() { return m_entries.end(); }

@@ -35,9 +35,14 @@ int main(int argc, char* argv[])
 	
 	ProgramNode* program = Parser::Parse(path);
 	std::cout << (program != nullptr) << "\n";
-	VisitorImpl* v = new VisitorImpl();
-	program->AcceptVisit(v);
-	std::cout << "visited " << v->numIDVisited << " IDNodes\n";
+
+	SymbolTableAssembler* assembler = new SymbolTableAssembler();
+	program->AcceptVisit(assembler);
+	for (SymbolTableEntry* entry : *assembler->GetLast()->GetSubTable())
+	{
+		std::cout << *entry << "\n";
+	}
+
 	delete program;
 #else
 	std::string directoryPath = "TestFiles";

@@ -1,4 +1,5 @@
-function freeFunc() => void
+function freeFunc(x : integer[][3], f : float) => void
 {
-    var[2 * (0+5-6)][2][5].func().arr[5].value.otherFunc(5.6*8.4/(4.2-6.3));
+    localvar y : integer;
+    localvar z : integer[2][3];
 }

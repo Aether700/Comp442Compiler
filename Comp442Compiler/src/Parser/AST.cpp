@@ -65,6 +65,10 @@ void ASTNodeBase::ChildrenAcceptVisit(Visitor* visitor)
     }
 }
 
+// IterableNode ///////////////////////////////////////////////////////////
+std::list<ASTNode*>::iterator IterableNode::begin() { return GetChildren().begin(); }
+std::list<ASTNode*>::iterator IterableNode::end() { return GetChildren().end(); }
+
 // LeafNode ////////////////////////////////////////////////////////////////
 LeafNode::LeafNode() : m_parent(nullptr) { }
 

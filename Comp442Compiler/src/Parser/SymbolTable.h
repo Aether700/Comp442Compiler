@@ -1,37 +1,57 @@
 #pragma once
 #include <string>
 #include <list>
+#include <iostream>
 
 class SymbolTable;
+
+enum class SymbolTableEntryKind
+{
+    Variable,
+    Function,
+    Class,
+    Parameter
+};
+
+std::ostream& operator<<(std::ostream& stream, SymbolTableEntryKind kind);
+
 
 class SymbolTableEntry
 {
 public:
-    SymbolTableEntry(const std::string& name, const std::string& kind, 
+    SymbolTableEntry(const std::string& name, SymbolTableEntryKind kind, 
         const std::string& type, SymbolTable* subTable = nullptr);
 
     ~SymbolTableEntry();
 
     const std::string& GetName() const;
-    const std::string& GetKind() const;
+    SymbolTableEntryKind GetKind() const;
     const std::string& GetType() const;
     SymbolTable* GetSubTable();
     const SymbolTable* GetSubTable() const;
 
 private:
     std::string m_name;
-    std::string m_kind;
+    SymbolTableEntryKind m_kind;
     std::string m_type;
     SymbolTable* m_subTable;
 };
 
+std::ostream& operator<<(std::ostream& stream, const SymbolTableEntry& entry);
+
 class SymbolTable
 {
-    using TableList = std::list<SymbolTableEntry>;
     
 public:
-    void AddEntry(const std::string& name, const std::string& kind, 
-        const std::string& type, SymbolTable* subTable = nullptr);
+    using TableList = std::list<SymbolTableEntry*>;
+    using TableIterator = TableList::iterator;
+
+    ~SymbolTable();
+
+    void AddEntry(SymbolTableEntry* entry);
+
+    TableIterator begin();
+    TableIterator end();
 
 private:
     TableList m_entries;
