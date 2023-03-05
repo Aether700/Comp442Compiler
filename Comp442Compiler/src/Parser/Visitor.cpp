@@ -44,6 +44,14 @@ void SymbolTableAssembler::Visit(VarDeclNode* element)
     m_stack.push_front(entry);
 }
 
+void SymbolTableAssembler::Visit(FParamNode* element)
+{
+    SymbolTableEntry* entry = new SymbolTableEntry(element->GetID()->GetID().GetLexeme(),
+        SymbolTableEntryKind::Parameter, VarDeclToTypeStr(element));
+
+    m_stack.push_front(entry);
+}
+
 void SymbolTableAssembler::Visit(FunctionDefNode* element)
 {
     std::stringstream typeStr;
@@ -56,7 +64,6 @@ void SymbolTableAssembler::Visit(FunctionDefNode* element)
         {
             VarDeclNode* var = dynamic_cast<VarDeclNode*>(param);
             ASSERT(var != nullptr);
-            need to change entry kind somewhere around here (currently always variable)
             typeStr << VarDeclToTypeStr(var) << ", ";
             hasParam = true;
         }

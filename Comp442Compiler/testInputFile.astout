@@ -25,84 +25,20 @@ Program
 |  |  |  |  |  Dimensions
 |  |  |  |  |  |  UnspecifiedArrDimension
 |  |  |  StatBlock
-|  |  |  |  Dot
-|  |  |  |  |  Variable
-|  |  |  |  |  |  id
-|  |  |  |  |  |  |  var
-|  |  |  |  |  |  Dimensions
-|  |  |  |  |  |  |  MultOp
-|  |  |  |  |  |  |  |  Literal
-|  |  |  |  |  |  |  |  |  2
-|  |  |  |  |  |  |  |  |  TypeNode
-|  |  |  |  |  |  |  |  |  |  integer
-|  |  |  |  |  |  |  |  *
-|  |  |  |  |  |  |  |  AddOp
-|  |  |  |  |  |  |  |  |  AddOp
-|  |  |  |  |  |  |  |  |  |  Literal
-|  |  |  |  |  |  |  |  |  |  |  0
-|  |  |  |  |  |  |  |  |  |  |  TypeNode
-|  |  |  |  |  |  |  |  |  |  |  |  integer
-|  |  |  |  |  |  |  |  |  |  +
-|  |  |  |  |  |  |  |  |  |  Literal
-|  |  |  |  |  |  |  |  |  |  |  5
-|  |  |  |  |  |  |  |  |  |  |  TypeNode
-|  |  |  |  |  |  |  |  |  |  |  |  integer
-|  |  |  |  |  |  |  |  |  -
-|  |  |  |  |  |  |  |  |  Literal
-|  |  |  |  |  |  |  |  |  |  6
-|  |  |  |  |  |  |  |  |  |  TypeNode
-|  |  |  |  |  |  |  |  |  |  |  integer
-|  |  |  |  |  |  |  Literal
-|  |  |  |  |  |  |  |  2
-|  |  |  |  |  |  |  |  TypeNode
-|  |  |  |  |  |  |  |  |  integer
-|  |  |  |  |  |  |  Literal
-|  |  |  |  |  |  |  |  5
-|  |  |  |  |  |  |  |  TypeNode
-|  |  |  |  |  |  |  |  |  integer
-|  |  |  |  |  Dot
-|  |  |  |  |  |  FuncCall
-|  |  |  |  |  |  |  id
-|  |  |  |  |  |  |  |  func
-|  |  |  |  |  |  |  AParams
-|  |  |  |  |  |  Dot
-|  |  |  |  |  |  |  Variable
-|  |  |  |  |  |  |  |  id
-|  |  |  |  |  |  |  |  |  arr
-|  |  |  |  |  |  |  |  Dimensions
-|  |  |  |  |  |  |  |  |  Literal
-|  |  |  |  |  |  |  |  |  |  5
-|  |  |  |  |  |  |  |  |  |  TypeNode
-|  |  |  |  |  |  |  |  |  |  |  integer
-|  |  |  |  |  |  |  Dot
-|  |  |  |  |  |  |  |  Variable
-|  |  |  |  |  |  |  |  |  id
-|  |  |  |  |  |  |  |  |  |  value
-|  |  |  |  |  |  |  |  |  Dimensions
-|  |  |  |  |  |  |  |  FuncCall
-|  |  |  |  |  |  |  |  |  id
-|  |  |  |  |  |  |  |  |  |  otherFunc
-|  |  |  |  |  |  |  |  |  AParams
-|  |  |  |  |  |  |  |  |  |  Expr
-|  |  |  |  |  |  |  |  |  |  |  MultOp
-|  |  |  |  |  |  |  |  |  |  |  |  MultOp
-|  |  |  |  |  |  |  |  |  |  |  |  |  Literal
-|  |  |  |  |  |  |  |  |  |  |  |  |  |  5.6
-|  |  |  |  |  |  |  |  |  |  |  |  |  |  TypeNode
-|  |  |  |  |  |  |  |  |  |  |  |  |  |  |  float
-|  |  |  |  |  |  |  |  |  |  |  |  |  *
-|  |  |  |  |  |  |  |  |  |  |  |  |  Literal
-|  |  |  |  |  |  |  |  |  |  |  |  |  |  8.4
-|  |  |  |  |  |  |  |  |  |  |  |  |  |  TypeNode
-|  |  |  |  |  |  |  |  |  |  |  |  |  |  |  float
-|  |  |  |  |  |  |  |  |  |  |  |  /
-|  |  |  |  |  |  |  |  |  |  |  |  AddOp
-|  |  |  |  |  |  |  |  |  |  |  |  |  Literal
-|  |  |  |  |  |  |  |  |  |  |  |  |  |  4.2
-|  |  |  |  |  |  |  |  |  |  |  |  |  |  TypeNode
-|  |  |  |  |  |  |  |  |  |  |  |  |  |  |  float
-|  |  |  |  |  |  |  |  |  |  |  |  |  -
-|  |  |  |  |  |  |  |  |  |  |  |  |  Literal
-|  |  |  |  |  |  |  |  |  |  |  |  |  |  6.3
-|  |  |  |  |  |  |  |  |  |  |  |  |  |  TypeNode
-|  |  |  |  |  |  |  |  |  |  |  |  |  |  |  float
+|  |  |  |  VarDecl
+|  |  |  |  |  id
+|  |  |  |  |  |  a
+|  |  |  |  |  TypeNode
+|  |  |  |  |  |  integer
+|  |  |  |  |  Dimensions
+|  |  |  |  |  |  Literal
+|  |  |  |  |  |  |  2
+|  |  |  |  |  |  |  TypeNode
+|  |  |  |  |  |  |  |  integer
+|  |  |  |  |  |  UnspecifiedArrDimension
+|  |  |  |  VarDecl
+|  |  |  |  |  id
+|  |  |  |  |  |  b
+|  |  |  |  |  TypeNode
+|  |  |  |  |  |  float
+|  |  |  |  |  Dimensions

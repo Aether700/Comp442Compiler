@@ -401,6 +401,7 @@ public:
     FParamNode(IDNode* id, TypeNode* type, DimensionNode* dimension);
 
     virtual std::string ToString(size_t indent = 0) override;
+    virtual void AcceptVisit(Visitor* visitor) override;
 };
 
 class FParamListNode : public IterableNode

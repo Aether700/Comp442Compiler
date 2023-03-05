@@ -676,6 +676,12 @@ std::string FParamNode::ToString(size_t indent)
     return ss.str();
 }
 
+void FParamNode::AcceptVisit(Visitor* visitor) 
+{
+    ChildrenAcceptVisit(visitor);
+    visitor->Visit(this);
+}
+
 // FParamListNode //////////////////////////////////////////
 void FParamListNode::AddLoopingChild(ASTNode* param)
 {

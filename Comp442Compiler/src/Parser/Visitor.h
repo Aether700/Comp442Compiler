@@ -7,6 +7,7 @@
 class IVisitableElement;
 class IDNode;
 class VarDeclNode;
+class FParamNode;
 class FunctionDefNode;
 class MemVarNode;
 class MemFuncDeclNode;
@@ -18,6 +19,7 @@ public:
     virtual void Visit(IVisitableElement* element) { }
     virtual void Visit(IDNode* element) { }
     virtual void Visit(VarDeclNode* element) { }
+    virtual void Visit(FParamNode* element) { }
     virtual void Visit(FunctionDefNode* element) { }
     virtual void Visit(MemVarNode* element) { }
     virtual void Visit(MemFuncDeclNode* element) { }
@@ -37,6 +39,7 @@ public:
     ~SymbolTableAssembler();
 
     virtual void Visit(VarDeclNode* element) override;
+    virtual void Visit(FParamNode* element) override;
     virtual void Visit(FunctionDefNode* element) override;
 
     // temp
