@@ -15,7 +15,6 @@ enum class SymbolTableEntryKind
 
 std::ostream& operator<<(std::ostream& stream, SymbolTableEntryKind kind);
 
-
 class SymbolTableEntry
 {
 public:
@@ -37,16 +36,16 @@ private:
     SymbolTable* m_subTable;
 };
 
-std::ostream& operator<<(std::ostream& stream, const SymbolTableEntry& entry);
-
 class SymbolTable
 {
     
 public:
     using TableList = std::list<SymbolTableEntry*>;
     using TableIterator = TableList::iterator;
-
+    SymbolTable(const std::string& name);
     ~SymbolTable();
+
+    const std::string& GetName() const;
 
     void AddEntry(SymbolTableEntry* entry);
 
@@ -54,5 +53,34 @@ public:
     TableIterator end();
 
 private:
+    std::string m_name;
     TableList m_entries;
+};
+
+class SymbolTableDisplayManager
+{
+public:
+    static std::string TableToStr(SymbolTable* table, bool isMain = true);
+
+private:
+    static constexpr size_t s_mainTableWidth = 120;
+    static constexpr size_t s_mainTableIndent = 1;
+    // column size - indent 
+    static constexpr size_t s_mainTableKindWidth = 25; 
+    static constexpr size_t s_mainTableNameWidth = 30; 
+    
+    static constexpr size_t s_subTableWidth = 110;
+    static constexpr size_t s_subTableIndent = 4;
+    // column size - indent 
+    static constexpr size_t s_subTableKindWidth = 25;
+    static constexpr size_t s_subTableNameWidth = 30;
+
+    static std::string MainTableToStr(SymbolTable* table);
+    static std::string SubTableToStr(SymbolTable* table);
+    static std::string CreateHeader(size_t headerLength);
+    static std::string FitInTable(const std::string& content, size_t tableWidth, 
+        size_t indent);
+    
+    static std::string FormatEntryRow(SymbolTableEntry* entry, 
+        size_t tableWidth, size_t indent, size_t kindWidth, size_t nameWidth);
 };

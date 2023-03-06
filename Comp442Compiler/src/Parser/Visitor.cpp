@@ -27,13 +27,43 @@ std::string VarDeclToTypeStr(VarDeclNode* var)
     return ss.str();
 }
 
+std::string FunctionTypeToStr(FunctionDefNode* func)
+{
+    std::stringstream typeStr;
+    typeStr << "(";
+    bool hasParam = false;
+    auto params = func->GetParameters();
+    for (ASTNode* param : *func->GetParameters())
+    {
+        VarDeclNode* var = dynamic_cast<VarDeclNode*>(param);
+        ASSERT(var != nullptr);
+        typeStr << VarDeclToTypeStr(var) << ", ";
+        hasParam = true;
+    }
+
+    if (hasParam)
+    {
+        // remove last ", "
+        std::string tempCopy = typeStr.str();
+        std::string trimmedStr = tempCopy.substr(0, tempCopy.length() - 2);
+        typeStr.str("");
+        typeStr << trimmedStr;
+    }
+    typeStr << "):" << func->GetReturnType()->GetType().GetLexeme();
+    
+    return typeStr.str();
+}
+
 // SymbolTableAssembler ////////////////////////////////////////
+SymbolTableAssembler::SymbolTableAssembler() : m_globalScopeTable(nullptr) { }
+
 SymbolTableAssembler::~SymbolTableAssembler()
 {
     for (SymbolTableEntry* entry : m_stack)
     {
         delete entry;
     }
+    delete m_globalScopeTable;
 }
 
 void SymbolTableAssembler::Visit(VarDeclNode* element)
@@ -54,30 +84,8 @@ void SymbolTableAssembler::Visit(FParamNode* element)
 
 void SymbolTableAssembler::Visit(FunctionDefNode* element)
 {
-    std::stringstream typeStr;
-    typeStr << element->GetReturnType()->GetType().GetLexeme() << ": ";
-
-    {
-        bool hasParam = false;
-        auto params = element->GetParameters();
-        for (ASTNode* param : *element->GetParameters())
-        {
-            VarDeclNode* var = dynamic_cast<VarDeclNode*>(param);
-            ASSERT(var != nullptr);
-            typeStr << VarDeclToTypeStr(var) << ", ";
-            hasParam = true;
-        }
-
-        if (hasParam)
-        {
-            // remove last ", "
-            std::string tempCopy = typeStr.str();
-            std::string trimmedStr = tempCopy.substr(0, tempCopy.length() - 2);
-            typeStr.str(trimmedStr);
-        }
-    }
-
-    SymbolTable* functionTable = new SymbolTable();
+    SymbolTable* functionTable = new SymbolTable("::" 
+        + element->GetID()->GetID().GetLexeme());
     std::list<SymbolTableEntry*> entriesToKeep;
     for (SymbolTableEntry* entry : m_stack)
     {
@@ -96,7 +104,21 @@ void SymbolTableAssembler::Visit(FunctionDefNode* element)
     m_stack = entriesToKeep;
 
     SymbolTableEntry* entry = new SymbolTableEntry(element->GetID()->GetID().GetLexeme(), 
-        SymbolTableEntryKind::FreeFunction, typeStr.str(), functionTable);
+        SymbolTableEntryKind::FreeFunction, FunctionTypeToStr(element), functionTable);
 
     m_stack.push_front(entry);
 }
+
+void SymbolTableAssembler::Visit(ProgramNode* element)
+{
+    m_globalScopeTable = new SymbolTable("Global");
+
+    for (SymbolTableEntry* entry : m_stack)
+    {
+        m_globalScopeTable->AddEntry(entry);
+    }
+    
+    m_stack.clear();
+}
+
+SymbolTable* SymbolTableAssembler::GetGlobalSymbolTable() { return m_globalScopeTable; }

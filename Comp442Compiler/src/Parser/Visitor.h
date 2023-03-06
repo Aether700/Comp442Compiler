@@ -12,6 +12,7 @@ class FunctionDefNode;
 class MemVarNode;
 class MemFuncDeclNode;
 class ConstructorDeclNode;
+class ProgramNode;
 
 class Visitor
 {
@@ -24,6 +25,7 @@ public:
     virtual void Visit(MemVarNode* element) { }
     virtual void Visit(MemFuncDeclNode* element) { }
     virtual void Visit(ConstructorDeclNode* element) { }
+    virtual void Visit(ProgramNode* element) { }
 };
 
 
@@ -36,16 +38,17 @@ public:
 class SymbolTableAssembler : public Visitor
 { 
 public:
+    SymbolTableAssembler();
     ~SymbolTableAssembler();
 
     virtual void Visit(VarDeclNode* element) override;
     virtual void Visit(FParamNode* element) override;
     virtual void Visit(FunctionDefNode* element) override;
-
-    // temp for debugging
-    auto& GetEntries() { return m_stack; }
-    //
+    virtual void Visit(ProgramNode* element) override;
+    
+    SymbolTable* GetGlobalSymbolTable();
 
 private:
+    SymbolTable* m_globalScopeTable;
     std::list<SymbolTableEntry*> m_stack;
 };

@@ -7,21 +7,32 @@
 #include "Parser/Parser.h"
 #include "Core/Util.h"
 
-class VisitorImpl : public Visitor
-{
-public:
-	size_t numIDVisited = 0;
-	void Visit(IDNode* element) override 
-	{
-		std::cout << "visited id \"" << element->GetID().GetLexeme() << "\"\n";
-		numIDVisited++;
-	}
-};
-
 void ExitPrompt()
 {
 	std::cout << "\nPress enter to exit\n";
 	std::cin.get();
+}
+
+void Compile(const std::string& filepath)
+{
+	ProgramNode* program = Parser::Parse(filepath);
+	if (program == nullptr)
+	{
+		std::cout << "Parsing error was found, check logs for detail\n";
+		return;
+	}
+
+	SymbolTableAssembler* assembler = new SymbolTableAssembler();
+	program->AcceptVisit(assembler);
+	
+	{
+		std::ofstream symbolTableFile = std::ofstream(SimplifyFilename(filepath) 
+			+ ".outsymboltables");
+		symbolTableFile << SymbolTableDisplayManager::TableToStr(assembler->
+			GetGlobalSymbolTable());
+	}
+	
+	delete program;
 }
 
 int main(int argc, char* argv[])
@@ -33,31 +44,7 @@ int main(int argc, char* argv[])
 	path = path.substr(0, path.find_last_of("/\\"));
 	path += "/Comp442Compiler/Comp442Compiler/" + file;
 	
-	ProgramNode* program = Parser::Parse(path);
-	std::cout << (program != nullptr) << "\n";
-
-	if (program == nullptr)
-	{
-		return 1;
-	}
-	SymbolTableAssembler* assembler = new SymbolTableAssembler();
-	program->AcceptVisit(assembler);
-	for (SymbolTableEntry* entry : assembler->GetEntries())
-	{
-		std::cout << *entry << "\n";
-		if (entry->GetSubTable() != nullptr)
-		{
-			std::cout << "\n";
-			for (SymbolTableEntry* entry2 : *entry->GetSubTable())
-			{
-				std::cout << *entry2 << "\n";
-			}
-
-			std::cout << "\n";
-		}
-	}
-
-	delete program;
+	Compile(path);
 #else
 	std::string directoryPath = "TestFiles";
 	
@@ -77,7 +64,7 @@ int main(int argc, char* argv[])
 		if (fileExtention == ".src")
 		{
 			std::cout << "Processing file \"" << filename << "\"\n"; 
-			delete Parser::Parse(filename);
+			Compile(filename);
 		}
 	}
 	std::cout << "Directory processing completed\n";
