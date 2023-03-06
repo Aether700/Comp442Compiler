@@ -7,7 +7,10 @@
 #include <fstream>
 #include <vector>
 
+#include "AST.h"
 #include "../Core/Token.h"
+#include "../Core/Core.h"
+
 
 typedef size_t RuleID;
 static constexpr RuleID NullRule = SIZE_MAX;
@@ -25,6 +28,53 @@ enum class ErrorID
     InvalidArraySize,
     InvalidRelExpr,
     InvalidOperator,
+};
+
+enum class SemanticAction
+{
+    PushStopNode,
+    PushUnspecifiedDimensionNode,
+    ConstructIntLiteral,
+    ConstructFloatLiteral,
+    ConstructVisibility,
+    ConstructDefaultVisibility,
+    ConstructAssignStat,
+    PushID,
+    PushSign,
+    PushNot,
+    PushOp,
+    PushType,
+    PushFreeFuncMarker,
+    PushMemFuncMarker,
+    PushConstructorMarker,
+    EncounteredDot,
+    ConstructExpr,
+    ConstructModifiedExpr,
+    ConstructSign,
+    ConstructAddOp,
+    ConstructMultOp,
+    ConstructRelOp,
+    ConstructDimensions,
+    ConstructVariable,
+    ConstructVarDecl,
+    ConstructStatBlock,
+    ConstructFParam,
+    ConstructFParams,
+    ConstructAParams,
+    ConstructFuncDef,
+    ConstructFuncCall,
+    ConstructIfStat,
+    ConstructWhileStat,
+    ConstructReadStat,
+    ConstructWriteStat,
+    ConstructReturnStat,
+    ConstructDotNode,
+    ConstructEncounteredDots,
+    ConstructClass,
+    ConstructMemVar,
+    ConstructMemFuncDecl,
+    ConstructConstructorDecl,
+    ConstructInheritanceList,
 };
 
 enum class NonTerminal
@@ -93,7 +143,7 @@ enum class StackableType
 {
     TerminalItem,
     NonTerminalItem,
-    SemanticAction
+    SemanticActionItem
 };
 
 class StackableItem
@@ -102,21 +152,25 @@ public:
     StackableItem();
     StackableItem(TokenType t);
     StackableItem(NonTerminal nonTerminal);
+    StackableItem(SemanticAction action);
     ~StackableItem();
     
     StackableType GetType() const;
     TokenType GetTerminal() const;
     NonTerminal GetNonTerminal() const;
+    SemanticAction GetAction() const;
 
 private:
     union Item
     {
         Item(TokenType t);
         Item(NonTerminal nonTerminal);
+        Item(SemanticAction action);
         ~Item();
 
         TokenType m_terminal;
         NonTerminal m_nonTerminal;
+        SemanticAction m_action;
     } m_item;
     StackableType m_type;
 };
@@ -257,7 +311,8 @@ class Parser
     friend class Rule;
     friend class ParsingErrorRule;
 public:
-    static bool Parse(const std::string& filepath);
+    // returns the root program node of the parsed program or nullptr if the program is not valid 
+    static ProgramNode* Parse(const std::string& filepath);
 private:
     Parser();
     ~Parser();
@@ -275,17 +330,106 @@ private:
     Token SkipError(const Token& currToken, const StackableItem& top);
     void PopNonTerminal();
 
+    // SemanticAction processing
+    void ProcessSemanticAction(SemanticAction action);
+    
+    void ConstructIntLiteralAction();
+    void ConstructFloatLiteralAction();
+    void ConstructVisibilityAction();
+    void ConstructDefaultVisibilityAction();
+    void ConstructExprAction();
+    void ConstructModifiedExprAction();
+    void ConstructAssignStatAction();
+    void ConstructVariableAction();
+    void ConstructVarDeclAction();
+    void ConstructFParamAction();
+    void ConstructFuncDefAction();
+    void ConstructFreeFuncDefAction(StatBlockNode* body);
+    void ConstructMemFuncDefAction(StatBlockNode* body);
+    void ConstructConstructorDefAction(StatBlockNode* body);
+    void ConstructFuncCallAction();
+    void ConstructIfStatAction();
+    void ConstructWhileStatAction();
+    void ConstructReadStatAction();
+    void ConstructWriteStatAction();
+    void ConstructReturnStatAction();
+    void ConstructClassAction();
+    void ConstructMemVarAction();
+    void ConstructMemFuncDeclAction();
+    void ConstructConstructorDeclAction();
+
+    // Will only construct DotNode objects to push to the semantic stack if an associated dot 
+    // symbol was encountered, 
+    // returns true if a dot node was constructed false otherwise.
+    bool ConstructDotNodeAction();
+    void ConstructEncounteredDotsAction();
+
+    template<typename NodeType, typename... Args>
+    void Push(Args... args)
+    {
+        m_semanticStack.push_front(new NodeType(std::forward<Args>(args)...));
+    }
+
+    template<typename NodeType>
+    void ConstructBinaryOperatorNode()
+    {
+        ASTNode* right = m_semanticStack.front();
+        m_semanticStack.pop_front();
+
+        OperatorNode* op = dynamic_cast<OperatorNode*>(m_semanticStack.front());
+        ASSERT(op != nullptr);
+        m_semanticStack.pop_front();
+
+        ASTNode* left = m_semanticStack.front();
+        m_semanticStack.pop_front();
+
+        m_semanticStack.push_front(new NodeType(left, op, right));
+    }
+
+    template<typename NodeType>
+    void ConstructLoopingNode()
+    {
+        NodeType* targetNode = new NodeType();
+        ASTNode* topNode = m_semanticStack.front();
+        m_semanticStack.pop_front();
+        while(dynamic_cast<StopNode*>(topNode) == nullptr)
+        {
+            targetNode->AddLoopingChild(topNode);
+            topNode = m_semanticStack.front();
+            m_semanticStack.pop_front();
+        }
+        delete topNode;
+
+        m_semanticStack.push_front(targetNode);
+    }
+
+    template<typename NodeType>
+    NodeType* PopTargetNodeFromSemanticStack()
+    {
+        ASTNode* top = m_semanticStack.front();
+        m_semanticStack.pop_front();
+        auto s = top->ToString();
+        NodeType* targetNode = dynamic_cast<NodeType*>(top);
+        ASSERT(targetNode != nullptr);
+        return targetNode;
+    }
+
     // returns index of first nonterminal or -1 if none was found
     void UpdateNextNonTerminalIndex();
     void WriteLexicalErrorToFile(const Token& t);
 
     std::unordered_map<NonTerminal, ParsingTableEntry*> m_parsingTable;
 
+    ProgramNode* m_currProgramRoot;
+    Token m_prevToken;
     std::list<StackableItem> m_parsingStack; // front is top of stack
+    std::list<ASTNode*> m_semanticStack;
     bool m_errorFound;
     std::ofstream m_derivationFile;
     std::ofstream m_errorFile;
+    std::ofstream m_astOutFile;
     std::vector<StackableItem> m_derivation;
     size_t m_nextNonTerminalIndex;
     std::list<ParsingErrorData> m_errors;
+    size_t m_numDotsEncountered;
 };

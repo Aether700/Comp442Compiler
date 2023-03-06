@@ -7,6 +7,7 @@
 #include "Parser/Parser.h"
 #include "Core/Util.h"
 
+
 void ExitPrompt()
 {
 	std::cout << "\nPress enter to exit\n";
@@ -21,7 +22,10 @@ int main(int argc, char* argv[])
 	std::string path = currDir.substr(0, currDir.find_last_of("/\\"));
 	path = path.substr(0, path.find_last_of("/\\"));
 	path += "/Comp442Compiler/Comp442Compiler/" + file;
-	std::cout << Parser::Parse(path) << "\n";
+	
+	ProgramNode* program = Parser::Parse(path);
+	std::cout << (program != nullptr) << "\n";
+	delete program;
 #else
 	std::string directoryPath = "TestFiles";
 	
@@ -41,7 +45,7 @@ int main(int argc, char* argv[])
 		if (fileExtention == ".src")
 		{
 			std::cout << "Processing file \"" << filename << "\"\n"; 
-			Parser::Parse(filename);
+			delete Parser::Parse(filename);
 		}
 	}
 	std::cout << "Directory processing completed\n";

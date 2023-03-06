@@ -1,7 +1,5 @@
 #include "Parser.h"
-#include "../Core/Token.h"
 #include "../Lexer/Lexer.h"
-#include "../Core/Core.h"
 #include "../Core/Util.h"
 
 std::ostream& operator<<(std::ostream& stream, NonTerminal n)
@@ -248,6 +246,8 @@ StackableItem::StackableItem(TokenType t)
     : m_type(StackableType::TerminalItem), m_item(t) { }
 StackableItem::StackableItem(NonTerminal nonTerminal) 
     : m_type(StackableType::NonTerminalItem), m_item(nonTerminal) { }
+StackableItem::StackableItem(SemanticAction action)
+    : m_type(StackableType::SemanticActionItem), m_item(action) { }
 
 StackableItem::~StackableItem()
 {
@@ -259,6 +259,10 @@ StackableItem::~StackableItem()
 
     case StackableType::NonTerminalItem:
         m_item.m_nonTerminal.~NonTerminal();
+        break;
+
+    case StackableType::SemanticActionItem:
+        m_item.m_action.~SemanticAction();
         break;
 
     default:
@@ -281,8 +285,15 @@ NonTerminal StackableItem::GetNonTerminal() const
     return m_item.m_nonTerminal;
 }
 
+SemanticAction StackableItem::GetAction() const
+{
+    ASSERT(m_type == StackableType::SemanticActionItem);
+    return m_item.m_action;
+}
+
 StackableItem::Item::Item(TokenType t) : m_terminal(t) { }
 StackableItem::Item::Item(NonTerminal nonTerminal) : m_nonTerminal(nonTerminal) { }
+StackableItem::Item::Item(SemanticAction action) : m_action(action) { }
 StackableItem::Item::~Item() { }
 
 std::ostream& operator<<(std::ostream& stream, const StackableItem& item)
@@ -295,6 +306,10 @@ std::ostream& operator<<(std::ostream& stream, const StackableItem& item)
 
     case StackableType::TerminalItem:
         stream << '\'' << TokenTypeToStr(item.GetTerminal()) << '\'';
+        break;
+
+    case StackableType::SemanticActionItem:
+        // don't print semantic actions
         break;
 
     default:
@@ -721,9 +736,10 @@ void RuleManager::InitializeRules()
     m_rules.push_back(new Rule({ NonTerminal::FuncDef })); 
 
     // 5 ClassDecl
-    m_rules.push_back(new Rule({ TokenType::Class, TokenType::ID, 
+    m_rules.push_back(new Rule({ TokenType::Class, TokenType::ID, SemanticAction::PushID,
         NonTerminal::ClassDeclInheritance, TokenType::OpenCurlyBracket, 
-        NonTerminal::ClassDeclMembDeclRepetition, TokenType::CloseCurlyBracket, 
+        SemanticAction::PushStopNode, NonTerminal::ClassDeclMembDeclRepetition, 
+        TokenType::CloseCurlyBracket, SemanticAction::ConstructClass, 
         TokenType::SemiColon })); 
 
     // 6 ClassDeclMembDeclRepetition
@@ -734,26 +750,28 @@ void RuleManager::InitializeRules()
     m_rules.push_back(new Rule({ }));
 
     // 8 ClassDeclInheritance
-    m_rules.push_back(new Rule({ TokenType::IsA, TokenType::ID, 
-        NonTerminal::ClassDeclInheritanceTail }));
+    m_rules.push_back(new Rule({ SemanticAction::PushStopNode, TokenType::IsA, 
+        TokenType::ID, SemanticAction::PushID, NonTerminal::ClassDeclInheritanceTail }));
 
     // 9 ClassDeclInheritance
-    m_rules.push_back(new Rule({ }));
+    m_rules.push_back(new Rule({ SemanticAction::PushStopNode, 
+        SemanticAction::ConstructInheritanceList }));
     
     // 10 ClassDeclInheritanceTail
-    m_rules.push_back(new Rule({ TokenType::Comma, TokenType::ID, NonTerminal::ClassDeclInheritanceTail }));
+    m_rules.push_back(new Rule({ TokenType::Comma, TokenType::ID, SemanticAction::PushID,
+        NonTerminal::ClassDeclInheritanceTail }));
 
     // 11 ClassDeclInheritanceTail
-    m_rules.push_back(new Rule({ }));
+    m_rules.push_back(new Rule({ SemanticAction::ConstructInheritanceList }));
 
     // 12 Visibility
-    m_rules.push_back(new Rule({ TokenType::Public }));
+    m_rules.push_back(new Rule({ TokenType::Public, SemanticAction::ConstructVisibility }));
 
     // 13 Visibility
-    m_rules.push_back(new Rule({ TokenType::Private }));
+    m_rules.push_back(new Rule({ TokenType::Private, SemanticAction::ConstructVisibility }));
 
     // 14 Visibility
-    m_rules.push_back(new Rule({ }));
+    m_rules.push_back(new Rule({ SemanticAction::ConstructDefaultVisibility }));
 
     // 15 MemberDecl
     m_rules.push_back(new Rule({ NonTerminal::MemberFuncDecl }));
@@ -763,47 +781,56 @@ void RuleManager::InitializeRules()
 
     // 17 MemberFuncDecl
     m_rules.push_back(new Rule({ TokenType::Function, 
-        TokenType::ID, TokenType::Colon, TokenType::OpenParanthese, NonTerminal::FParams, 
+        TokenType::ID, SemanticAction::PushID, TokenType::Colon, TokenType::OpenParanthese, 
+        SemanticAction::PushStopNode, NonTerminal::FParams, SemanticAction::ConstructFParams, 
         TokenType::CloseParanthese, TokenType::Arrow, NonTerminal::ReturnType, 
-        TokenType::SemiColon }));
+        SemanticAction::ConstructMemFuncDecl, TokenType::SemiColon }));
 
     // 18 MemberFuncDecl
     m_rules.push_back(new Rule({ TokenType::Constructor, 
-        TokenType::Colon, TokenType::OpenParanthese, NonTerminal::FParams, 
-        TokenType::CloseParanthese, TokenType::SemiColon }));
+        TokenType::Colon, TokenType::OpenParanthese, SemanticAction::PushStopNode, 
+        NonTerminal::FParams, SemanticAction::ConstructFParams,
+        TokenType::CloseParanthese, SemanticAction::ConstructConstructorDecl, 
+        TokenType::SemiColon }));
 
     // 19 MemberVarDecl
     m_rules.push_back(new Rule({ TokenType::Attribute, 
-        TokenType::ID, TokenType::Colon,  NonTerminal::Type, NonTerminal::ArraySizeRepetition, 
-        TokenType::SemiColon }));
+        TokenType::ID, SemanticAction::PushID, TokenType::Colon,  NonTerminal::Type, 
+        SemanticAction::PushStopNode, NonTerminal::ArraySizeRepetition, 
+        SemanticAction::ConstructMemVar, TokenType::SemiColon }));
 
     // 20 FuncDef
     m_rules.push_back(new Rule({ NonTerminal::FuncHead, NonTerminal::FuncBody }));
 
     // 21 FuncHead
     m_rules.push_back(new Rule({ TokenType::Function, 
-        TokenType::ID, NonTerminal::FuncHead2 }));
+        TokenType::ID, SemanticAction::PushID, NonTerminal::FuncHead2 }));
     
     // 22 FuncHead2
     m_rules.push_back(new Rule({ TokenType::Scope, NonTerminal::FuncHead3 }));
 
     // 23 FuncHead2
-    m_rules.push_back(new Rule({ TokenType::OpenParanthese, 
-        NonTerminal::FParams, TokenType::CloseParanthese, TokenType::Arrow, 
-        NonTerminal::ReturnType }));
+    m_rules.push_back(new Rule({ TokenType::OpenParanthese, SemanticAction::PushStopNode,
+        NonTerminal::FParams, SemanticAction::ConstructFParams, TokenType::CloseParanthese, 
+        TokenType::Arrow, NonTerminal::ReturnType, SemanticAction::PushFreeFuncMarker }));
     
     // 24 FuncHead3
-    m_rules.push_back(new Rule({ TokenType::ID, 
-        TokenType::OpenParanthese, NonTerminal::FParams, TokenType::CloseParanthese, 
-        TokenType::Arrow, NonTerminal::ReturnType }));
+    m_rules.push_back(new Rule({ TokenType::ID, SemanticAction::PushID,
+        TokenType::OpenParanthese, SemanticAction::PushStopNode, NonTerminal::FParams, 
+        SemanticAction::ConstructFParams, TokenType::CloseParanthese, 
+        TokenType::Arrow, NonTerminal::ReturnType, SemanticAction::PushMemFuncMarker }));
 
     // 25 FuncHead3
     m_rules.push_back(new Rule({ TokenType::Constructor, 
-        TokenType::OpenParanthese, NonTerminal::FParams, TokenType::CloseParanthese }));
+        TokenType::OpenParanthese, SemanticAction::PushStopNode, NonTerminal::FParams, 
+        SemanticAction::ConstructFParams, TokenType::CloseParanthese, 
+        SemanticAction::PushConstructorMarker }));
 
     // 26 FuncBody
     m_rules.push_back(new Rule({ TokenType::OpenCurlyBracket, 
-        NonTerminal::LocalVarDeclOrStmtRepetition, TokenType::CloseCurlyBracket }));
+        SemanticAction::PushStopNode, NonTerminal::LocalVarDeclOrStmtRepetition, 
+        SemanticAction::ConstructStatBlock, TokenType::CloseCurlyBracket, 
+        SemanticAction::ConstructFuncDef }));
 
     // 27 LocalVarDeclOrStmtRepetition
     m_rules.push_back(new Rule({ NonTerminal::LocalVarDeclOrStmt, 
@@ -820,15 +847,17 @@ void RuleManager::InitializeRules()
 
     // 31 LocalVarDecl
     m_rules.push_back(new Rule({ TokenType::LocalVar, TokenType::ID, 
-        TokenType::Colon, NonTerminal::Type, NonTerminal::LocalVarDecl2, 
+        SemanticAction::PushID, TokenType::Colon, NonTerminal::Type, 
+        NonTerminal::LocalVarDecl2, SemanticAction::ConstructVarDecl, 
         TokenType::SemiColon }));
 
     // 32 LocalVarDecl2
-    m_rules.push_back(new Rule({ NonTerminal::ArraySizeRepetition }));
+    m_rules.push_back(new Rule({ SemanticAction::PushStopNode, 
+        NonTerminal::ArraySizeRepetition }));
 
     // 33 LocalVarDecl2
-    m_rules.push_back(new Rule({ TokenType::OpenParanthese, NonTerminal::AParams, 
-        TokenType::CloseParanthese }));
+    m_rules.push_back(new Rule({ TokenType::OpenParanthese, SemanticAction::PushStopNode, 
+        NonTerminal::AParams, SemanticAction::ConstructAParams, TokenType::CloseParanthese }));
 
     // 34 Statement
     m_rules.push_back(new Rule({ NonTerminal::SimpleStatement, 
@@ -838,48 +867,54 @@ void RuleManager::InitializeRules()
     m_rules.push_back(new Rule({ TokenType::If, 
         TokenType::OpenParanthese, NonTerminal::RelExpr, TokenType::CloseParanthese, 
         TokenType::Then, NonTerminal::StatBlock, TokenType::Else, NonTerminal::StatBlock, 
-        TokenType::SemiColon }));
+        SemanticAction::ConstructIfStat, TokenType::SemiColon }));
 
     // 36 Statement
     m_rules.push_back(new Rule({ TokenType::While, 
         TokenType::OpenParanthese, NonTerminal::RelExpr, TokenType::CloseParanthese, 
-        NonTerminal::StatBlock, TokenType::SemiColon }));
+        NonTerminal::StatBlock, SemanticAction::ConstructWhileStat, 
+        TokenType::SemiColon }));
 
     // 37 Statement
     m_rules.push_back(new Rule({ TokenType::Read, 
         TokenType::OpenParanthese, NonTerminal::Variable, TokenType::CloseParanthese, 
-        TokenType::SemiColon }));
+        SemanticAction::ConstructReadStat, TokenType::SemiColon }));
 
     // 38 Statement
     m_rules.push_back(new Rule({ TokenType::Write, 
         TokenType::OpenParanthese, NonTerminal::Expr, TokenType::CloseParanthese, 
-        TokenType::SemiColon }));
+        SemanticAction::ConstructWriteStat, TokenType::SemiColon }));
 
     // 39 Statement
     m_rules.push_back(new Rule({ TokenType::Return, 
         TokenType::OpenParanthese, NonTerminal::Expr, TokenType::CloseParanthese, 
-        TokenType::SemiColon }));
+        SemanticAction::ConstructReturnStat, TokenType::SemiColon }));
 
     // 40 SimpleStatement
-    m_rules.push_back(new Rule({ TokenType::ID, 
+    m_rules.push_back(new Rule({ TokenType::ID, SemanticAction::PushID, 
         NonTerminal::SimpleStatement2 }));
     
     // 41 SimpleStatement2
-    m_rules.push_back(new Rule({ NonTerminal::Indice, 
-        NonTerminal::SimpleStatement3 }));
+    m_rules.push_back(new Rule({ SemanticAction::PushStopNode, NonTerminal::Indice, 
+        SemanticAction::ConstructVariable, NonTerminal::SimpleStatement3 }));
 
     // 42 SimpleStatement2
     m_rules.push_back(new Rule({ TokenType::OpenParanthese, 
-        NonTerminal::AParams, TokenType::CloseParanthese, NonTerminal::SimpleStatement4 }));
+        SemanticAction::PushStopNode, NonTerminal::AParams, SemanticAction::ConstructAParams, 
+        TokenType::CloseParanthese, SemanticAction::ConstructFuncCall, 
+        NonTerminal::SimpleStatement4 }));
 
     // 43 SimpleStatement3
-    m_rules.push_back(new Rule({ TokenType::Dot, NonTerminal::SimpleStatement }));
+    m_rules.push_back(new Rule({ TokenType::Dot, SemanticAction::EncounteredDot, 
+        NonTerminal::SimpleStatement, SemanticAction::ConstructDotNode }));
 
     // 44 SimpleStatement3
-    m_rules.push_back(new Rule({ TokenType::Assign, NonTerminal::Expr }));
+    m_rules.push_back(new Rule({ TokenType::Assign, SemanticAction::ConstructEncounteredDots, 
+        NonTerminal::Expr, SemanticAction::ConstructAssignStat }));
 
     // 45 SimpleStatement4
-    m_rules.push_back(new Rule({ TokenType::Dot, NonTerminal::SimpleStatement }));
+    m_rules.push_back(new Rule({ TokenType::Dot, SemanticAction::EncounteredDot, 
+        NonTerminal::SimpleStatement, SemanticAction::ConstructDotNode }));
 
     // 46 SimpleStatement4
     m_rules.push_back(new Rule({ }));
@@ -891,43 +926,48 @@ void RuleManager::InitializeRules()
     m_rules.push_back(new Rule({ }));
 
     // 49 StatBlock
-    m_rules.push_back(new Rule({ TokenType::OpenCurlyBracket, 
-        NonTerminal::StatementRepetition, TokenType::CloseCurlyBracket }));
+    m_rules.push_back(new Rule({ SemanticAction::PushStopNode, TokenType::OpenCurlyBracket, 
+        NonTerminal::StatementRepetition, SemanticAction::ConstructStatBlock, 
+        TokenType::CloseCurlyBracket }));
 
     // 50 StatBlock
-    m_rules.push_back(new Rule({ NonTerminal::Statement }));
+    m_rules.push_back(new Rule({ SemanticAction::PushStopNode, NonTerminal::Statement, 
+        SemanticAction::ConstructStatBlock }));
 
     // 51 StatBlock
-    m_rules.push_back(new Rule({ }));
+    m_rules.push_back(new Rule({ SemanticAction::PushStopNode, 
+        SemanticAction::ConstructStatBlock}));
 
     // 52 Expr
     m_rules.push_back(new Rule({ NonTerminal::ArithExpr, NonTerminal::Expr2 }));
 
     // 53 Expr2
-    m_rules.push_back(new Rule({ NonTerminal::RelOp, NonTerminal::ArithExpr }));
+    m_rules.push_back(new Rule({ NonTerminal::RelOp, NonTerminal::ArithExpr, 
+        SemanticAction::ConstructRelOp, SemanticAction::ConstructExpr }));
 
     // 54 Expr2
-    m_rules.push_back(new Rule({ }));
+    m_rules.push_back(new Rule({ SemanticAction::ConstructExpr }));
 
     // 55 RelExpr
     m_rules.push_back(new Rule({ NonTerminal::ArithExpr, 
-        NonTerminal::RelOp, NonTerminal::ArithExpr }));
+        NonTerminal::RelOp, NonTerminal::ArithExpr, SemanticAction::ConstructRelOp, 
+        SemanticAction::ConstructExpr }));
 
     // 56 ArithExpr
     m_rules.push_back(new Rule({ NonTerminal::Term, NonTerminal::ArithExpr2 }));
 
     // 57 ArithExpr2
     m_rules.push_back(new Rule({ NonTerminal::AddOp, NonTerminal::Term, 
-        NonTerminal::ArithExpr2 }));
+        SemanticAction::ConstructAddOp, NonTerminal::ArithExpr2 }));
 
     // 58 ArithExpr2
     m_rules.push_back(new Rule({ }));
 
     // 59 Sign
-    m_rules.push_back(new Rule({ TokenType::Plus }));
+    m_rules.push_back(new Rule({ TokenType::Plus, SemanticAction::PushSign }));
 
     // 60 Sign
-    m_rules.push_back(new Rule({ TokenType::Minus }));
+    m_rules.push_back(new Rule({ TokenType::Minus, SemanticAction::PushSign }));
 
     // 61 Term
     m_rules.push_back(new Rule({ NonTerminal::Factor, 
@@ -935,7 +975,7 @@ void RuleManager::InitializeRules()
     
     // 62 Term2
     m_rules.push_back(new Rule({ NonTerminal::MultOp, 
-        NonTerminal::Factor, NonTerminal::Term2 }));
+        NonTerminal::Factor, SemanticAction::ConstructMultOp, NonTerminal::Term2 }));
 
     // 63 Term2
     m_rules.push_back(new Rule({ }));
@@ -944,51 +984,63 @@ void RuleManager::InitializeRules()
     m_rules.push_back(new Rule({ NonTerminal::VarOrFuncCall }));
 
     // 65 Factor
-    m_rules.push_back(new Rule({ TokenType::IntegerLiteral }));
+    m_rules.push_back(new Rule({ TokenType::IntegerLiteral, 
+        SemanticAction::ConstructIntLiteral }));
 
     // 66 Factor
-    m_rules.push_back(new Rule({ TokenType::FloatLiteral }));
+    m_rules.push_back(new Rule({ TokenType::FloatLiteral, 
+        SemanticAction::ConstructFloatLiteral }));
 
     // 67 Factor
     m_rules.push_back(new Rule({ TokenType::OpenParanthese, 
         NonTerminal::ArithExpr, TokenType::CloseParanthese }));
 
     // 68 Factor
-    m_rules.push_back(new Rule({ TokenType::Not, NonTerminal::Factor }));
+    m_rules.push_back(new Rule({ TokenType::Not, SemanticAction::PushNot, 
+        NonTerminal::Factor, SemanticAction::ConstructModifiedExpr }));
 
     // 69 Factor
     m_rules.push_back(new Rule({ NonTerminal::Sign, 
-        NonTerminal::Factor }));
+        NonTerminal::Factor, SemanticAction::ConstructModifiedExpr }));
 
     // 70 VarOrFuncCall
-    m_rules.push_back(new Rule({ TokenType::ID, NonTerminal::VarOrFuncCall2 }));
+    m_rules.push_back(new Rule({ TokenType::ID, SemanticAction::PushID, 
+        NonTerminal::VarOrFuncCall2 }));
 
     // 71 VarOrFuncCall2
-    m_rules.push_back(new Rule({ NonTerminal::Indice, NonTerminal::VarOrFuncCall3 }));
+    m_rules.push_back(new Rule({ SemanticAction::PushStopNode, NonTerminal::Indice, 
+        SemanticAction::ConstructVariable, NonTerminal::VarOrFuncCall3 }));
 
     // 72 VarOrFuncCall2
-    m_rules.push_back(new Rule({ TokenType::OpenParanthese, 
-        NonTerminal::AParams, TokenType::CloseParanthese, NonTerminal::VarOrFuncCall3 }));
+    m_rules.push_back(new Rule({ TokenType::OpenParanthese, SemanticAction::PushStopNode,
+        NonTerminal::AParams, SemanticAction::ConstructAParams, TokenType::CloseParanthese, 
+        SemanticAction::ConstructFuncCall, NonTerminal::VarOrFuncCall3 }));
 
     // 73 VarOrFuncCall3
-    m_rules.push_back(new Rule({ TokenType::Dot, NonTerminal::VarOrFuncCall }));
+    m_rules.push_back(new Rule({ TokenType::Dot, SemanticAction::EncounteredDot, 
+        NonTerminal::VarOrFuncCall, SemanticAction::ConstructDotNode }));
 
     // 74 VarOrFuncCall3
     m_rules.push_back(new Rule({ }));
 
     // 75 Variable
-    m_rules.push_back(new Rule({ TokenType::ID, NonTerminal::Variable2 }));
+    m_rules.push_back(new Rule({ TokenType::ID, SemanticAction::PushID, 
+        NonTerminal::Variable2 }));
 
     // 76 Variable2
-    m_rules.push_back(new Rule({ NonTerminal::Indice, NonTerminal::Variable3 }));
+    m_rules.push_back(new Rule({ SemanticAction::PushStopNode, NonTerminal::Indice, 
+        SemanticAction::ConstructVariable, NonTerminal::Variable3 }));
 
     // 77 Variable2
     m_rules.push_back(new Rule({ TokenType::OpenParanthese, 
-        NonTerminal::AParams, TokenType::CloseParanthese, TokenType::Dot, 
-        NonTerminal::Variable }));
+        SemanticAction::PushStopNode, NonTerminal::AParams, SemanticAction::ConstructAParams, 
+        TokenType::CloseParanthese, SemanticAction::ConstructFuncCall, 
+        TokenType::Dot, SemanticAction::EncounteredDot, NonTerminal::Variable, 
+        SemanticAction::ConstructDotNode }));
 
     // 78 Variable3
-    m_rules.push_back(new Rule({ TokenType::Dot, NonTerminal::Variable }));
+    m_rules.push_back(new Rule({ TokenType::Dot, SemanticAction::EncounteredDot, 
+        NonTerminal::Variable, SemanticAction::ConstructDotNode }));
     
     // 79 Variable3
     m_rules.push_back(new Rule({ }));
@@ -998,43 +1050,47 @@ void RuleManager::InitializeRules()
         NonTerminal::ArithExpr, TokenType::CloseSquareBracket, NonTerminal::Indice }));
 
     // 81 Indice
-    m_rules.push_back(new Rule({ }));
+    m_rules.push_back(new Rule({ SemanticAction::ConstructDimensions }));
 
     // 82 ArraySize
     m_rules.push_back(new Rule({ TokenType::OpenSquareBracket, 
         NonTerminal::ArraySize2 }));
 
     // 83 ArraySize2
-    m_rules.push_back(new Rule({ TokenType::IntegerLiteral, TokenType::CloseSquareBracket }));
+    m_rules.push_back(new Rule({ TokenType::IntegerLiteral, 
+        SemanticAction::ConstructIntLiteral, TokenType::CloseSquareBracket }));
 
     // 84 ArraySize2
-    m_rules.push_back(new Rule({ TokenType::CloseSquareBracket }));
+    m_rules.push_back(new Rule({ SemanticAction::PushUnspecifiedDimensionNode, 
+        TokenType::CloseSquareBracket }));
 
     // 85 ArraySizeRepetition
     m_rules.push_back(new Rule({ NonTerminal::ArraySize, 
         NonTerminal::ArraySizeRepetition }));
 
     // 86 ArraySizeRepetition
-    m_rules.push_back(new Rule({ }));
+    m_rules.push_back(new Rule({ SemanticAction::ConstructDimensions }));
 
     // 87 Type
-    m_rules.push_back(new Rule({ TokenType::IntegerKeyword }));
+    m_rules.push_back(new Rule({ TokenType::IntegerKeyword, SemanticAction::PushType }));
 
     // 88 Type
-    m_rules.push_back(new Rule({ TokenType::FloatKeyword }));
+    m_rules.push_back(new Rule({ TokenType::FloatKeyword, SemanticAction::PushType }));
 
     // 89 Type
-    m_rules.push_back(new Rule({ TokenType::ID }));
+    m_rules.push_back(new Rule({ TokenType::ID, SemanticAction::PushType }));
 
     // 90 ReturnType
     m_rules.push_back(new Rule({ NonTerminal::Type }));
 
     // 91 ReturnType
-    m_rules.push_back(new Rule({ TokenType::Void }));
+    m_rules.push_back(new Rule({ TokenType::Void, SemanticAction::PushType }));
 
     // 92 FParams
-    m_rules.push_back(new Rule({ TokenType::ID, TokenType::Colon, 
-        NonTerminal::Type, NonTerminal::ArraySizeRepetition, NonTerminal::FParamsTail }));
+    m_rules.push_back(new Rule({ TokenType::ID, SemanticAction::PushID, TokenType::Colon, 
+        NonTerminal::Type, SemanticAction::PushStopNode, 
+        NonTerminal::ArraySizeRepetition, SemanticAction::ConstructFParam, 
+        NonTerminal::FParamsTail }));
 
     // 93 FParams
     m_rules.push_back(new Rule({ }));
@@ -1047,8 +1103,9 @@ void RuleManager::InitializeRules()
 
     // 96 FParamsTail
     m_rules.push_back(new Rule({ TokenType::Comma, 
-        TokenType::ID, TokenType::Colon, NonTerminal::Type, NonTerminal::ArraySizeRepetition, 
-        NonTerminal::FParamsTail }));
+        TokenType::ID, SemanticAction::PushID, TokenType::Colon, NonTerminal::Type, 
+        SemanticAction::PushStopNode, NonTerminal::ArraySizeRepetition, 
+        SemanticAction::ConstructFParam, NonTerminal::FParamsTail }));
 
     // 97 FParamsTail
     m_rules.push_back(new Rule({ }));
@@ -1061,40 +1118,40 @@ void RuleManager::InitializeRules()
     m_rules.push_back(new Rule({ }));
 
     // 100 RelOp
-    m_rules.push_back(new Rule({ TokenType::Equal }));
+    m_rules.push_back(new Rule({ TokenType::Equal, SemanticAction::PushOp }));
 
     // 101 RelOp
-    m_rules.push_back(new Rule({ TokenType::NotEqual }));
+    m_rules.push_back(new Rule({ TokenType::NotEqual, SemanticAction::PushOp }));
 
     // 102 RelOp
-    m_rules.push_back(new Rule({ TokenType::LessThan }));
+    m_rules.push_back(new Rule({ TokenType::LessThan, SemanticAction::PushOp }));
 
     // 103 RelOp
-    m_rules.push_back(new Rule({ TokenType::GreaterThan }));
+    m_rules.push_back(new Rule({ TokenType::GreaterThan, SemanticAction::PushOp }));
 
     // 104 RelOp
-    m_rules.push_back(new Rule({ TokenType::LessOrEqual }));
+    m_rules.push_back(new Rule({ TokenType::LessOrEqual, SemanticAction::PushOp }));
 
     // 105 RelOp
-    m_rules.push_back(new Rule({ TokenType::GreaterOrEqual }));
+    m_rules.push_back(new Rule({ TokenType::GreaterOrEqual, SemanticAction::PushOp }));
 
     // 106 AddOp
-    m_rules.push_back(new Rule({ TokenType::Plus }));
+    m_rules.push_back(new Rule({ TokenType::Plus, SemanticAction::PushOp }));
 
     // 107 AddOp
-    m_rules.push_back(new Rule({ TokenType::Minus }));
+    m_rules.push_back(new Rule({ TokenType::Minus, SemanticAction::PushOp }));
 
     // 108 AddOp
-    m_rules.push_back(new Rule({ TokenType::Or }));
+    m_rules.push_back(new Rule({ TokenType::Or, SemanticAction::PushOp }));
 
     // 109 MultOp
-    m_rules.push_back(new Rule({ TokenType::Multiply }));
+    m_rules.push_back(new Rule({ TokenType::Multiply, SemanticAction::PushOp }));
 
     // 110 MultOp
-    m_rules.push_back(new Rule({ TokenType::Divide }));
+    m_rules.push_back(new Rule({ TokenType::Divide, SemanticAction::PushOp }));
 
     // 111 MultOp
-    m_rules.push_back(new Rule({ TokenType::And }));
+    m_rules.push_back(new Rule({ TokenType::And, SemanticAction::PushOp }));
     
     ////////////////////////////////////////////////////////////////////////////
     // Error Cutoff ////////////////////////////////////////////////////////////
@@ -1337,7 +1394,7 @@ ParsingErrorManager& ParsingErrorManager::GetInstance()
 }
 
 // Parser ////////////////////////////////////////////
-bool Parser::Parse(const std::string& filepath)
+ProgramNode* Parser::Parse(const std::string& filepath)
 {
     Reset(filepath);
 
@@ -1346,17 +1403,19 @@ bool Parser::Parse(const std::string& filepath)
     p.m_parsingStack.push_front(NonTerminal::Start);
 
     Token currToken = GetNextToken();
+    p.m_currProgramRoot = new ProgramNode();
     
     while (!(p.m_parsingStack.front().GetType() == StackableType::TerminalItem 
-        && p.m_parsingStack.front().GetTerminal() == TokenType::EndOfFile)
-        && currToken.GetTokenType() != TokenType::EndOfFile)
+        && p.m_parsingStack.front().GetTerminal() == TokenType::EndOfFile))
     {
         const StackableItem& top = p.m_parsingStack.front();
+
         if (top.GetType() == StackableType::TerminalItem)
         {
             if (currToken.GetTokenType() == top.GetTerminal())
             {
                 p.m_parsingStack.pop_front();
+                p.m_prevToken = currToken;
                 currToken = GetNextToken();
                 p.m_derivationFile << "\n"; // skip line since we read a terminal
             }
@@ -1365,6 +1424,10 @@ bool Parser::Parse(const std::string& filepath)
                 // use default error rule
                 RuleManager::GetRule(NullRule)->Apply(top, currToken);
                 p.m_errorFound = true;
+                if (currToken.GetTokenType() == TokenType::EndOfFile)
+                {
+                    break;
+                }
                 currToken = p.SkipError(currToken, top);
             }
         }
@@ -1385,25 +1448,34 @@ bool Parser::Parse(const std::string& filepath)
                 currToken = p.SkipError(currToken, top);
             }
         }
+        else if (top.GetType() == StackableType::SemanticActionItem)
+        {
+            p.ProcessSemanticAction(top.GetAction());
+        }
 
     }
-
 
     p.WriteErrorsToFile();
 
     if (currToken.GetTokenType() != TokenType::EndOfFile || p.m_errorFound)
     {
-        return false;
+        delete p.m_currProgramRoot;
+        p.m_currProgramRoot = nullptr;
+        return nullptr;
     }
+
+    p.m_astOutFile << p.m_currProgramRoot->ToString();
 
     // update derivation to remove all epsilon derivations
     p.RemoveNonTerminalsFromDerivation();
     p.WriteDerivationToFile();
     
-    return true;
+    ProgramNode* finalProgramRoot = p.m_currProgramRoot;
+    p.m_currProgramRoot = nullptr;
+    return finalProgramRoot;
 }
 
-Parser::Parser() 
+Parser::Parser() : m_currProgramRoot(nullptr)
 { 
     InitializeParsingTable(); 
 }
@@ -1413,6 +1485,11 @@ Parser::~Parser()
     for (auto& pair : m_parsingTable)
     {
         delete pair.second;
+    }
+
+    for (ASTNode* node : m_semanticStack)
+    {
+        delete node;
     }
 }
 
@@ -1434,8 +1511,10 @@ void Parser::Reset(const std::string& filepath)
 
     p.m_derivationFile.close();
     p.m_errorFile.close();
+    p.m_astOutFile.close();
     p.m_derivationFile = std::ofstream(simpleName + ".outderivation");
     p.m_errorFile = std::ofstream(simpleName + ".outsyntaxerrors");
+    p.m_astOutFile = std::ofstream(simpleName + ".astout");
     p.m_derivationFile << NonTerminal::Start << "\n";
 
     p.m_errors.clear();
@@ -1443,6 +1522,7 @@ void Parser::Reset(const std::string& filepath)
     p.m_derivation.emplace_back(NonTerminal::Start);
     p.m_derivation.emplace_back(TokenType::EndOfFile);
     p.m_nextNonTerminalIndex = 0;
+    p.m_numDotsEncountered = 0;
 }
 
 Token Parser::GetNextToken()
@@ -1805,6 +1885,486 @@ void Parser::PopNonTerminal()
 {
     m_parsingStack.pop_front();
     m_derivation.erase(m_derivation.begin() + m_nextNonTerminalIndex);
+}
+
+void Parser::ProcessSemanticAction(SemanticAction action)
+{
+    ASSERT(m_parsingStack.front().GetType() == StackableType::SemanticActionItem);
+    m_parsingStack.pop_front();
+
+    // do not process semantic actions for invalid programs
+    if (m_errorFound)
+    {
+        return;
+    }
+
+    switch(action)
+    {
+    case SemanticAction::PushStopNode:
+        Push<StopNode>(); 
+        break;
+
+    case SemanticAction::PushUnspecifiedDimensionNode:
+        Push<UnspecificedDimensionNode>(); 
+        break;
+
+    case SemanticAction::ConstructIntLiteral:
+        ConstructIntLiteralAction();
+        break;
+
+    case SemanticAction::ConstructFloatLiteral:
+        ConstructFloatLiteralAction();
+        break;
+
+    case SemanticAction::ConstructVisibility:
+        ConstructVisibilityAction();
+        break;
+
+    case SemanticAction::ConstructDefaultVisibility:
+        ConstructDefaultVisibilityAction();
+        break;
+
+    case SemanticAction::PushID:
+        Push<IDNode>(m_prevToken); 
+        break;
+
+    case SemanticAction::PushOp:
+        Push<OperatorNode>(m_prevToken); 
+        break;
+
+    case SemanticAction::PushSign:
+        Push<SignNode>(m_prevToken); 
+        break;
+
+    case SemanticAction::PushNot:
+        Push<NotNode>(); 
+        break;
+
+    case SemanticAction::PushType:
+        Push<TypeNode>(m_prevToken); 
+        break;
+
+    case SemanticAction::PushFreeFuncMarker:
+        Push<FreeFuncMarkerNode>(); 
+        break;
+
+    case SemanticAction::PushMemFuncMarker:
+        Push<MemFuncMarkerNode>(); 
+        break;
+
+    case SemanticAction::PushConstructorMarker:
+        Push<ConstructorMarkerNode>(); 
+        break;
+
+    case SemanticAction::EncounteredDot:
+        m_numDotsEncountered++;
+        break;
+
+    case SemanticAction::ConstructAssignStat:
+        ConstructAssignStatAction();
+        break;
+
+    case SemanticAction::ConstructExpr:
+        ConstructExprAction();
+        break;
+
+    case SemanticAction::ConstructModifiedExpr:
+        ConstructModifiedExprAction();
+        break;
+
+    case SemanticAction::ConstructAddOp:
+        ConstructBinaryOperatorNode<AddOpNode>();
+        break;
+
+    case SemanticAction::ConstructMultOp:
+        ConstructBinaryOperatorNode<MultOpNode>();
+        break;
+
+    case SemanticAction::ConstructRelOp:
+        ConstructBinaryOperatorNode<RelOpNode>();
+        break;
+
+    case SemanticAction::ConstructDimensions:
+        ConstructLoopingNode<DimensionNode>();
+        break;
+
+    case SemanticAction::ConstructVariable:
+        ConstructVariableAction();
+        break;
+
+    case SemanticAction::ConstructVarDecl:
+        ConstructVarDeclAction();
+        break;
+
+    case SemanticAction::ConstructStatBlock:
+        ConstructLoopingNode<StatBlockNode>();
+        break;
+
+    case SemanticAction::ConstructFParam:
+        ConstructFParamAction();
+        break;
+
+    case SemanticAction::ConstructFParams:
+        ConstructLoopingNode<FParamListNode>();
+        break;
+
+    case SemanticAction::ConstructAParams:
+        ConstructLoopingNode<AParamListNode>();
+        break;
+
+    case SemanticAction::ConstructFuncDef:
+        ConstructFuncDefAction();
+        break;
+
+    case SemanticAction::ConstructFuncCall:
+        ConstructFuncCallAction();
+        break;
+
+    case SemanticAction::ConstructIfStat:
+        ConstructIfStatAction();
+        break;
+
+    case SemanticAction::ConstructWhileStat:
+        ConstructWhileStatAction();
+        break;
+
+    case SemanticAction::ConstructReadStat:
+        ConstructReadStatAction();
+        break;
+
+    case SemanticAction::ConstructWriteStat:
+        ConstructWriteStatAction();
+        break;
+
+    case SemanticAction::ConstructReturnStat:
+        ConstructReturnStatAction();
+        break;
+
+    case SemanticAction::ConstructClass:
+        ConstructClassAction();
+        break;
+
+    case SemanticAction::ConstructMemVar:
+        ConstructMemVarAction();
+        break;
+
+    case SemanticAction::ConstructMemFuncDecl:
+        ConstructMemFuncDeclAction();
+        break;
+
+    case SemanticAction::ConstructConstructorDecl:
+        ConstructConstructorDeclAction();
+        break;
+
+    case SemanticAction::ConstructDotNode:
+        if (ConstructDotNodeAction())
+        {
+            m_numDotsEncountered--;
+        }
+        break;
+
+    case SemanticAction::ConstructEncounteredDots:
+        ConstructEncounteredDotsAction();
+        break;
+
+    case SemanticAction::ConstructInheritanceList:
+        ConstructLoopingNode<InheritanceListNode>();
+        break;
+
+    default:
+        DEBUG_BREAK();
+        break;
+    }
+}
+
+void Parser::ConstructIntLiteralAction()
+{
+    m_semanticStack.push_front(new LiteralNode(new IDNode(m_prevToken), 
+        new TypeNode(Token("integer",TokenType::IntegerKeyword, SIZE_MAX))));
+}
+
+void Parser::ConstructFloatLiteralAction()
+{
+    m_semanticStack.push_front(new LiteralNode(new IDNode(m_prevToken), 
+        new TypeNode(Token("float", TokenType::FloatKeyword, SIZE_MAX))));
+}
+
+void Parser::ConstructVisibilityAction()
+{
+    m_semanticStack.push_front(new VisibilityNode(m_prevToken.GetLexeme()));
+}
+
+void Parser::ConstructDefaultVisibilityAction()
+{
+    m_semanticStack.push_front(new DefaultVisibilityNode());
+}
+
+void Parser::ConstructExprAction()
+{
+    ASTNode* topNode = m_semanticStack.front();
+    m_semanticStack.pop_front();
+    m_semanticStack.push_front(new ExprNode(topNode));
+}
+
+void Parser::ConstructModifiedExprAction()
+{
+    ASTNode* expr = m_semanticStack.front();
+    m_semanticStack.pop_front();
+
+    ASTNode* modifier = m_semanticStack.front();
+    m_semanticStack.pop_front();
+
+    m_semanticStack.push_front(new ModifiedExpr(modifier, expr));
+}
+
+void Parser::ConstructAssignStatAction()
+{
+    ExprNode* right = PopTargetNodeFromSemanticStack<ExprNode>();
+
+    ASTNode* left = m_semanticStack.front();
+    m_semanticStack.pop_front();
+
+    m_semanticStack.push_front(new AssignStatNode(left, right));
+}
+
+void Parser::ConstructVariableAction()
+{
+    DimensionNode* dim = PopTargetNodeFromSemanticStack<DimensionNode>();
+    IDNode* id = PopTargetNodeFromSemanticStack<IDNode>();
+    m_semanticStack.push_front(new VariableNode(id, dim));
+}
+
+void Parser::ConstructVarDeclAction()
+{
+    ASTNode* lastNode = m_semanticStack.front();
+    m_semanticStack.pop_front();
+
+    TypeNode* type = PopTargetNodeFromSemanticStack<TypeNode>();
+    IDNode* id = PopTargetNodeFromSemanticStack<IDNode>();
+
+    if (dynamic_cast<DimensionNode*>(lastNode) != nullptr)
+    {
+        m_semanticStack.push_front(new VarDeclNode(id, type, (DimensionNode*)lastNode));
+    }
+    else if (dynamic_cast<AParamListNode*>(lastNode) != nullptr)
+    {
+        m_semanticStack.push_front(new VarDeclNode(id, type, (AParamListNode*)lastNode));
+    }
+    else
+    {
+        DEBUG_BREAK();
+    }
+}
+
+void Parser::ConstructFParamAction()
+{
+    DimensionNode* dimension = PopTargetNodeFromSemanticStack<DimensionNode>();
+    TypeNode* type = PopTargetNodeFromSemanticStack<TypeNode>();
+    IDNode* id = PopTargetNodeFromSemanticStack<IDNode>();
+
+    m_semanticStack.push_front(new FParamNode(id, type, dimension));
+}
+
+void Parser::ConstructFuncDefAction()
+{
+    StatBlockNode* body = PopTargetNodeFromSemanticStack<StatBlockNode>();
+    ASTNode* marker = m_semanticStack.front();
+    m_semanticStack.pop_front();
+    
+    if (dynamic_cast<FreeFuncMarkerNode*>(marker) != nullptr)
+    {
+        ConstructFreeFuncDefAction(body);
+    }
+    else if (dynamic_cast<MemFuncMarkerNode*>(marker) != nullptr)
+    {
+        ConstructMemFuncDefAction(body);
+    }
+    else if (dynamic_cast<ConstructorMarkerNode*>(marker) != nullptr)
+    {
+        ConstructConstructorDefAction(body);
+    }
+    else
+    {
+        DEBUG_BREAK();
+    }
+    delete marker;
+}
+
+void Parser::ConstructFreeFuncDefAction(StatBlockNode* body)
+{
+    TypeNode* returnType = PopTargetNodeFromSemanticStack<TypeNode>();
+    FParamListNode* params = PopTargetNodeFromSemanticStack<FParamListNode>();
+    IDNode* id = PopTargetNodeFromSemanticStack<IDNode>();
+    m_currProgramRoot->GetFunctionList()->AddFunc(new FunctionDefNode(id, returnType, 
+        params, body));
+}
+
+void Parser::ConstructMemFuncDefAction(StatBlockNode* body)
+{
+    TypeNode* returnType = PopTargetNodeFromSemanticStack<TypeNode>();
+    FParamListNode* params = PopTargetNodeFromSemanticStack<FParamListNode>();
+    IDNode* id = PopTargetNodeFromSemanticStack<IDNode>();
+    IDNode* classID = PopTargetNodeFromSemanticStack<IDNode>();
+
+    m_currProgramRoot->GetFunctionList()->AddFunc(new MemFuncDefNode(classID, id, 
+        returnType, params, body));
+}
+
+void Parser::ConstructConstructorDefAction(StatBlockNode* body)
+{
+    FParamListNode* params = PopTargetNodeFromSemanticStack<FParamListNode>();
+    IDNode* classID = PopTargetNodeFromSemanticStack<IDNode>();
+    m_currProgramRoot->GetFunctionList()->AddFunc(
+        new ConstructorDefNode(classID, params, body));
+}
+
+void Parser::ConstructFuncCallAction()
+{
+    AParamListNode* aparam = PopTargetNodeFromSemanticStack<AParamListNode>();
+    IDNode* id = PopTargetNodeFromSemanticStack<IDNode>();
+    m_semanticStack.push_front(new FuncCallNode(id, aparam));
+}
+
+void Parser::ConstructIfStatAction()
+{
+    StatBlockNode* elseBlock = PopTargetNodeFromSemanticStack<StatBlockNode>();
+    StatBlockNode* ifBlock = PopTargetNodeFromSemanticStack<StatBlockNode>();
+    ExprNode* condition = PopTargetNodeFromSemanticStack<ExprNode>();
+    m_semanticStack.push_front(new IfStatNode(condition, ifBlock, elseBlock));
+}
+
+void Parser::ConstructWhileStatAction()
+{
+    StatBlockNode* loopBlock = PopTargetNodeFromSemanticStack<StatBlockNode>();
+    ExprNode* condition = PopTargetNodeFromSemanticStack<ExprNode>();
+    m_semanticStack.push_front(new WhileStatNode(condition, loopBlock));
+}
+
+void Parser::ConstructReadStatAction()
+{
+    ASTNode* var = m_semanticStack.front();
+    m_semanticStack.pop_front();
+    m_semanticStack.push_front(new ReadStatNode(var));
+}
+
+void Parser::ConstructWriteStatAction()
+{
+    ExprNode* expr = PopTargetNodeFromSemanticStack<ExprNode>();
+    m_semanticStack.push_front(new WriteStatNode(expr));
+}
+
+void Parser::ConstructReturnStatAction()
+{
+    ExprNode* expr = PopTargetNodeFromSemanticStack<ExprNode>();
+    m_semanticStack.push_front(new ReturnStatNode(expr));
+}
+
+void Parser::ConstructClassAction()
+{
+    std::list<MemVarNode*> memVar;
+    std::list<ConstructorDeclNode*> constructors;
+    std::list<MemFuncDeclNode*> memFunc;
+
+    ASTNode* top = m_semanticStack.front();
+    m_semanticStack.pop_front();
+    while(dynamic_cast<StopNode*>(top) == nullptr)
+    {
+        if (dynamic_cast<MemVarNode*>(top) != nullptr)
+        {
+            memVar.push_back((MemVarNode*)top);
+        }
+        else if (dynamic_cast<ConstructorDeclNode*>(top) != nullptr)
+        {
+            constructors.push_back((ConstructorDeclNode*)top);
+        }
+        else if (dynamic_cast<MemFuncDeclNode*>(top) != nullptr)
+        {
+            memFunc.push_back((MemFuncDeclNode*)top);
+        }
+        else
+        {
+            DEBUG_BREAK();
+        }
+
+        top = m_semanticStack.front();
+        m_semanticStack.pop_front();
+    }
+    delete top;
+
+    InheritanceListNode* inheritanceList = PopTargetNodeFromSemanticStack
+        <InheritanceListNode>();
+    IDNode* id = PopTargetNodeFromSemanticStack<IDNode>();
+    ClassDefNode* classDef = new ClassDefNode(id, inheritanceList);
+
+    for (MemVarNode* var : memVar)
+    {
+        classDef->AddVarDecl(var);
+    }
+
+    for (ConstructorDeclNode* constructor : constructors)
+    {
+        classDef->AddConstructor(constructor);
+    }
+
+    for (MemFuncDeclNode* funcDecl : memFunc)
+    {
+        classDef->AddFuncDecl(funcDecl);
+    }
+
+    m_currProgramRoot->GetClassList()->AddClass(classDef);
+}
+
+void Parser::ConstructMemVarAction()
+{
+    DimensionNode* dimension = PopTargetNodeFromSemanticStack<DimensionNode>();
+    TypeNode* type = PopTargetNodeFromSemanticStack<TypeNode>();
+    IDNode* id = PopTargetNodeFromSemanticStack<IDNode>();
+    VisibilityNode* visibility = PopTargetNodeFromSemanticStack<VisibilityNode>();
+
+    m_semanticStack.push_front(new MemVarNode(visibility, id, type, dimension));
+}
+
+void Parser::ConstructMemFuncDeclAction()
+{
+    TypeNode* returnType = PopTargetNodeFromSemanticStack<TypeNode>();
+    FParamListNode* params = PopTargetNodeFromSemanticStack<FParamListNode>();
+    IDNode* id = PopTargetNodeFromSemanticStack<IDNode>();
+    VisibilityNode* visibility = PopTargetNodeFromSemanticStack<VisibilityNode>();
+
+    m_semanticStack.push_front(new MemFuncDeclNode(visibility, id, returnType, params));
+}
+
+void Parser::ConstructConstructorDeclAction()
+{
+    FParamListNode* params = PopTargetNodeFromSemanticStack<FParamListNode>();
+    VisibilityNode* visibility = PopTargetNodeFromSemanticStack<VisibilityNode>();
+    m_semanticStack.push_front(new ConstructorDeclNode(visibility, params));
+}
+
+bool Parser::ConstructDotNodeAction()
+{
+    if (m_numDotsEncountered == 0)
+    {
+        return false;
+    }
+
+    ASTNode* right = m_semanticStack.front();
+    m_semanticStack.pop_front();
+
+    ASTNode* left = m_semanticStack.front();
+    m_semanticStack.pop_front();
+
+    m_semanticStack.push_front(new DotNode(left, right));
+    return true;
+}
+
+void Parser::ConstructEncounteredDotsAction()
+{
+    while (m_numDotsEncountered > 0)
+    {
+        ConstructDotNodeAction();
+        m_numDotsEncountered--;
+    }
 }
 
 void Parser::UpdateNextNonTerminalIndex()
