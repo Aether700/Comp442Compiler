@@ -13,6 +13,7 @@ class MemVarNode;
 class MemFuncDeclNode;
 class ConstructorDeclNode;
 class ProgramNode;
+class ClassDefNode;
 
 class Visitor
 {
@@ -25,6 +26,7 @@ public:
     virtual void Visit(MemVarNode* element) { }
     virtual void Visit(MemFuncDeclNode* element) { }
     virtual void Visit(ConstructorDeclNode* element) { }
+    virtual void Visit(ClassDefNode* element) { }
     virtual void Visit(ProgramNode* element) { }
 };
 
@@ -44,6 +46,7 @@ public:
     virtual void Visit(VarDeclNode* element) override;
     virtual void Visit(FParamNode* element) override;
     virtual void Visit(FunctionDefNode* element) override;
+    virtual void Visit(ClassDefNode* element) override;
     virtual void Visit(ProgramNode* element) override;
     
     SymbolTable* GetGlobalSymbolTable();

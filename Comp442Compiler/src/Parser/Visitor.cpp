@@ -27,10 +27,9 @@ std::string VarDeclToTypeStr(VarDeclNode* var)
     return ss.str();
 }
 
-std::string FunctionTypeToStr(FunctionDefNode* func)
+std::string FunctionParamTypeToStr(FunctionDefNode* func)
 {
     std::stringstream typeStr;
-    typeStr << "(";
     bool hasParam = false;
     auto params = func->GetParameters();
     for (ASTNode* param : *func->GetParameters())
@@ -49,7 +48,6 @@ std::string FunctionTypeToStr(FunctionDefNode* func)
         typeStr.str("");
         typeStr << trimmedStr;
     }
-    typeStr << "):" << func->GetReturnType()->GetType().GetLexeme();
     
     return typeStr.str();
 }
@@ -68,16 +66,16 @@ SymbolTableAssembler::~SymbolTableAssembler()
 
 void SymbolTableAssembler::Visit(VarDeclNode* element)
 {
-    SymbolTableEntry* entry = new SymbolTableEntry(element->GetID()->GetID().GetLexeme(),
-        SymbolTableEntryKind::LocalVariable, VarDeclToTypeStr(element));
+    SymbolTableEntry* entry = new VarSymbolTableEntry(element,
+        SymbolTableEntryKind::LocalVariable);
 
     m_stack.push_front(entry);
 }
 
 void SymbolTableAssembler::Visit(FParamNode* element)
 {
-    SymbolTableEntry* entry = new SymbolTableEntry(element->GetID()->GetID().GetLexeme(),
-        SymbolTableEntryKind::Parameter, VarDeclToTypeStr(element));
+    SymbolTableEntry* entry = new VarSymbolTableEntry(element, 
+        SymbolTableEntryKind::Parameter);
 
     m_stack.push_front(entry);
 }
@@ -103,10 +101,19 @@ void SymbolTableAssembler::Visit(FunctionDefNode* element)
     m_stack.clear();
     m_stack = entriesToKeep;
 
-    SymbolTableEntry* entry = new SymbolTableEntry(element->GetID()->GetID().GetLexeme(), 
-        SymbolTableEntryKind::FreeFunction, FunctionTypeToStr(element), functionTable);
+    SymbolTableEntry* entry = new FreeFuncTableEntry(element, 
+        FunctionParamTypeToStr(element), functionTable);
 
     m_stack.push_front(entry);
+}
+
+void SymbolTableAssembler::Visit(ClassDefNode* element)
+{
+    const std::string& className = element->GetID()->GetID().GetLexeme();
+    SymbolTable* classTable = new SymbolTable(className);
+
+    SymbolTableEntry* classEntry = new SymbolTableEntry(className, SymbolTableEntryKind::Class, "", )
+    m_stack.push_front();
 }
 
 void SymbolTableAssembler::Visit(ProgramNode* element)

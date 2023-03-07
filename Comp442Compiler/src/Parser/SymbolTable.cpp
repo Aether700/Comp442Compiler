@@ -1,4 +1,5 @@
 #include "SymbolTable.h"
+#include "AST.h"
 #include "../Core/Core.h"
 #include <sstream>
 
@@ -33,21 +34,67 @@ std::ostream& operator<<(std::ostream& stream, SymbolTableEntryKind kind)
 
 // SymbolTableEntry //////////////////////////////////////////
 
-SymbolTableEntry::SymbolTableEntry(const std::string& name, SymbolTableEntryKind kind, 
-    const std::string& type, SymbolTable* subTable) 
-    : m_name(name), m_kind(kind), m_type(type), m_subTable(subTable) { }
+SymbolTableEntry::SymbolTableEntry(SymbolTableEntryKind kind) 
+    : m_kind(kind) { }
 
-SymbolTableEntry::~SymbolTableEntry()
-{
-    delete m_subTable;
-}
+SymbolTableEntry::~SymbolTableEntry() { }
 
 const std::string& SymbolTableEntry::GetName() const { return m_name; }
 SymbolTableEntryKind SymbolTableEntry::GetKind() const { return m_kind; }
-const std::string& SymbolTableEntry::GetType() const { return m_type; }
-SymbolTable* SymbolTableEntry::GetSubTable() { return m_subTable; }
-const SymbolTable* SymbolTableEntry::GetSubTable() const { return m_subTable; }
+void SymbolTableEntry::SetName(const std::string& name) { m_name = name; }
 
+// VarSymbolTableEntry /////////////////////////////////////////////////////////////////
+VarSymbolTableEntry::VarSymbolTableEntry(VarDeclNode* node, 
+    SymbolTableEntryKind kind) : SymbolTableEntry(kind), m_node(node)
+{
+    SetName(m_node->GetID()->GetID().GetLexeme());
+}
+
+
+const std::string& VarSymbolTableEntry::GetType() const 
+{ 
+    return m_node->GetType()->GetType().GetLexeme(); 
+}
+
+SymbolTable* VarSymbolTableEntry::GetSubTable() { return nullptr; }
+
+ASTNode* VarSymbolTableEntry::GetNode() { return m_node; }
+
+std::string VarSymbolTableEntry::ToString()
+{
+    std::stringstream ss;
+    ss << GetKind() << s_seperator << GetName() << s_seperator << GetType();
+    return ss.str();
+}
+
+// FreeFuncTableEntry /////////////////////////////////////////////////////////////
+FreeFuncTableEntry::FreeFuncTableEntry(FunctionDefNode* node, 
+    const std::string& parametersType, SymbolTable* subTable) 
+    : SymbolTableEntry(SymbolTableEntryKind::FreeFunction), m_subTable(subTable), 
+    m_paramTypes(parametersType), m_funcNode(node)
+{
+    SetName(node->GetID()->GetID().GetLexeme());
+}
+
+FreeFuncTableEntry::~FreeFuncTableEntry() { delete m_subTable; }
+
+const std::string& FreeFuncTableEntry::GetReturnType() const 
+{ 
+    return m_funcNode->GetReturnType()->GetType().GetLexeme(); 
+}
+
+const std::string& FreeFuncTableEntry::GetParamTypes() const { return m_paramTypes; }
+SymbolTable* FreeFuncTableEntry::GetSubTable() { return m_subTable; }
+
+ASTNode* FreeFuncTableEntry::GetNode() { return m_funcNode; }
+
+std::string FreeFuncTableEntry::ToString() 
+{
+    std::stringstream ss;
+    ss << GetKind() << s_seperator << GetName() << s_seperator << 
+        "(" << GetParamTypes() << "):" << GetReturnType();
+    return ss.str();
+}
 
 // SymbolTable ////////////////////////////////////////////////////////////////////
 
@@ -70,15 +117,24 @@ SymbolTable::TableIterator SymbolTable::end() { return m_entries.end(); }
 
 
 // SymbolTableDisplayManager //////////////////////////////////////////////////////////////
-std::string SymbolTableDisplayManager::TableToStr(SymbolTable* table, bool isMain)
+std::string SymbolTableDisplayManager::TableToStr(SymbolTable* table, size_t depth)
 {
-    if (isMain)
+    if (depth == 0)
     {
         return MainTableToStr(table);
     }
-    else
+    else if (depth == 1)
     {
         return SubTableToStr(table);
+    }
+    else if (depth == 2)
+    {
+        return SubSubTableToStr(table);
+    }
+    else
+    {
+        DEBUG_BREAK();
+        return "";
     }
 }
 
@@ -93,12 +149,11 @@ std::string SymbolTableDisplayManager::MainTableToStr(SymbolTable* table)
 
     for (SymbolTableEntry* entry : *table)
     {
-        ss << FormatEntryRow(entry, s_mainTableWidth, 
-            s_mainTableIndent, s_mainTableKindWidth, s_mainTableNameWidth) << "\n";
+        ss << FitInTable(entry->ToString(), s_mainTableWidth, s_mainTableIndent) << "\n";
         
         if (entry->GetSubTable() != nullptr)
         {
-            ss << TableToStr(entry->GetSubTable(), false);
+            ss << TableToStr(entry->GetSubTable(), 1);
         }
     }
 
@@ -121,13 +176,43 @@ std::string SymbolTableDisplayManager::SubTableToStr(SymbolTable* table)
 
     for (SymbolTableEntry* entry : *table)
     {
-        ss << FitInTable(FormatEntryRow(entry, s_subTableWidth, 
-            s_mainTableIndent, s_subTableKindWidth, s_subTableNameWidth), 
-            s_mainTableWidth, s_subTableIndent) << "\n";
+        ss << FitInTable(FitInTable(entry->ToString(), s_subTableWidth, 
+            s_mainTableIndent), s_mainTableWidth, s_subTableIndent) << "\n";
+
+        if (entry->GetSubTable() != nullptr)
+        {
+            ss << TableToStr(entry->GetSubTable(), 2);
+        }
     }
 
     ss << FitInTable(CreateHeader(s_subTableWidth), s_mainTableWidth, 
         s_subTableIndent) << "\n";
+
+    return ss.str();
+}
+
+std::string SymbolTableDisplayManager::SubSubTableToStr(SymbolTable* table)
+{
+    std::stringstream ss;
+    ss << FitInTable(FitInTable(CreateHeader(s_subSubTableWidth), s_subTableWidth, 
+        s_subSubTableIndent), s_mainTableWidth, s_subTableIndent) << "\n";
+    
+    ss << FitInTable(FitInTable(FitInTable(table->GetName(), s_subSubTableWidth, 
+        s_mainTableIndent), s_subTableWidth, s_subSubTableIndent), 
+        s_mainTableWidth, s_subTableIndent) << "\n";
+
+    ss << FitInTable(FitInTable(CreateHeader(s_subSubTableWidth), s_subTableWidth, 
+        s_subSubTableIndent), s_mainTableWidth, s_subTableIndent) << "\n";
+
+    for (SymbolTableEntry* entry : *table)
+    {
+        ss << FitInTable(FitInTable(FitInTable(entry->ToString(), s_subSubTableWidth, 
+            s_mainTableIndent), s_subTableWidth, s_subSubTableIndent), s_mainTableWidth, 
+            s_subTableIndent) << "\n";
+    }
+
+    ss << FitInTable(FitInTable(CreateHeader(s_subSubTableWidth), s_subTableWidth, 
+        s_subSubTableIndent), s_mainTableWidth, s_subTableIndent) << "\n";
 
     return ss.str();
 }
@@ -163,70 +248,5 @@ std::string SymbolTableDisplayManager::FitInTable(const std::string& content,
         ss << " ";
     }
     ss << "|";
-    return ss.str();
-}
-
-std::string SymbolTableDisplayManager::FormatEntryRow(SymbolTableEntry* entry, 
-    size_t tableWidth, size_t indent, size_t kindWidth, size_t nameWidth)
-{
-    std::stringstream ss;
-    
-    ss << "|";
-
-    // format kind
-    for (size_t i = 0; i < indent; i++)
-    {
-        ss << " ";
-    }
-
-    size_t kindWidthUsed;
-    {
-        std::stringstream kindStream;
-        kindStream << entry->GetKind();
-        kindWidthUsed = kindStream.str().length();
-        ss << kindStream.str();
-    }
-
-    ASSERT(kindWidthUsed < kindWidth)
-    for (size_t i = kindWidthUsed; i < kindWidth - 1; i++)
-    {
-        ss << " ";
-    }
-    ss << "|";
-
-    // format name 
-    for (size_t i = 0; i < indent; i++)
-    {
-        ss << " ";
-    }
-
-    size_t nameWidthUsed = entry->GetName().length();
-    ss << entry->GetName();
-    ASSERT(nameWidthUsed < nameWidth)
-    for (size_t i = nameWidthUsed; i < nameWidth - 1; i++)
-    {
-        ss << " ";
-    }
-    ss << "|";
-
-    // format type
-    for (size_t i = 0; i < indent; i++)
-    {
-        ss << " ";
-    }
-
-    size_t typeWidthUsed = entry->GetType().length();
-    size_t previouslyUsedWidth = 3 * indent + kindWidth + nameWidth + 1; // add the initial "|"
-    ss << entry->GetType();
-    ASSERT(typeWidthUsed + previouslyUsedWidth < tableWidth)
-    
-    // remove the last |
-    size_t padding = tableWidth - (typeWidthUsed + previouslyUsedWidth) - 1; 
-    for (size_t i = 0; i < padding; i++)
-    {
-        ss << " ";
-    }
-    ss << "|";
-
     return ss.str();
 }

@@ -3,6 +3,10 @@
 #include <list>
 #include <iostream>
 
+class ASTNode;
+class VarDeclNode;
+class FunctionDefNode;
+
 class SymbolTable;
 
 enum class SymbolTableEntryKind
@@ -18,22 +22,58 @@ std::ostream& operator<<(std::ostream& stream, SymbolTableEntryKind kind);
 class SymbolTableEntry
 {
 public:
-    SymbolTableEntry(const std::string& name, SymbolTableEntryKind kind, 
-        const std::string& type, SymbolTable* subTable = nullptr);
-
-    ~SymbolTableEntry();
+    SymbolTableEntry(SymbolTableEntryKind kind);
+    virtual ~SymbolTableEntry();
 
     const std::string& GetName() const;
     SymbolTableEntryKind GetKind() const;
-    const std::string& GetType() const;
-    SymbolTable* GetSubTable();
-    const SymbolTable* GetSubTable() const;
+    virtual ASTNode* GetNode() = 0;
+    virtual SymbolTable* GetSubTable() = 0;
+    
+    virtual std::string ToString() = 0;
 
+protected:
+    static constexpr const char* s_seperator = "    | ";
+
+    void SetName(const std::string& name);
 private:
     std::string m_name;
     SymbolTableEntryKind m_kind;
-    std::string m_type;
+};
+
+class VarSymbolTableEntry : public SymbolTableEntry
+{
+public:
+    VarSymbolTableEntry(VarDeclNode* node, SymbolTableEntryKind kind);
+
+    const std::string& GetType() const;
+    virtual SymbolTable* GetSubTable() override;
+    virtual ASTNode* GetNode() override;
+    
+    virtual std::string ToString() override;
+
+private:
+    VarDeclNode* m_node;
+};
+
+class FreeFuncTableEntry : public SymbolTableEntry
+{
+public:
+    FreeFuncTableEntry(FunctionDefNode* node, const std::string& parametersType, 
+        SymbolTable* subTable);
+    ~FreeFuncTableEntry();
+
+    const std::string& GetReturnType() const;
+    const std::string& GetParamTypes() const;
+
+    virtual SymbolTable* GetSubTable() override;
+    virtual ASTNode* GetNode() override;
+    
+    virtual std::string ToString() override;
+private:
     SymbolTable* m_subTable;
+    FunctionDefNode* m_funcNode;
+    std::string m_paramTypes;
 };
 
 class SymbolTable
@@ -60,27 +100,22 @@ private:
 class SymbolTableDisplayManager
 {
 public:
-    static std::string TableToStr(SymbolTable* table, bool isMain = true);
+    static std::string TableToStr(SymbolTable* table, size_t depth = 0);
 
 private:
     static constexpr size_t s_mainTableWidth = 120;
     static constexpr size_t s_mainTableIndent = 1;
-    // column size - indent 
-    static constexpr size_t s_mainTableKindWidth = 25; 
-    static constexpr size_t s_mainTableNameWidth = 30; 
     
     static constexpr size_t s_subTableWidth = 110;
     static constexpr size_t s_subTableIndent = 4;
-    // column size - indent 
-    static constexpr size_t s_subTableKindWidth = 25;
-    static constexpr size_t s_subTableNameWidth = 30;
+
+    static constexpr size_t s_subSubTableWidth = 100;
+    static constexpr size_t s_subSubTableIndent = 4;
 
     static std::string MainTableToStr(SymbolTable* table);
     static std::string SubTableToStr(SymbolTable* table);
+    static std::string SubSubTableToStr(SymbolTable* table);
     static std::string CreateHeader(size_t headerLength);
     static std::string FitInTable(const std::string& content, size_t tableWidth, 
         size_t indent);
-    
-    static std::string FormatEntryRow(SymbolTableEntry* entry, 
-        size_t tableWidth, size_t indent, size_t kindWidth, size_t nameWidth);
 };
