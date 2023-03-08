@@ -96,6 +96,29 @@ std::string FreeFuncTableEntry::ToString()
     return ss.str();
 }
 
+// ClassTableEntry ////////////////////////////////////////////////////////////////
+ClassTableEntry::ClassTableEntry(ClassDefNode* node, SymbolTable* subTable) 
+    : SymbolTableEntry(SymbolTableEntryKind::Class), m_classNode(node), 
+    m_subTable(subTable) 
+{
+    SetName(m_classNode->GetID()->GetID().GetLexeme());
+}
+
+ClassTableEntry::~ClassTableEntry()
+{
+    delete m_subTable;
+}
+
+SymbolTable* ClassTableEntry::GetSubTable() { return m_subTable; }
+ASTNode* ClassTableEntry::GetNode() { return m_classNode; }
+
+std::string ClassTableEntry::ToString()
+{
+    std::stringstream ss;
+    ss << GetKind() << s_seperator << GetName();
+    return ss.str();
+}
+
 // SymbolTable ////////////////////////////////////////////////////////////////////
 
 SymbolTable::SymbolTable(const std::string& name) : m_name(name) { }
@@ -143,7 +166,8 @@ std::string SymbolTableDisplayManager::MainTableToStr(SymbolTable* table)
     std::stringstream ss;
     ss << CreateHeader(s_mainTableWidth) << "\n";
     
-    ss << FitInTable(table->GetName(), s_mainTableWidth, s_mainTableIndent) << "\n";
+    ss << FitInTable(std::string(s_namePrefix) + table->GetName(), 
+        s_mainTableWidth, s_mainTableIndent) << "\n";
 
     ss << CreateHeader(s_mainTableWidth) << "\n";
 
@@ -168,8 +192,8 @@ std::string SymbolTableDisplayManager::SubTableToStr(SymbolTable* table)
     ss << FitInTable(CreateHeader(s_subTableWidth), s_mainTableWidth, 
         s_subTableIndent) << "\n";
     
-    ss << FitInTable(FitInTable(table->GetName(), s_subTableWidth, s_mainTableIndent), 
-        s_mainTableWidth, s_subTableIndent) << "\n";
+    ss << FitInTable(FitInTable(std::string(s_namePrefix) + table->GetName(), 
+        s_subTableWidth, s_mainTableIndent), s_mainTableWidth, s_subTableIndent) << "\n";
 
     ss << FitInTable(CreateHeader(s_subTableWidth), s_mainTableWidth, 
         s_subTableIndent) << "\n";
@@ -197,8 +221,8 @@ std::string SymbolTableDisplayManager::SubSubTableToStr(SymbolTable* table)
     ss << FitInTable(FitInTable(CreateHeader(s_subSubTableWidth), s_subTableWidth, 
         s_subSubTableIndent), s_mainTableWidth, s_subTableIndent) << "\n";
     
-    ss << FitInTable(FitInTable(FitInTable(table->GetName(), s_subSubTableWidth, 
-        s_mainTableIndent), s_subTableWidth, s_subSubTableIndent), 
+    ss << FitInTable(FitInTable(FitInTable(std::string(s_namePrefix) + table->GetName(), 
+        s_subSubTableWidth, s_mainTableIndent), s_subTableWidth, s_subSubTableIndent), 
         s_mainTableWidth, s_subTableIndent) << "\n";
 
     ss << FitInTable(FitInTable(CreateHeader(s_subSubTableWidth), s_subTableWidth, 

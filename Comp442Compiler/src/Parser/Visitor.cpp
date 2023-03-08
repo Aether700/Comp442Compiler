@@ -112,8 +112,8 @@ void SymbolTableAssembler::Visit(ClassDefNode* element)
     const std::string& className = element->GetID()->GetID().GetLexeme();
     SymbolTable* classTable = new SymbolTable(className);
 
-    SymbolTableEntry* classEntry = new SymbolTableEntry(className, SymbolTableEntryKind::Class, "", )
-    m_stack.push_front();
+    SymbolTableEntry* classEntry = new ClassTableEntry(element, classTable);
+    m_stack.push_front(classEntry);
 }
 
 void SymbolTableAssembler::Visit(ProgramNode* element)

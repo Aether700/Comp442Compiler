@@ -6,6 +6,7 @@
 class ASTNode;
 class VarDeclNode;
 class FunctionDefNode;
+class ClassDefNode;
 
 class SymbolTable;
 
@@ -76,6 +77,22 @@ private:
     std::string m_paramTypes;
 };
 
+class ClassTableEntry : public SymbolTableEntry
+{
+public:
+    ClassTableEntry(ClassDefNode* node, SymbolTable* subTable);
+    ~ClassTableEntry();
+
+    virtual SymbolTable* GetSubTable() override;
+    virtual ASTNode* GetNode() override;
+    
+    virtual std::string ToString() override;
+
+private:
+    ClassDefNode* m_classNode;
+    SymbolTable* m_subTable;
+};
+
 class SymbolTable
 {
     
@@ -103,6 +120,7 @@ public:
     static std::string TableToStr(SymbolTable* table, size_t depth = 0);
 
 private:
+    static constexpr const char* s_namePrefix = "table: ";
     static constexpr size_t s_mainTableWidth = 120;
     static constexpr size_t s_mainTableIndent = 1;
     

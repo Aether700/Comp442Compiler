@@ -1,16 +1,4 @@
-function freeFunc(x : integer[3], y : float[]) => void
+class MyObj
 {
-    localvar a : integer[2][];
-    localvar b : float;
-}
 
-function freeFunc2(a : float) => integer
-{
-    localvar b : integer;
-}
-
-function freeFunc3(i : integer[3], j : float[]) => void
-{
-    localvar k : integer[2][];
-    localvar l : float;
-}
+};

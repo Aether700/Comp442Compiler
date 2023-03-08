@@ -6,14 +6,11 @@
 
 class IVisitableElement;
 class IDNode;
-class VarDeclNode;
 class FParamNode;
-class FunctionDefNode;
 class MemVarNode;
 class MemFuncDeclNode;
 class ConstructorDeclNode;
 class ProgramNode;
-class ClassDefNode;
 
 class Visitor
 {
