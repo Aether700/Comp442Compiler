@@ -5,6 +5,7 @@
 
 class ASTNode;
 class VarDeclNode;
+class MemVarNode;
 class FunctionDefNode;
 class ClassDefNode;
 
@@ -15,6 +16,9 @@ enum class SymbolTableEntryKind
     LocalVariable,
     FreeFunction,
     Class,
+    MemVar,
+    Constructor,
+    MemFunc,
     Parameter
 };
 
@@ -93,9 +97,20 @@ private:
     SymbolTable* m_subTable;
 };
 
+class MemVarTableEntry : public VarSymbolTableEntry
+{
+public:
+    MemVarTableEntry(MemVarNode* node);
+    const std::string& GetClassID() const;
+    const std::string& GetVisibility() const;
+    virtual std::string ToString() override;
+
+private:
+    MemVarNode* GetMemVarNode() const;
+};
+
 class SymbolTable
 {
-    
 public:
     using TableList = std::list<SymbolTableEntry*>;
     using TableIterator = TableList::iterator;

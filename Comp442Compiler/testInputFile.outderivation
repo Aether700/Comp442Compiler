@@ -7,8 +7,37 @@
 
 -> 'class' 'id'    '{'  <ClassDeclMembDeclRepetition> '}'  ';' <ClassDeclOrFuncDefRepetition> 'EOF' 
 
--> 'class' 'id'    '{'  '}'  ';' <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'class' 'id'    '{'  <Visibility> <MemberDecl> <ClassDeclMembDeclRepetition> '}'  ';' <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'class' 'id'    '{'  'public'  <MemberDecl> <ClassDeclMembDeclRepetition> '}'  ';' <ClassDeclOrFuncDefRepetition> 'EOF' 
+
+-> 'class' 'id'    '{'  'public'  <MemberVarDecl> <ClassDeclMembDeclRepetition> '}'  ';' <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'class' 'id'    '{'  'public'  'attribute' 'id'  ':' <Type>  <ArraySizeRepetition>  ';' <ClassDeclMembDeclRepetition> '}'  ';' <ClassDeclOrFuncDefRepetition> 'EOF' 
 
 
--> 'class' 'id'    '{'  '}'  ';' 'EOF' 
--> 'class' 'id'    '{'  '}'  ';' 'EOF' 
+
+-> 'class' 'id'    '{'  'public'  'attribute' 'id'  ':' 'integer'   <ArraySizeRepetition>  ';' <ClassDeclMembDeclRepetition> '}'  ';' <ClassDeclOrFuncDefRepetition> 'EOF' 
+
+-> 'class' 'id'    '{'  'public'  'attribute' 'id'  ':' 'integer'   <ArraySize> <ArraySizeRepetition>  ';' <ClassDeclMembDeclRepetition> '}'  ';' <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'class' 'id'    '{'  'public'  'attribute' 'id'  ':' 'integer'   '[' <ArraySize2> <ArraySizeRepetition>  ';' <ClassDeclMembDeclRepetition> '}'  ';' <ClassDeclOrFuncDefRepetition> 'EOF' 
+
+-> 'class' 'id'    '{'  'public'  'attribute' 'id'  ':' 'integer'   '[' 'integer literal'  ']' <ArraySizeRepetition>  ';' <ClassDeclMembDeclRepetition> '}'  ';' <ClassDeclOrFuncDefRepetition> 'EOF' 
+
+
+-> 'class' 'id'    '{'  'public'  'attribute' 'id'  ':' 'integer'   '[' 'integer literal'  ']'   ';' <ClassDeclMembDeclRepetition> '}'  ';' <ClassDeclOrFuncDefRepetition> 'EOF' 
+
+-> 'class' 'id'    '{'  'public'  'attribute' 'id'  ':' 'integer'   '[' 'integer literal'  ']'   ';' <Visibility> <MemberDecl> <ClassDeclMembDeclRepetition> '}'  ';' <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'class' 'id'    '{'  'public'  'attribute' 'id'  ':' 'integer'   '[' 'integer literal'  ']'   ';'  <MemberDecl> <ClassDeclMembDeclRepetition> '}'  ';' <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'class' 'id'    '{'  'public'  'attribute' 'id'  ':' 'integer'   '[' 'integer literal'  ']'   ';'  <MemberVarDecl> <ClassDeclMembDeclRepetition> '}'  ';' <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'class' 'id'    '{'  'public'  'attribute' 'id'  ':' 'integer'   '[' 'integer literal'  ']'   ';'  'attribute' 'id'  ':' <Type>  <ArraySizeRepetition>  ';' <ClassDeclMembDeclRepetition> '}'  ';' <ClassDeclOrFuncDefRepetition> 'EOF' 
+
+
+
+-> 'class' 'id'    '{'  'public'  'attribute' 'id'  ':' 'integer'   '[' 'integer literal'  ']'   ';'  'attribute' 'id'  ':' 'float'   <ArraySizeRepetition>  ';' <ClassDeclMembDeclRepetition> '}'  ';' <ClassDeclOrFuncDefRepetition> 'EOF' 
+
+-> 'class' 'id'    '{'  'public'  'attribute' 'id'  ':' 'integer'   '[' 'integer literal'  ']'   ';'  'attribute' 'id'  ':' 'float'     ';' <ClassDeclMembDeclRepetition> '}'  ';' <ClassDeclOrFuncDefRepetition> 'EOF' 
+
+-> 'class' 'id'    '{'  'public'  'attribute' 'id'  ':' 'integer'   '[' 'integer literal'  ']'   ';'  'attribute' 'id'  ':' 'float'     ';' '}'  ';' <ClassDeclOrFuncDefRepetition> 'EOF' 
+
+
+-> 'class' 'id'    '{'  'public'  'attribute' 'id'  ':' 'integer'   '[' 'integer literal'  ']'   ';'  'attribute' 'id'  ':' 'float'     ';' '}'  ';' 'EOF' 
+-> 'class' 'id'    '{'  'public'  'attribute' 'id'  ':' 'integer'   '[' 'integer literal'  ']'   ';'  'attribute' 'id'  ':' 'float'     ';' '}'  ';' 'EOF' 

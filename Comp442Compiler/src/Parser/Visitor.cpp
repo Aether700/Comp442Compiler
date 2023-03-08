@@ -57,7 +57,7 @@ SymbolTableAssembler::SymbolTableAssembler() : m_globalScopeTable(nullptr) { }
 
 SymbolTableAssembler::~SymbolTableAssembler()
 {
-    for (SymbolTableEntry* entry : m_stack)
+    for (SymbolTableEntry* entry : m_workingList)
     {
         delete entry;
     }
@@ -69,7 +69,7 @@ void SymbolTableAssembler::Visit(VarDeclNode* element)
     SymbolTableEntry* entry = new VarSymbolTableEntry(element,
         SymbolTableEntryKind::LocalVariable);
 
-    m_stack.push_front(entry);
+    m_workingList.push_front(entry);
 }
 
 void SymbolTableAssembler::Visit(FParamNode* element)
@@ -77,7 +77,7 @@ void SymbolTableAssembler::Visit(FParamNode* element)
     SymbolTableEntry* entry = new VarSymbolTableEntry(element, 
         SymbolTableEntryKind::Parameter);
 
-    m_stack.push_front(entry);
+    m_workingList.push_front(entry);
 }
 
 void SymbolTableAssembler::Visit(FunctionDefNode* element)
@@ -85,7 +85,7 @@ void SymbolTableAssembler::Visit(FunctionDefNode* element)
     SymbolTable* functionTable = new SymbolTable("::" 
         + element->GetID()->GetID().GetLexeme());
     std::list<SymbolTableEntry*> entriesToKeep;
-    for (SymbolTableEntry* entry : m_stack)
+    for (SymbolTableEntry* entry : m_workingList)
     {
         if (entry->GetKind() == SymbolTableEntryKind::LocalVariable 
             || entry->GetKind() == SymbolTableEntryKind::Parameter)
@@ -98,13 +98,19 @@ void SymbolTableAssembler::Visit(FunctionDefNode* element)
         }
     }
 
-    m_stack.clear();
-    m_stack = entriesToKeep;
+    m_workingList.clear();
+    m_workingList = entriesToKeep;
 
     SymbolTableEntry* entry = new FreeFuncTableEntry(element, 
         FunctionParamTypeToStr(element), functionTable);
 
-    m_stack.push_front(entry);
+    m_workingList.push_front(entry);
+}
+
+void SymbolTableAssembler::Visit(MemVarNode* element)
+{
+    MemVarTableEntry* entry = new MemVarTableEntry(element);
+    m_workingList.push_front(entry);
 }
 
 void SymbolTableAssembler::Visit(ClassDefNode* element)
@@ -112,20 +118,53 @@ void SymbolTableAssembler::Visit(ClassDefNode* element)
     const std::string& className = element->GetID()->GetID().GetLexeme();
     SymbolTable* classTable = new SymbolTable(className);
 
+    std::list<MemVarTableEntry*> memVarEntries;
+
+    std::list<SymbolTableEntry*> entriesToKeep;
+    for (SymbolTableEntry* entry : m_workingList)
+    {
+        if (entry->GetKind() == SymbolTableEntryKind::MemVar)
+        {
+            MemVarTableEntry* memVarEntry = (MemVarTableEntry*)entry;
+            if (memVarEntry->GetClassID() == className)
+            {
+                memVarEntries.push_front(memVarEntry);
+            }
+            else
+            {
+                entriesToKeep.push_front(entry);
+            }
+        }
+        else if (entry->GetKind() != SymbolTableEntryKind::MemFunc && entry->GetKind() 
+            != SymbolTableEntryKind::Constructor)
+        {
+            entriesToKeep.push_front(entry);
+        }
+    }
+
+    m_workingList.clear();
+    m_workingList = entriesToKeep;
+
+
+    for (MemVarTableEntry* memVarEntry : memVarEntries)
+    {
+        classTable->AddEntry(memVarEntry);
+    }
     SymbolTableEntry* classEntry = new ClassTableEntry(element, classTable);
-    m_stack.push_front(classEntry);
+
+    m_workingList.push_front(classEntry);
 }
 
 void SymbolTableAssembler::Visit(ProgramNode* element)
 {
     m_globalScopeTable = new SymbolTable("Global");
 
-    for (SymbolTableEntry* entry : m_stack)
+    for (SymbolTableEntry* entry : m_workingList)
     {
         m_globalScopeTable->AddEntry(entry);
     }
     
-    m_stack.clear();
+    m_workingList.clear();
 }
 
 SymbolTable* SymbolTableAssembler::GetGlobalSymbolTable() { return m_globalScopeTable; }

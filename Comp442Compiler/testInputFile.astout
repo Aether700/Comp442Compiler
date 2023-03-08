@@ -4,4 +4,24 @@ Program
 |  |  |  id
 |  |  |  |  MyObj
 |  |  |  InheritanceList
+|  |  |  MemVar
+|  |  |  |  Visibility
+|  |  |  |  |  public
+|  |  |  |  id
+|  |  |  |  |  x
+|  |  |  |  TypeNode
+|  |  |  |  |  integer
+|  |  |  |  Dimensions
+|  |  |  |  |  Literal
+|  |  |  |  |  |  3
+|  |  |  |  |  |  TypeNode
+|  |  |  |  |  |  |  integer
+|  |  |  MemVar
+|  |  |  |  Visibility
+|  |  |  |  |  default
+|  |  |  |  id
+|  |  |  |  |  y
+|  |  |  |  TypeNode
+|  |  |  |  |  float
+|  |  |  |  Dimensions
 |  FuncDefList

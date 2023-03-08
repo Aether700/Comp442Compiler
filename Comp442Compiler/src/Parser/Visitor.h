@@ -43,6 +43,7 @@ public:
     virtual void Visit(VarDeclNode* element) override;
     virtual void Visit(FParamNode* element) override;
     virtual void Visit(FunctionDefNode* element) override;
+    virtual void Visit(MemVarNode* element) override;
     virtual void Visit(ClassDefNode* element) override;
     virtual void Visit(ProgramNode* element) override;
     
@@ -50,5 +51,5 @@ public:
 
 private:
     SymbolTable* m_globalScopeTable;
-    std::list<SymbolTableEntry*> m_stack;
+    std::list<SymbolTableEntry*> m_workingList;
 };

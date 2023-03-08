@@ -1,4 +1,5 @@
 class MyObj
 {
-
+    public attribute x : integer[3];
+    attribute y : float;
 };

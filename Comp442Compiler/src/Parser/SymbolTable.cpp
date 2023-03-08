@@ -25,6 +25,10 @@ std::ostream& operator<<(std::ostream& stream, SymbolTableEntryKind kind)
         stream << "local variable";
         break;
 
+    case SymbolTableEntryKind::MemVar:
+        stream << "member variable";
+        break;
+
     default:
         DEBUG_BREAK();
         break;
@@ -117,6 +121,34 @@ std::string ClassTableEntry::ToString()
     std::stringstream ss;
     ss << GetKind() << s_seperator << GetName();
     return ss.str();
+}
+
+// MemVarTableEntry /////////////////////////////////////////////////////////////////
+
+MemVarTableEntry::MemVarTableEntry(MemVarNode* node) 
+    : VarSymbolTableEntry(node, SymbolTableEntryKind::MemVar) { }
+
+const std::string& MemVarTableEntry::GetClassID() const
+{
+    return ((ClassDefNode*)GetMemVarNode()->GetParent())->GetID()->GetID().GetLexeme();
+}
+
+const std::string& MemVarTableEntry::GetVisibility() const
+{
+    return GetMemVarNode()->GetVisibility()->GetVisibility();
+}
+
+std::string MemVarTableEntry::ToString()
+{
+    std::stringstream ss;
+    ss << GetKind() << s_seperator << GetName() << s_seperator 
+        << GetType() << s_seperator << GetVisibility();
+    return ss.str();
+}
+
+MemVarNode* MemVarTableEntry::GetMemVarNode() const
+{
+    return (MemVarNode*)const_cast<MemVarTableEntry*>(this)->GetNode();
 }
 
 // SymbolTable ////////////////////////////////////////////////////////////////////
