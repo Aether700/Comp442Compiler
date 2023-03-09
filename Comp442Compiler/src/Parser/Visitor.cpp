@@ -146,7 +146,14 @@ void SymbolTableAssembler::Visit(MemFuncDeclNode* element)
 
 void SymbolTableAssembler::Visit(MemFuncDefNode* element)
 {
-    SymbolTable* functionTable = new SymbolTable(element->GetID()->GetID().GetLexeme());
+    SymbolTable* functionTable;
+    
+    {
+        const std::string& className = element->GetClassID()->GetID().GetLexeme();
+        functionTable = new SymbolTable(className + "::" 
+            + element->GetID()->GetID().GetLexeme());
+    }
+
     std::list<SymbolTableEntry*> entriesToKeep;
     for (SymbolTableEntry* entry : m_workingList)
     {
