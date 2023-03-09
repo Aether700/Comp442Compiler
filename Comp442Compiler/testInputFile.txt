@@ -1,5 +1,18 @@
-class MyObj
+function MyObj::memFunc2 (x : float) => void
+{
+    localvar b : integer;
+}
+
+class MyObj isa Object, Example
 {
     public attribute x : integer[3];
     attribute y : float;
+
+    public function memFunc : (x : integer) => void;
+    function memFunc2 : (x : float) => void;
 };
+
+function MyObj::memFunc (x : integer) => void
+{
+    localvar a : integer;
+}

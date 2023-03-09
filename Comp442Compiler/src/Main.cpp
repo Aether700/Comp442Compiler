@@ -7,7 +7,6 @@
 #include "Parser/Parser.h"
 #include "Core/Util.h"
 
-do inheritance list entry next
 
 void ExitPrompt()
 {

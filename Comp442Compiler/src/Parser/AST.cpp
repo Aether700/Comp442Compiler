@@ -57,6 +57,8 @@ ASTNode* ASTNodeBase::GetChild(size_t index)
 
 std::list<ASTNode*>& ASTNodeBase::GetChildren() { return m_children; }
 
+const std::list<ASTNode*>& ASTNodeBase::GetChildren() const { return m_children; }
+
 void ASTNodeBase::ChildrenAcceptVisit(Visitor* visitor)
 {
     for (ASTNode* child : m_children)
@@ -929,6 +931,20 @@ void ConstructorDefNode::AcceptVisit(Visitor* visitor)
 // InheritanceListNode ///////////////////////////////////////////////////////////
 void InheritanceListNode::AddLoopingChild(ASTNode* id) { AddChildFirst(id); }
 
+bool InheritanceListNode::ContainsClassName(const std::string& className) const
+{
+    for (ASTNode* child : GetChildren())
+    {
+        IDNode* id = dynamic_cast<IDNode*>(child);
+        ASSERT(id != nullptr);
+        if (id->GetID().GetLexeme() == className)
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
 std::string InheritanceListNode::ToString(size_t indent)
 {
     std::stringstream ss;
@@ -946,6 +962,11 @@ void InheritanceListNode::AcceptVisit(Visitor* visitor)
 { 
     ChildrenAcceptVisit(visitor);
     visitor->Visit(this); 
+}
+
+const std::list<ASTNode*>& InheritanceListNode::GetChildren() const
+{
+    return ASTNodeBase::GetChildren();
 }
 
 // ClassDefNode //////////////////////////////////////////////////////////////

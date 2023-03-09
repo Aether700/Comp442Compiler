@@ -29,6 +29,14 @@ std::ostream& operator<<(std::ostream& stream, SymbolTableEntryKind kind)
         stream << "member variable";
         break;
 
+    case SymbolTableEntryKind::MemFuncDecl:
+        stream << "member function";
+        break;
+
+    case SymbolTableEntryKind::InheritanceList:
+        stream << "inherites";
+        break;
+
     default:
         DEBUG_BREAK();
         break;
@@ -88,6 +96,7 @@ const std::string& FreeFuncTableEntry::GetReturnType() const
 }
 
 const std::string& FreeFuncTableEntry::GetParamTypes() const { return m_paramTypes; }
+
 SymbolTable* FreeFuncTableEntry::GetSubTable() { return m_subTable; }
 
 ASTNode* FreeFuncTableEntry::GetNode() { return m_funcNode; }
@@ -123,6 +132,60 @@ std::string ClassTableEntry::ToString()
     return ss.str();
 }
 
+// InheritanceListEntry /////////////////////////////////////////////////
+
+InheritanceListEntry::InheritanceListEntry(InheritanceListNode* node) 
+    : SymbolTableEntry(SymbolTableEntryKind::InheritanceList), m_node(node) 
+{
+    SetName(GetClassID() + "::InheritanceList");
+}
+    
+const std::string& InheritanceListEntry::GetClassID() const
+{
+    return ((ClassDefNode*)GetNonConstNode()->GetParent())->GetID()->GetID().GetLexeme();
+}
+
+bool InheritanceListEntry::IsChildOf(const std::string& parentClassName) const
+{
+    return m_node->ContainsClassName(parentClassName);
+}
+
+SymbolTable* InheritanceListEntry::GetSubTable() { return nullptr; }
+ASTNode* InheritanceListEntry::GetNode() { return m_node; }
+    
+std::string InheritanceListEntry::ToString()
+{
+    std::stringstream ss;
+    ss << GetKind() << s_seperator;
+
+    bool isEmpty = true;
+    for (ASTNode* node : m_node->GetChildren())
+    {
+        IDNode* id = dynamic_cast<IDNode*>(node);
+        ASSERT(id != nullptr);
+        ss << id->GetID().GetLexeme() << ", ";
+        isEmpty = false;
+    }
+
+    if (isEmpty)
+    {
+        ss << "None";
+    }
+    else
+    {
+        // remove last ", "
+        std::string tempCopy = ss.str();
+        ss.str(tempCopy.substr(0, tempCopy.length() - 2));
+    }
+
+    return ss.str();
+}
+
+InheritanceListNode* InheritanceListEntry::GetNonConstNode() const
+{
+    return const_cast<InheritanceListNode*>(m_node);
+}
+
 // MemVarTableEntry /////////////////////////////////////////////////////////////////
 
 MemVarTableEntry::MemVarTableEntry(MemVarNode* node) 
@@ -151,6 +214,99 @@ MemVarNode* MemVarTableEntry::GetMemVarNode() const
     return (MemVarNode*)const_cast<MemVarTableEntry*>(this)->GetNode();
 }
 
+// MemFuncTableEntry /////////////////////////////////////////////////////////
+
+MemFuncTableEntry::MemFuncTableEntry(MemFuncDeclNode* node, 
+    const std::string& parameterTypes) : SymbolTableEntry(SymbolTableEntryKind::MemFuncDecl), 
+    m_declaration(node), m_definition(nullptr), 
+    m_definitionSubTable(nullptr), m_parameterTypes(parameterTypes)
+{
+    SetName(node->GetID()->GetID().GetLexeme());
+}
+
+MemFuncTableEntry::~MemFuncTableEntry()
+{
+    delete m_definitionSubTable;
+}
+
+const std::string& MemFuncTableEntry::GetClassID() const
+{
+    return ((ClassDefNode*)m_declaration->GetParent())->GetID()->GetID().GetLexeme();
+}
+
+const std::string& MemFuncTableEntry::GetVisibility() const
+{
+    return m_declaration->GetVisibility()->GetVisibility();
+}
+
+const std::string& MemFuncTableEntry::GetReturnType() const
+{
+    return m_declaration->GetReturnType()->GetType().GetLexeme();
+}
+
+const std::string& MemFuncTableEntry::GetParamTypes() const
+{
+    return m_parameterTypes;
+}
+
+void MemFuncTableEntry::SetDefinition(MemFuncDefEntry* defEntry)
+{
+    m_definition = defEntry->m_defNode;
+    m_definitionSubTable = defEntry->m_subTable;
+    defEntry->m_defNode = nullptr;
+    defEntry->m_subTable = nullptr;
+}
+
+bool MemFuncTableEntry::HasDefinition() const { return m_definition != nullptr; }
+ASTNode* MemFuncTableEntry::GetNode() { return m_declaration; }
+SymbolTable* MemFuncTableEntry::GetSubTable() { return m_definitionSubTable; }
+
+std::string MemFuncTableEntry::ToString()
+{
+    ASSERT(HasDefinition());
+    std::stringstream ss;
+    ss << GetKind() << s_seperator << GetName() << s_seperator 
+        << "(" << GetParamTypes() << "):" << GetReturnType() 
+        << s_seperator << GetVisibility();
+
+    return ss.str();
+}
+
+// MemFuncDefEntry ///////////////////////////////////////////////////////
+
+MemFuncDefEntry::MemFuncDefEntry(MemFuncDefNode* def, const std::string& parameterTypes, 
+    SymbolTable* subTable) : SymbolTableEntry(SymbolTableEntryKind::MemFuncDef), 
+    m_defNode(def), m_subTable(subTable), m_parameterTypes(parameterTypes)
+{
+    SetName(def->GetID()->GetID().GetLexeme());
+}
+
+MemFuncDefEntry::~MemFuncDefEntry()
+{
+    delete m_subTable;
+}
+
+const std::string& MemFuncDefEntry::GetClassID() const
+{
+    return m_defNode->GetClassID()->GetID().GetLexeme();
+}
+
+const std::string& MemFuncDefEntry::GetReturnType() const
+{
+    return m_defNode->GetReturnType()->GetType().GetLexeme();
+}
+
+const std::string& MemFuncDefEntry::GetParamTypes() const { return m_parameterTypes; }
+
+ASTNode* MemFuncDefEntry::GetNode() { return m_defNode; }
+SymbolTable* MemFuncDefEntry::GetSubTable() { return m_subTable; }
+
+std::string MemFuncDefEntry::ToString()
+{
+    DEBUG_BREAK();
+    return "";
+}
+
 // SymbolTable ////////////////////////////////////////////////////////////////////
 
 SymbolTable::SymbolTable(const std::string& name) : m_name(name) { }
@@ -165,7 +321,7 @@ SymbolTable::~SymbolTable()
 
 const std::string& SymbolTable::GetName() const { return m_name; }
 
-void SymbolTable::AddEntry(SymbolTableEntry* entry) { m_entries.push_front(entry); }
+void SymbolTable::AddEntry(SymbolTableEntry* entry) { m_entries.push_back(entry); }
 
 SymbolTable::TableIterator SymbolTable::begin() { return m_entries.begin(); }
 SymbolTable::TableIterator SymbolTable::end() { return m_entries.end(); }

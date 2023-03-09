@@ -1,43 +1,164 @@
 <Start>
 -> <ClassDeclOrFuncDefRepetition> 'EOF' 
 -> <ClassDeclOrFuncDef> <ClassDeclOrFuncDefRepetition> 'EOF' 
--> <ClassDecl> <ClassDeclOrFuncDefRepetition> 'EOF' 
--> 'class' 'id'  <ClassDeclInheritance> '{'  <ClassDeclMembDeclRepetition> '}'  ';' <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> <FuncDef> <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> <FuncHead> <FuncBody> <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  <FuncHead2> <FuncBody> <ClassDeclOrFuncDefRepetition> 'EOF' 
 
 
--> 'class' 'id'    '{'  <ClassDeclMembDeclRepetition> '}'  ';' <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '::' <FuncHead3> <FuncBody> <ClassDeclOrFuncDefRepetition> 'EOF' 
 
--> 'class' 'id'    '{'  <Visibility> <MemberDecl> <ClassDeclMembDeclRepetition> '}'  ';' <ClassDeclOrFuncDefRepetition> 'EOF' 
--> 'class' 'id'    '{'  'public'  <MemberDecl> <ClassDeclMembDeclRepetition> '}'  ';' <ClassDeclOrFuncDefRepetition> 'EOF' 
-
--> 'class' 'id'    '{'  'public'  <MemberVarDecl> <ClassDeclMembDeclRepetition> '}'  ';' <ClassDeclOrFuncDefRepetition> 'EOF' 
--> 'class' 'id'    '{'  'public'  'attribute' 'id'  ':' <Type>  <ArraySizeRepetition>  ';' <ClassDeclMembDeclRepetition> '}'  ';' <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '::' 'id'  '('  <FParams>  ')' '=>' <ReturnType>  <FuncBody> <ClassDeclOrFuncDefRepetition> 'EOF' 
 
 
-
--> 'class' 'id'    '{'  'public'  'attribute' 'id'  ':' 'integer'   <ArraySizeRepetition>  ';' <ClassDeclMembDeclRepetition> '}'  ';' <ClassDeclOrFuncDefRepetition> 'EOF' 
-
--> 'class' 'id'    '{'  'public'  'attribute' 'id'  ':' 'integer'   <ArraySize> <ArraySizeRepetition>  ';' <ClassDeclMembDeclRepetition> '}'  ';' <ClassDeclOrFuncDefRepetition> 'EOF' 
--> 'class' 'id'    '{'  'public'  'attribute' 'id'  ':' 'integer'   '[' <ArraySize2> <ArraySizeRepetition>  ';' <ClassDeclMembDeclRepetition> '}'  ';' <ClassDeclOrFuncDefRepetition> 'EOF' 
-
--> 'class' 'id'    '{'  'public'  'attribute' 'id'  ':' 'integer'   '[' 'integer literal'  ']' <ArraySizeRepetition>  ';' <ClassDeclMembDeclRepetition> '}'  ';' <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '::' 'id'  '('  'id'  ':' <Type>  <ArraySizeRepetition>  <FParamsTail>  ')' '=>' <ReturnType>  <FuncBody> <ClassDeclOrFuncDefRepetition> 'EOF' 
 
 
--> 'class' 'id'    '{'  'public'  'attribute' 'id'  ':' 'integer'   '[' 'integer literal'  ']'   ';' <ClassDeclMembDeclRepetition> '}'  ';' <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '::' 'id'  '('  'id'  ':' 'float'   <ArraySizeRepetition>  <FParamsTail>  ')' '=>' <ReturnType>  <FuncBody> <ClassDeclOrFuncDefRepetition> 'EOF' 
 
--> 'class' 'id'    '{'  'public'  'attribute' 'id'  ':' 'integer'   '[' 'integer literal'  ']'   ';' <Visibility> <MemberDecl> <ClassDeclMembDeclRepetition> '}'  ';' <ClassDeclOrFuncDefRepetition> 'EOF' 
--> 'class' 'id'    '{'  'public'  'attribute' 'id'  ':' 'integer'   '[' 'integer literal'  ']'   ';'  <MemberDecl> <ClassDeclMembDeclRepetition> '}'  ';' <ClassDeclOrFuncDefRepetition> 'EOF' 
--> 'class' 'id'    '{'  'public'  'attribute' 'id'  ':' 'integer'   '[' 'integer literal'  ']'   ';'  <MemberVarDecl> <ClassDeclMembDeclRepetition> '}'  ';' <ClassDeclOrFuncDefRepetition> 'EOF' 
--> 'class' 'id'    '{'  'public'  'attribute' 'id'  ':' 'integer'   '[' 'integer literal'  ']'   ';'  'attribute' 'id'  ':' <Type>  <ArraySizeRepetition>  ';' <ClassDeclMembDeclRepetition> '}'  ';' <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '::' 'id'  '('  'id'  ':' 'float'     <FParamsTail>  ')' '=>' <ReturnType>  <FuncBody> <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '::' 'id'  '('  'id'  ':' 'float'      ')' '=>' <ReturnType>  <FuncBody> <ClassDeclOrFuncDefRepetition> 'EOF' 
+
+
+-> 'function' 'id'  '::' 'id'  '('  'id'  ':' 'float'      ')' '=>' 'void'   <FuncBody> <ClassDeclOrFuncDefRepetition> 'EOF' 
+
+-> 'function' 'id'  '::' 'id'  '('  'id'  ':' 'float'      ')' '=>' 'void'   '{'  <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+
+-> 'function' 'id'  '::' 'id'  '('  'id'  ':' 'float'      ')' '=>' 'void'   '{'  <LocalVarDeclOrStmt> <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '::' 'id'  '('  'id'  ':' 'float'      ')' '=>' 'void'   '{'  <LocalVarDecl> <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '::' 'id'  '('  'id'  ':' 'float'      ')' '=>' 'void'   '{'  'localvar' 'id'  ':' <Type> <LocalVarDecl2>  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
 
 
 
--> 'class' 'id'    '{'  'public'  'attribute' 'id'  ':' 'integer'   '[' 'integer literal'  ']'   ';'  'attribute' 'id'  ':' 'float'   <ArraySizeRepetition>  ';' <ClassDeclMembDeclRepetition> '}'  ';' <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '::' 'id'  '('  'id'  ':' 'float'      ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'integer'  <LocalVarDecl2>  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
 
--> 'class' 'id'    '{'  'public'  'attribute' 'id'  ':' 'integer'   '[' 'integer literal'  ']'   ';'  'attribute' 'id'  ':' 'float'     ';' <ClassDeclMembDeclRepetition> '}'  ';' <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '::' 'id'  '('  'id'  ':' 'float'      ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'integer'   <ArraySizeRepetition>  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '::' 'id'  '('  'id'  ':' 'float'      ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'integer'     ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
 
--> 'class' 'id'    '{'  'public'  'attribute' 'id'  ':' 'integer'   '[' 'integer literal'  ']'   ';'  'attribute' 'id'  ':' 'float'     ';' '}'  ';' <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '::' 'id'  '('  'id'  ':' 'float'      ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'integer'     ';'  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+
+-> 'function' 'id'  '::' 'id'  '('  'id'  ':' 'float'      ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'integer'     ';'  '}'  <ClassDeclOrFuncDef> <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '::' 'id'  '('  'id'  ':' 'float'      ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'integer'     ';'  '}'  <ClassDecl> <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '::' 'id'  '('  'id'  ':' 'float'      ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'integer'     ';'  '}'  'class' 'id'  <ClassDeclInheritance> '{'  <ClassDeclMembDeclRepetition> '}'  ';' <ClassDeclOrFuncDefRepetition> 'EOF' 
 
 
--> 'class' 'id'    '{'  'public'  'attribute' 'id'  ':' 'integer'   '[' 'integer literal'  ']'   ';'  'attribute' 'id'  ':' 'float'     ';' '}'  ';' 'EOF' 
--> 'class' 'id'    '{'  'public'  'attribute' 'id'  ':' 'integer'   '[' 'integer literal'  ']'   ';'  'attribute' 'id'  ':' 'float'     ';' '}'  ';' 'EOF' 
+-> 'function' 'id'  '::' 'id'  '('  'id'  ':' 'float'      ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'integer'     ';'  '}'  'class' 'id'   'isa' 'id'  <ClassDeclInheritanceTail> '{'  <ClassDeclMembDeclRepetition> '}'  ';' <ClassDeclOrFuncDefRepetition> 'EOF' 
+
+
+-> 'function' 'id'  '::' 'id'  '('  'id'  ':' 'float'      ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'integer'     ';'  '}'  'class' 'id'   'isa' 'id'  ',' 'id'  <ClassDeclInheritanceTail> '{'  <ClassDeclMembDeclRepetition> '}'  ';' <ClassDeclOrFuncDefRepetition> 'EOF' 
+
+
+-> 'function' 'id'  '::' 'id'  '('  'id'  ':' 'float'      ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'integer'     ';'  '}'  'class' 'id'   'isa' 'id'  ',' 'id'   '{'  <ClassDeclMembDeclRepetition> '}'  ';' <ClassDeclOrFuncDefRepetition> 'EOF' 
+
+-> 'function' 'id'  '::' 'id'  '('  'id'  ':' 'float'      ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'integer'     ';'  '}'  'class' 'id'   'isa' 'id'  ',' 'id'   '{'  <Visibility> <MemberDecl> <ClassDeclMembDeclRepetition> '}'  ';' <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '::' 'id'  '('  'id'  ':' 'float'      ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'integer'     ';'  '}'  'class' 'id'   'isa' 'id'  ',' 'id'   '{'  'public'  <MemberDecl> <ClassDeclMembDeclRepetition> '}'  ';' <ClassDeclOrFuncDefRepetition> 'EOF' 
+
+-> 'function' 'id'  '::' 'id'  '('  'id'  ':' 'float'      ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'integer'     ';'  '}'  'class' 'id'   'isa' 'id'  ',' 'id'   '{'  'public'  <MemberVarDecl> <ClassDeclMembDeclRepetition> '}'  ';' <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '::' 'id'  '('  'id'  ':' 'float'      ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'integer'     ';'  '}'  'class' 'id'   'isa' 'id'  ',' 'id'   '{'  'public'  'attribute' 'id'  ':' <Type>  <ArraySizeRepetition>  ';' <ClassDeclMembDeclRepetition> '}'  ';' <ClassDeclOrFuncDefRepetition> 'EOF' 
+
+
+
+-> 'function' 'id'  '::' 'id'  '('  'id'  ':' 'float'      ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'integer'     ';'  '}'  'class' 'id'   'isa' 'id'  ',' 'id'   '{'  'public'  'attribute' 'id'  ':' 'integer'   <ArraySizeRepetition>  ';' <ClassDeclMembDeclRepetition> '}'  ';' <ClassDeclOrFuncDefRepetition> 'EOF' 
+
+-> 'function' 'id'  '::' 'id'  '('  'id'  ':' 'float'      ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'integer'     ';'  '}'  'class' 'id'   'isa' 'id'  ',' 'id'   '{'  'public'  'attribute' 'id'  ':' 'integer'   <ArraySize> <ArraySizeRepetition>  ';' <ClassDeclMembDeclRepetition> '}'  ';' <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '::' 'id'  '('  'id'  ':' 'float'      ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'integer'     ';'  '}'  'class' 'id'   'isa' 'id'  ',' 'id'   '{'  'public'  'attribute' 'id'  ':' 'integer'   '[' <ArraySize2> <ArraySizeRepetition>  ';' <ClassDeclMembDeclRepetition> '}'  ';' <ClassDeclOrFuncDefRepetition> 'EOF' 
+
+-> 'function' 'id'  '::' 'id'  '('  'id'  ':' 'float'      ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'integer'     ';'  '}'  'class' 'id'   'isa' 'id'  ',' 'id'   '{'  'public'  'attribute' 'id'  ':' 'integer'   '[' 'integer literal'  ']' <ArraySizeRepetition>  ';' <ClassDeclMembDeclRepetition> '}'  ';' <ClassDeclOrFuncDefRepetition> 'EOF' 
+
+
+-> 'function' 'id'  '::' 'id'  '('  'id'  ':' 'float'      ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'integer'     ';'  '}'  'class' 'id'   'isa' 'id'  ',' 'id'   '{'  'public'  'attribute' 'id'  ':' 'integer'   '[' 'integer literal'  ']'   ';' <ClassDeclMembDeclRepetition> '}'  ';' <ClassDeclOrFuncDefRepetition> 'EOF' 
+
+-> 'function' 'id'  '::' 'id'  '('  'id'  ':' 'float'      ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'integer'     ';'  '}'  'class' 'id'   'isa' 'id'  ',' 'id'   '{'  'public'  'attribute' 'id'  ':' 'integer'   '[' 'integer literal'  ']'   ';' <Visibility> <MemberDecl> <ClassDeclMembDeclRepetition> '}'  ';' <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '::' 'id'  '('  'id'  ':' 'float'      ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'integer'     ';'  '}'  'class' 'id'   'isa' 'id'  ',' 'id'   '{'  'public'  'attribute' 'id'  ':' 'integer'   '[' 'integer literal'  ']'   ';'  <MemberDecl> <ClassDeclMembDeclRepetition> '}'  ';' <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '::' 'id'  '('  'id'  ':' 'float'      ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'integer'     ';'  '}'  'class' 'id'   'isa' 'id'  ',' 'id'   '{'  'public'  'attribute' 'id'  ':' 'integer'   '[' 'integer literal'  ']'   ';'  <MemberVarDecl> <ClassDeclMembDeclRepetition> '}'  ';' <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '::' 'id'  '('  'id'  ':' 'float'      ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'integer'     ';'  '}'  'class' 'id'   'isa' 'id'  ',' 'id'   '{'  'public'  'attribute' 'id'  ':' 'integer'   '[' 'integer literal'  ']'   ';'  'attribute' 'id'  ':' <Type>  <ArraySizeRepetition>  ';' <ClassDeclMembDeclRepetition> '}'  ';' <ClassDeclOrFuncDefRepetition> 'EOF' 
+
+
+
+-> 'function' 'id'  '::' 'id'  '('  'id'  ':' 'float'      ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'integer'     ';'  '}'  'class' 'id'   'isa' 'id'  ',' 'id'   '{'  'public'  'attribute' 'id'  ':' 'integer'   '[' 'integer literal'  ']'   ';'  'attribute' 'id'  ':' 'float'   <ArraySizeRepetition>  ';' <ClassDeclMembDeclRepetition> '}'  ';' <ClassDeclOrFuncDefRepetition> 'EOF' 
+
+-> 'function' 'id'  '::' 'id'  '('  'id'  ':' 'float'      ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'integer'     ';'  '}'  'class' 'id'   'isa' 'id'  ',' 'id'   '{'  'public'  'attribute' 'id'  ':' 'integer'   '[' 'integer literal'  ']'   ';'  'attribute' 'id'  ':' 'float'     ';' <ClassDeclMembDeclRepetition> '}'  ';' <ClassDeclOrFuncDefRepetition> 'EOF' 
+
+-> 'function' 'id'  '::' 'id'  '('  'id'  ':' 'float'      ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'integer'     ';'  '}'  'class' 'id'   'isa' 'id'  ',' 'id'   '{'  'public'  'attribute' 'id'  ':' 'integer'   '[' 'integer literal'  ']'   ';'  'attribute' 'id'  ':' 'float'     ';' <Visibility> <MemberDecl> <ClassDeclMembDeclRepetition> '}'  ';' <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '::' 'id'  '('  'id'  ':' 'float'      ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'integer'     ';'  '}'  'class' 'id'   'isa' 'id'  ',' 'id'   '{'  'public'  'attribute' 'id'  ':' 'integer'   '[' 'integer literal'  ']'   ';'  'attribute' 'id'  ':' 'float'     ';' 'public'  <MemberDecl> <ClassDeclMembDeclRepetition> '}'  ';' <ClassDeclOrFuncDefRepetition> 'EOF' 
+
+-> 'function' 'id'  '::' 'id'  '('  'id'  ':' 'float'      ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'integer'     ';'  '}'  'class' 'id'   'isa' 'id'  ',' 'id'   '{'  'public'  'attribute' 'id'  ':' 'integer'   '[' 'integer literal'  ']'   ';'  'attribute' 'id'  ':' 'float'     ';' 'public'  <MemberFuncDecl> <ClassDeclMembDeclRepetition> '}'  ';' <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '::' 'id'  '('  'id'  ':' 'float'      ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'integer'     ';'  '}'  'class' 'id'   'isa' 'id'  ',' 'id'   '{'  'public'  'attribute' 'id'  ':' 'integer'   '[' 'integer literal'  ']'   ';'  'attribute' 'id'  ':' 'float'     ';' 'public'  'function' 'id'  ':' '('  <FParams>  ')' '=>' <ReturnType>  ';' <ClassDeclMembDeclRepetition> '}'  ';' <ClassDeclOrFuncDefRepetition> 'EOF' 
+
+
+
+
+-> 'function' 'id'  '::' 'id'  '('  'id'  ':' 'float'      ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'integer'     ';'  '}'  'class' 'id'   'isa' 'id'  ',' 'id'   '{'  'public'  'attribute' 'id'  ':' 'integer'   '[' 'integer literal'  ']'   ';'  'attribute' 'id'  ':' 'float'     ';' 'public'  'function' 'id'  ':' '('  'id'  ':' <Type>  <ArraySizeRepetition>  <FParamsTail>  ')' '=>' <ReturnType>  ';' <ClassDeclMembDeclRepetition> '}'  ';' <ClassDeclOrFuncDefRepetition> 'EOF' 
+
+
+-> 'function' 'id'  '::' 'id'  '('  'id'  ':' 'float'      ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'integer'     ';'  '}'  'class' 'id'   'isa' 'id'  ',' 'id'   '{'  'public'  'attribute' 'id'  ':' 'integer'   '[' 'integer literal'  ']'   ';'  'attribute' 'id'  ':' 'float'     ';' 'public'  'function' 'id'  ':' '('  'id'  ':' 'integer'   <ArraySizeRepetition>  <FParamsTail>  ')' '=>' <ReturnType>  ';' <ClassDeclMembDeclRepetition> '}'  ';' <ClassDeclOrFuncDefRepetition> 'EOF' 
+
+-> 'function' 'id'  '::' 'id'  '('  'id'  ':' 'float'      ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'integer'     ';'  '}'  'class' 'id'   'isa' 'id'  ',' 'id'   '{'  'public'  'attribute' 'id'  ':' 'integer'   '[' 'integer literal'  ']'   ';'  'attribute' 'id'  ':' 'float'     ';' 'public'  'function' 'id'  ':' '('  'id'  ':' 'integer'     <FParamsTail>  ')' '=>' <ReturnType>  ';' <ClassDeclMembDeclRepetition> '}'  ';' <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '::' 'id'  '('  'id'  ':' 'float'      ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'integer'     ';'  '}'  'class' 'id'   'isa' 'id'  ',' 'id'   '{'  'public'  'attribute' 'id'  ':' 'integer'   '[' 'integer literal'  ']'   ';'  'attribute' 'id'  ':' 'float'     ';' 'public'  'function' 'id'  ':' '('  'id'  ':' 'integer'      ')' '=>' <ReturnType>  ';' <ClassDeclMembDeclRepetition> '}'  ';' <ClassDeclOrFuncDefRepetition> 'EOF' 
+
+
+-> 'function' 'id'  '::' 'id'  '('  'id'  ':' 'float'      ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'integer'     ';'  '}'  'class' 'id'   'isa' 'id'  ',' 'id'   '{'  'public'  'attribute' 'id'  ':' 'integer'   '[' 'integer literal'  ']'   ';'  'attribute' 'id'  ':' 'float'     ';' 'public'  'function' 'id'  ':' '('  'id'  ':' 'integer'      ')' '=>' 'void'   ';' <ClassDeclMembDeclRepetition> '}'  ';' <ClassDeclOrFuncDefRepetition> 'EOF' 
+
+
+-> 'function' 'id'  '::' 'id'  '('  'id'  ':' 'float'      ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'integer'     ';'  '}'  'class' 'id'   'isa' 'id'  ',' 'id'   '{'  'public'  'attribute' 'id'  ':' 'integer'   '[' 'integer literal'  ']'   ';'  'attribute' 'id'  ':' 'float'     ';' 'public'  'function' 'id'  ':' '('  'id'  ':' 'integer'      ')' '=>' 'void'   ';' <Visibility> <MemberDecl> <ClassDeclMembDeclRepetition> '}'  ';' <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '::' 'id'  '('  'id'  ':' 'float'      ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'integer'     ';'  '}'  'class' 'id'   'isa' 'id'  ',' 'id'   '{'  'public'  'attribute' 'id'  ':' 'integer'   '[' 'integer literal'  ']'   ';'  'attribute' 'id'  ':' 'float'     ';' 'public'  'function' 'id'  ':' '('  'id'  ':' 'integer'      ')' '=>' 'void'   ';'  <MemberDecl> <ClassDeclMembDeclRepetition> '}'  ';' <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '::' 'id'  '('  'id'  ':' 'float'      ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'integer'     ';'  '}'  'class' 'id'   'isa' 'id'  ',' 'id'   '{'  'public'  'attribute' 'id'  ':' 'integer'   '[' 'integer literal'  ']'   ';'  'attribute' 'id'  ':' 'float'     ';' 'public'  'function' 'id'  ':' '('  'id'  ':' 'integer'      ')' '=>' 'void'   ';'  <MemberFuncDecl> <ClassDeclMembDeclRepetition> '}'  ';' <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '::' 'id'  '('  'id'  ':' 'float'      ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'integer'     ';'  '}'  'class' 'id'   'isa' 'id'  ',' 'id'   '{'  'public'  'attribute' 'id'  ':' 'integer'   '[' 'integer literal'  ']'   ';'  'attribute' 'id'  ':' 'float'     ';' 'public'  'function' 'id'  ':' '('  'id'  ':' 'integer'      ')' '=>' 'void'   ';'  'function' 'id'  ':' '('  <FParams>  ')' '=>' <ReturnType>  ';' <ClassDeclMembDeclRepetition> '}'  ';' <ClassDeclOrFuncDefRepetition> 'EOF' 
+
+
+
+
+-> 'function' 'id'  '::' 'id'  '('  'id'  ':' 'float'      ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'integer'     ';'  '}'  'class' 'id'   'isa' 'id'  ',' 'id'   '{'  'public'  'attribute' 'id'  ':' 'integer'   '[' 'integer literal'  ']'   ';'  'attribute' 'id'  ':' 'float'     ';' 'public'  'function' 'id'  ':' '('  'id'  ':' 'integer'      ')' '=>' 'void'   ';'  'function' 'id'  ':' '('  'id'  ':' <Type>  <ArraySizeRepetition>  <FParamsTail>  ')' '=>' <ReturnType>  ';' <ClassDeclMembDeclRepetition> '}'  ';' <ClassDeclOrFuncDefRepetition> 'EOF' 
+
+
+-> 'function' 'id'  '::' 'id'  '('  'id'  ':' 'float'      ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'integer'     ';'  '}'  'class' 'id'   'isa' 'id'  ',' 'id'   '{'  'public'  'attribute' 'id'  ':' 'integer'   '[' 'integer literal'  ']'   ';'  'attribute' 'id'  ':' 'float'     ';' 'public'  'function' 'id'  ':' '('  'id'  ':' 'integer'      ')' '=>' 'void'   ';'  'function' 'id'  ':' '('  'id'  ':' 'float'   <ArraySizeRepetition>  <FParamsTail>  ')' '=>' <ReturnType>  ';' <ClassDeclMembDeclRepetition> '}'  ';' <ClassDeclOrFuncDefRepetition> 'EOF' 
+
+-> 'function' 'id'  '::' 'id'  '('  'id'  ':' 'float'      ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'integer'     ';'  '}'  'class' 'id'   'isa' 'id'  ',' 'id'   '{'  'public'  'attribute' 'id'  ':' 'integer'   '[' 'integer literal'  ']'   ';'  'attribute' 'id'  ':' 'float'     ';' 'public'  'function' 'id'  ':' '('  'id'  ':' 'integer'      ')' '=>' 'void'   ';'  'function' 'id'  ':' '('  'id'  ':' 'float'     <FParamsTail>  ')' '=>' <ReturnType>  ';' <ClassDeclMembDeclRepetition> '}'  ';' <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '::' 'id'  '('  'id'  ':' 'float'      ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'integer'     ';'  '}'  'class' 'id'   'isa' 'id'  ',' 'id'   '{'  'public'  'attribute' 'id'  ':' 'integer'   '[' 'integer literal'  ']'   ';'  'attribute' 'id'  ':' 'float'     ';' 'public'  'function' 'id'  ':' '('  'id'  ':' 'integer'      ')' '=>' 'void'   ';'  'function' 'id'  ':' '('  'id'  ':' 'float'      ')' '=>' <ReturnType>  ';' <ClassDeclMembDeclRepetition> '}'  ';' <ClassDeclOrFuncDefRepetition> 'EOF' 
+
+
+-> 'function' 'id'  '::' 'id'  '('  'id'  ':' 'float'      ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'integer'     ';'  '}'  'class' 'id'   'isa' 'id'  ',' 'id'   '{'  'public'  'attribute' 'id'  ':' 'integer'   '[' 'integer literal'  ']'   ';'  'attribute' 'id'  ':' 'float'     ';' 'public'  'function' 'id'  ':' '('  'id'  ':' 'integer'      ')' '=>' 'void'   ';'  'function' 'id'  ':' '('  'id'  ':' 'float'      ')' '=>' 'void'   ';' <ClassDeclMembDeclRepetition> '}'  ';' <ClassDeclOrFuncDefRepetition> 'EOF' 
+
+
+-> 'function' 'id'  '::' 'id'  '('  'id'  ':' 'float'      ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'integer'     ';'  '}'  'class' 'id'   'isa' 'id'  ',' 'id'   '{'  'public'  'attribute' 'id'  ':' 'integer'   '[' 'integer literal'  ']'   ';'  'attribute' 'id'  ':' 'float'     ';' 'public'  'function' 'id'  ':' '('  'id'  ':' 'integer'      ')' '=>' 'void'   ';'  'function' 'id'  ':' '('  'id'  ':' 'float'      ')' '=>' 'void'   ';' '}'  ';' <ClassDeclOrFuncDefRepetition> 'EOF' 
+
+
+-> 'function' 'id'  '::' 'id'  '('  'id'  ':' 'float'      ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'integer'     ';'  '}'  'class' 'id'   'isa' 'id'  ',' 'id'   '{'  'public'  'attribute' 'id'  ':' 'integer'   '[' 'integer literal'  ']'   ';'  'attribute' 'id'  ':' 'float'     ';' 'public'  'function' 'id'  ':' '('  'id'  ':' 'integer'      ')' '=>' 'void'   ';'  'function' 'id'  ':' '('  'id'  ':' 'float'      ')' '=>' 'void'   ';' '}'  ';' <ClassDeclOrFuncDef> <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '::' 'id'  '('  'id'  ':' 'float'      ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'integer'     ';'  '}'  'class' 'id'   'isa' 'id'  ',' 'id'   '{'  'public'  'attribute' 'id'  ':' 'integer'   '[' 'integer literal'  ']'   ';'  'attribute' 'id'  ':' 'float'     ';' 'public'  'function' 'id'  ':' '('  'id'  ':' 'integer'      ')' '=>' 'void'   ';'  'function' 'id'  ':' '('  'id'  ':' 'float'      ')' '=>' 'void'   ';' '}'  ';' <FuncDef> <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '::' 'id'  '('  'id'  ':' 'float'      ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'integer'     ';'  '}'  'class' 'id'   'isa' 'id'  ',' 'id'   '{'  'public'  'attribute' 'id'  ':' 'integer'   '[' 'integer literal'  ']'   ';'  'attribute' 'id'  ':' 'float'     ';' 'public'  'function' 'id'  ':' '('  'id'  ':' 'integer'      ')' '=>' 'void'   ';'  'function' 'id'  ':' '('  'id'  ':' 'float'      ')' '=>' 'void'   ';' '}'  ';' <FuncHead> <FuncBody> <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '::' 'id'  '('  'id'  ':' 'float'      ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'integer'     ';'  '}'  'class' 'id'   'isa' 'id'  ',' 'id'   '{'  'public'  'attribute' 'id'  ':' 'integer'   '[' 'integer literal'  ']'   ';'  'attribute' 'id'  ':' 'float'     ';' 'public'  'function' 'id'  ':' '('  'id'  ':' 'integer'      ')' '=>' 'void'   ';'  'function' 'id'  ':' '('  'id'  ':' 'float'      ')' '=>' 'void'   ';' '}'  ';' 'function' 'id'  <FuncHead2> <FuncBody> <ClassDeclOrFuncDefRepetition> 'EOF' 
+
+
+-> 'function' 'id'  '::' 'id'  '('  'id'  ':' 'float'      ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'integer'     ';'  '}'  'class' 'id'   'isa' 'id'  ',' 'id'   '{'  'public'  'attribute' 'id'  ':' 'integer'   '[' 'integer literal'  ']'   ';'  'attribute' 'id'  ':' 'float'     ';' 'public'  'function' 'id'  ':' '('  'id'  ':' 'integer'      ')' '=>' 'void'   ';'  'function' 'id'  ':' '('  'id'  ':' 'float'      ')' '=>' 'void'   ';' '}'  ';' 'function' 'id'  '::' <FuncHead3> <FuncBody> <ClassDeclOrFuncDefRepetition> 'EOF' 
+
+-> 'function' 'id'  '::' 'id'  '('  'id'  ':' 'float'      ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'integer'     ';'  '}'  'class' 'id'   'isa' 'id'  ',' 'id'   '{'  'public'  'attribute' 'id'  ':' 'integer'   '[' 'integer literal'  ']'   ';'  'attribute' 'id'  ':' 'float'     ';' 'public'  'function' 'id'  ':' '('  'id'  ':' 'integer'      ')' '=>' 'void'   ';'  'function' 'id'  ':' '('  'id'  ':' 'float'      ')' '=>' 'void'   ';' '}'  ';' 'function' 'id'  '::' 'id'  '('  <FParams>  ')' '=>' <ReturnType>  <FuncBody> <ClassDeclOrFuncDefRepetition> 'EOF' 
+
+
+-> 'function' 'id'  '::' 'id'  '('  'id'  ':' 'float'      ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'integer'     ';'  '}'  'class' 'id'   'isa' 'id'  ',' 'id'   '{'  'public'  'attribute' 'id'  ':' 'integer'   '[' 'integer literal'  ']'   ';'  'attribute' 'id'  ':' 'float'     ';' 'public'  'function' 'id'  ':' '('  'id'  ':' 'integer'      ')' '=>' 'void'   ';'  'function' 'id'  ':' '('  'id'  ':' 'float'      ')' '=>' 'void'   ';' '}'  ';' 'function' 'id'  '::' 'id'  '('  'id'  ':' <Type>  <ArraySizeRepetition>  <FParamsTail>  ')' '=>' <ReturnType>  <FuncBody> <ClassDeclOrFuncDefRepetition> 'EOF' 
+
+
+-> 'function' 'id'  '::' 'id'  '('  'id'  ':' 'float'      ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'integer'     ';'  '}'  'class' 'id'   'isa' 'id'  ',' 'id'   '{'  'public'  'attribute' 'id'  ':' 'integer'   '[' 'integer literal'  ']'   ';'  'attribute' 'id'  ':' 'float'     ';' 'public'  'function' 'id'  ':' '('  'id'  ':' 'integer'      ')' '=>' 'void'   ';'  'function' 'id'  ':' '('  'id'  ':' 'float'      ')' '=>' 'void'   ';' '}'  ';' 'function' 'id'  '::' 'id'  '('  'id'  ':' 'integer'   <ArraySizeRepetition>  <FParamsTail>  ')' '=>' <ReturnType>  <FuncBody> <ClassDeclOrFuncDefRepetition> 'EOF' 
+
+-> 'function' 'id'  '::' 'id'  '('  'id'  ':' 'float'      ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'integer'     ';'  '}'  'class' 'id'   'isa' 'id'  ',' 'id'   '{'  'public'  'attribute' 'id'  ':' 'integer'   '[' 'integer literal'  ']'   ';'  'attribute' 'id'  ':' 'float'     ';' 'public'  'function' 'id'  ':' '('  'id'  ':' 'integer'      ')' '=>' 'void'   ';'  'function' 'id'  ':' '('  'id'  ':' 'float'      ')' '=>' 'void'   ';' '}'  ';' 'function' 'id'  '::' 'id'  '('  'id'  ':' 'integer'     <FParamsTail>  ')' '=>' <ReturnType>  <FuncBody> <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '::' 'id'  '('  'id'  ':' 'float'      ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'integer'     ';'  '}'  'class' 'id'   'isa' 'id'  ',' 'id'   '{'  'public'  'attribute' 'id'  ':' 'integer'   '[' 'integer literal'  ']'   ';'  'attribute' 'id'  ':' 'float'     ';' 'public'  'function' 'id'  ':' '('  'id'  ':' 'integer'      ')' '=>' 'void'   ';'  'function' 'id'  ':' '('  'id'  ':' 'float'      ')' '=>' 'void'   ';' '}'  ';' 'function' 'id'  '::' 'id'  '('  'id'  ':' 'integer'      ')' '=>' <ReturnType>  <FuncBody> <ClassDeclOrFuncDefRepetition> 'EOF' 
+
+
+-> 'function' 'id'  '::' 'id'  '('  'id'  ':' 'float'      ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'integer'     ';'  '}'  'class' 'id'   'isa' 'id'  ',' 'id'   '{'  'public'  'attribute' 'id'  ':' 'integer'   '[' 'integer literal'  ']'   ';'  'attribute' 'id'  ':' 'float'     ';' 'public'  'function' 'id'  ':' '('  'id'  ':' 'integer'      ')' '=>' 'void'   ';'  'function' 'id'  ':' '('  'id'  ':' 'float'      ')' '=>' 'void'   ';' '}'  ';' 'function' 'id'  '::' 'id'  '('  'id'  ':' 'integer'      ')' '=>' 'void'   <FuncBody> <ClassDeclOrFuncDefRepetition> 'EOF' 
+
+-> 'function' 'id'  '::' 'id'  '('  'id'  ':' 'float'      ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'integer'     ';'  '}'  'class' 'id'   'isa' 'id'  ',' 'id'   '{'  'public'  'attribute' 'id'  ':' 'integer'   '[' 'integer literal'  ']'   ';'  'attribute' 'id'  ':' 'float'     ';' 'public'  'function' 'id'  ':' '('  'id'  ':' 'integer'      ')' '=>' 'void'   ';'  'function' 'id'  ':' '('  'id'  ':' 'float'      ')' '=>' 'void'   ';' '}'  ';' 'function' 'id'  '::' 'id'  '('  'id'  ':' 'integer'      ')' '=>' 'void'   '{'  <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+
+-> 'function' 'id'  '::' 'id'  '('  'id'  ':' 'float'      ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'integer'     ';'  '}'  'class' 'id'   'isa' 'id'  ',' 'id'   '{'  'public'  'attribute' 'id'  ':' 'integer'   '[' 'integer literal'  ']'   ';'  'attribute' 'id'  ':' 'float'     ';' 'public'  'function' 'id'  ':' '('  'id'  ':' 'integer'      ')' '=>' 'void'   ';'  'function' 'id'  ':' '('  'id'  ':' 'float'      ')' '=>' 'void'   ';' '}'  ';' 'function' 'id'  '::' 'id'  '('  'id'  ':' 'integer'      ')' '=>' 'void'   '{'  <LocalVarDeclOrStmt> <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '::' 'id'  '('  'id'  ':' 'float'      ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'integer'     ';'  '}'  'class' 'id'   'isa' 'id'  ',' 'id'   '{'  'public'  'attribute' 'id'  ':' 'integer'   '[' 'integer literal'  ']'   ';'  'attribute' 'id'  ':' 'float'     ';' 'public'  'function' 'id'  ':' '('  'id'  ':' 'integer'      ')' '=>' 'void'   ';'  'function' 'id'  ':' '('  'id'  ':' 'float'      ')' '=>' 'void'   ';' '}'  ';' 'function' 'id'  '::' 'id'  '('  'id'  ':' 'integer'      ')' '=>' 'void'   '{'  <LocalVarDecl> <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '::' 'id'  '('  'id'  ':' 'float'      ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'integer'     ';'  '}'  'class' 'id'   'isa' 'id'  ',' 'id'   '{'  'public'  'attribute' 'id'  ':' 'integer'   '[' 'integer literal'  ']'   ';'  'attribute' 'id'  ':' 'float'     ';' 'public'  'function' 'id'  ':' '('  'id'  ':' 'integer'      ')' '=>' 'void'   ';'  'function' 'id'  ':' '('  'id'  ':' 'float'      ')' '=>' 'void'   ';' '}'  ';' 'function' 'id'  '::' 'id'  '('  'id'  ':' 'integer'      ')' '=>' 'void'   '{'  'localvar' 'id'  ':' <Type> <LocalVarDecl2>  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+
+
+
+-> 'function' 'id'  '::' 'id'  '('  'id'  ':' 'float'      ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'integer'     ';'  '}'  'class' 'id'   'isa' 'id'  ',' 'id'   '{'  'public'  'attribute' 'id'  ':' 'integer'   '[' 'integer literal'  ']'   ';'  'attribute' 'id'  ':' 'float'     ';' 'public'  'function' 'id'  ':' '('  'id'  ':' 'integer'      ')' '=>' 'void'   ';'  'function' 'id'  ':' '('  'id'  ':' 'float'      ')' '=>' 'void'   ';' '}'  ';' 'function' 'id'  '::' 'id'  '('  'id'  ':' 'integer'      ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'integer'  <LocalVarDecl2>  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+
+-> 'function' 'id'  '::' 'id'  '('  'id'  ':' 'float'      ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'integer'     ';'  '}'  'class' 'id'   'isa' 'id'  ',' 'id'   '{'  'public'  'attribute' 'id'  ':' 'integer'   '[' 'integer literal'  ']'   ';'  'attribute' 'id'  ':' 'float'     ';' 'public'  'function' 'id'  ':' '('  'id'  ':' 'integer'      ')' '=>' 'void'   ';'  'function' 'id'  ':' '('  'id'  ':' 'float'      ')' '=>' 'void'   ';' '}'  ';' 'function' 'id'  '::' 'id'  '('  'id'  ':' 'integer'      ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'integer'   <ArraySizeRepetition>  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '::' 'id'  '('  'id'  ':' 'float'      ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'integer'     ';'  '}'  'class' 'id'   'isa' 'id'  ',' 'id'   '{'  'public'  'attribute' 'id'  ':' 'integer'   '[' 'integer literal'  ']'   ';'  'attribute' 'id'  ':' 'float'     ';' 'public'  'function' 'id'  ':' '('  'id'  ':' 'integer'      ')' '=>' 'void'   ';'  'function' 'id'  ':' '('  'id'  ':' 'float'      ')' '=>' 'void'   ';' '}'  ';' 'function' 'id'  '::' 'id'  '('  'id'  ':' 'integer'      ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'integer'     ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+
+-> 'function' 'id'  '::' 'id'  '('  'id'  ':' 'float'      ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'integer'     ';'  '}'  'class' 'id'   'isa' 'id'  ',' 'id'   '{'  'public'  'attribute' 'id'  ':' 'integer'   '[' 'integer literal'  ']'   ';'  'attribute' 'id'  ':' 'float'     ';' 'public'  'function' 'id'  ':' '('  'id'  ':' 'integer'      ')' '=>' 'void'   ';'  'function' 'id'  ':' '('  'id'  ':' 'float'      ')' '=>' 'void'   ';' '}'  ';' 'function' 'id'  '::' 'id'  '('  'id'  ':' 'integer'      ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'integer'     ';'  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+
+-> 'function' 'id'  '::' 'id'  '('  'id'  ':' 'float'      ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'integer'     ';'  '}'  'class' 'id'   'isa' 'id'  ',' 'id'   '{'  'public'  'attribute' 'id'  ':' 'integer'   '[' 'integer literal'  ']'   ';'  'attribute' 'id'  ':' 'float'     ';' 'public'  'function' 'id'  ':' '('  'id'  ':' 'integer'      ')' '=>' 'void'   ';'  'function' 'id'  ':' '('  'id'  ':' 'float'      ')' '=>' 'void'   ';' '}'  ';' 'function' 'id'  '::' 'id'  '('  'id'  ':' 'integer'      ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'integer'     ';'  '}'  'EOF' 
+-> 'function' 'id'  '::' 'id'  '('  'id'  ':' 'float'      ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'integer'     ';'  '}'  'class' 'id'   'isa' 'id'  ',' 'id'   '{'  'public'  'attribute' 'id'  ':' 'integer'   '[' 'integer literal'  ']'   ';'  'attribute' 'id'  ':' 'float'     ';' 'public'  'function' 'id'  ':' '('  'id'  ':' 'integer'      ')' '=>' 'void'   ';'  'function' 'id'  ':' '('  'id'  ':' 'float'      ')' '=>' 'void'   ';' '}'  ';' 'function' 'id'  '::' 'id'  '('  'id'  ':' 'integer'      ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'integer'     ';'  '}'  'EOF' 

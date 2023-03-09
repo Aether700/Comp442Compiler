@@ -42,6 +42,7 @@ protected:
 
     ASTNode* GetChild(size_t index);
     std::list<ASTNode*>& GetChildren();
+    const std::list<ASTNode*>& GetChildren() const;
 
     void ChildrenAcceptVisit(Visitor* visitor);
 
@@ -514,9 +515,14 @@ class InheritanceListNode : public ASTNodeBase
 {
 public:
     void AddLoopingChild(ASTNode* id);
+    
+    bool ContainsClassName(const std::string& className) const;
 
     virtual std::string ToString(size_t indent = 0) override;
     virtual void AcceptVisit(Visitor* visitor) override;
+
+    const std::list<ASTNode*>& GetChildren() const;
+
 };
 
 class ClassDefNode : public ASTNodeBase

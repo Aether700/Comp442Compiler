@@ -7,18 +7,24 @@ class ASTNode;
 class VarDeclNode;
 class MemVarNode;
 class FunctionDefNode;
+class MemFuncDeclNode;
+class MemFuncDefNode;
 class ClassDefNode;
+class InheritanceListNode;
 
 class SymbolTable;
+class MemFuncDefEntry;
 
 enum class SymbolTableEntryKind
 {
     LocalVariable,
     FreeFunction,
     Class,
+    InheritanceList,
     MemVar,
     Constructor,
-    MemFunc,
+    MemFuncDecl,
+    MemFuncDef,
     Parameter
 };
 
@@ -66,7 +72,7 @@ class FreeFuncTableEntry : public SymbolTableEntry
 public:
     FreeFuncTableEntry(FunctionDefNode* node, const std::string& parametersType, 
         SymbolTable* subTable);
-    ~FreeFuncTableEntry();
+    virtual ~FreeFuncTableEntry();
 
     const std::string& GetReturnType() const;
     const std::string& GetParamTypes() const;
@@ -97,6 +103,24 @@ private:
     SymbolTable* m_subTable;
 };
 
+class InheritanceListEntry : public SymbolTableEntry
+{
+public:
+    InheritanceListEntry(InheritanceListNode* node);
+    
+    const std::string& GetClassID() const; 
+    bool IsChildOf(const std::string& parentClassName) const;
+    virtual SymbolTable* GetSubTable() override;
+    virtual ASTNode* GetNode() override;
+    
+    virtual std::string ToString() override;
+
+private:
+    InheritanceListNode* GetNonConstNode() const;
+
+    InheritanceListNode* m_node;
+};
+
 class MemVarTableEntry : public VarSymbolTableEntry
 {
 public:
@@ -107,6 +131,55 @@ public:
 
 private:
     MemVarNode* GetMemVarNode() const;
+};
+
+class MemFuncTableEntry : public SymbolTableEntry
+{
+public:
+    MemFuncTableEntry(MemFuncDeclNode* node, const std::string& parameterTypes);
+    ~MemFuncTableEntry();
+
+    const std::string& GetClassID() const;
+    const std::string& GetVisibility() const;
+    const std::string& GetReturnType() const;
+    const std::string& GetParamTypes() const;
+
+    void SetDefinition(MemFuncDefEntry* defEntry);
+
+    bool HasDefinition() const;
+    virtual ASTNode* GetNode() override;
+    virtual SymbolTable* GetSubTable() override;
+
+    virtual std::string ToString() override;
+
+private:
+    std::string m_parameterTypes;
+    MemFuncDeclNode* m_declaration;
+    MemFuncDefNode* m_definition;
+    SymbolTable* m_definitionSubTable;
+};
+
+// temporary entry used to store the definition of a MemFunc
+class MemFuncDefEntry : public SymbolTableEntry
+{
+    friend class MemFuncTableEntry;
+public:
+    MemFuncDefEntry(MemFuncDefNode* def, const std::string& parametersType, 
+        SymbolTable* subTable);
+    ~MemFuncDefEntry();
+
+    const std::string& GetClassID() const;
+    const std::string& GetReturnType() const;
+    const std::string& GetParamTypes() const;
+
+    virtual ASTNode* GetNode() override;
+    virtual SymbolTable* GetSubTable() override;
+
+    virtual std::string ToString() override;
+private:
+    MemFuncDefNode* m_defNode;
+    SymbolTable* m_subTable;
+    std::string m_parameterTypes;
 };
 
 class SymbolTable

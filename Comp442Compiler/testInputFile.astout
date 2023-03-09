@@ -4,6 +4,10 @@ Program
 |  |  |  id
 |  |  |  |  MyObj
 |  |  |  InheritanceList
+|  |  |  |  id
+|  |  |  |  |  Object
+|  |  |  |  id
+|  |  |  |  |  Example
 |  |  |  MemVar
 |  |  |  |  Visibility
 |  |  |  |  |  public
@@ -24,4 +28,74 @@ Program
 |  |  |  |  TypeNode
 |  |  |  |  |  float
 |  |  |  |  Dimensions
+|  |  |  MemFuncDecl
+|  |  |  |  Visibility
+|  |  |  |  |  public
+|  |  |  |  id
+|  |  |  |  |  memFunc
+|  |  |  |  FParamList
+|  |  |  |  |  FParam
+|  |  |  |  |  |  id
+|  |  |  |  |  |  |  x
+|  |  |  |  |  |  TypeNode
+|  |  |  |  |  |  |  integer
+|  |  |  |  |  |  Dimensions
+|  |  |  |  TypeNode
+|  |  |  |  |  void
+|  |  |  MemFuncDecl
+|  |  |  |  Visibility
+|  |  |  |  |  default
+|  |  |  |  id
+|  |  |  |  |  memFunc2
+|  |  |  |  FParamList
+|  |  |  |  |  FParam
+|  |  |  |  |  |  id
+|  |  |  |  |  |  |  x
+|  |  |  |  |  |  TypeNode
+|  |  |  |  |  |  |  float
+|  |  |  |  |  |  Dimensions
+|  |  |  |  TypeNode
+|  |  |  |  |  void
 |  FuncDefList
+|  |  MemFuncDef
+|  |  |  id
+|  |  |  |  MyObj
+|  |  |  id
+|  |  |  |  memFunc2
+|  |  |  TypeNode
+|  |  |  |  void
+|  |  |  FParamList
+|  |  |  |  FParam
+|  |  |  |  |  id
+|  |  |  |  |  |  x
+|  |  |  |  |  TypeNode
+|  |  |  |  |  |  float
+|  |  |  |  |  Dimensions
+|  |  |  StatBlock
+|  |  |  |  VarDecl
+|  |  |  |  |  id
+|  |  |  |  |  |  b
+|  |  |  |  |  TypeNode
+|  |  |  |  |  |  integer
+|  |  |  |  |  Dimensions
+|  |  MemFuncDef
+|  |  |  id
+|  |  |  |  MyObj
+|  |  |  id
+|  |  |  |  memFunc
+|  |  |  TypeNode
+|  |  |  |  void
+|  |  |  FParamList
+|  |  |  |  FParam
+|  |  |  |  |  id
+|  |  |  |  |  |  x
+|  |  |  |  |  TypeNode
+|  |  |  |  |  |  integer
+|  |  |  |  |  Dimensions
+|  |  |  StatBlock
+|  |  |  |  VarDecl
+|  |  |  |  |  id
+|  |  |  |  |  |  a
+|  |  |  |  |  TypeNode
+|  |  |  |  |  |  integer
+|  |  |  |  |  Dimensions
