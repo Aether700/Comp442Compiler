@@ -7,6 +7,7 @@
 #include "Parser/Parser.h"
 #include "Core/Util.h"
 
+start working on semantic checking
 
 void ExitPrompt()
 {

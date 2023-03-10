@@ -886,7 +886,7 @@ ConstructorDeclNode::ConstructorDeclNode(VisibilityNode* visibility, FParamListN
 
 VisibilityNode* ConstructorDeclNode::GetVisibility() { return (VisibilityNode*)GetChild(0); }
 
-FParamListNode* ConstructorDeclNode::GetParams() { return (FParamListNode*)GetChild(1); }
+FParamListNode* ConstructorDeclNode::GetParameters() { return (FParamListNode*)GetChild(1); }
 
 std::string ConstructorDeclNode::ToString(size_t indent)
 {
@@ -894,7 +894,7 @@ std::string ConstructorDeclNode::ToString(size_t indent)
     WriteIndentToStream(ss, indent);
     ss << "ConstructorDecl\n";
     ss << GetVisibility()->ToString(indent + 1);
-    ss << GetParams()->ToString(indent + 1);
+    ss << GetParameters()->ToString(indent + 1);
 
     return ss.str();
 }

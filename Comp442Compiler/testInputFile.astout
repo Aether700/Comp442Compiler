@@ -28,6 +28,30 @@ Program
 |  |  |  |  TypeNode
 |  |  |  |  |  float
 |  |  |  |  Dimensions
+|  |  |  ConstructorDecl
+|  |  |  |  Visibility
+|  |  |  |  |  public
+|  |  |  |  FParamList
+|  |  |  ConstructorDecl
+|  |  |  |  Visibility
+|  |  |  |  |  default
+|  |  |  |  FParamList
+|  |  |  |  |  FParam
+|  |  |  |  |  |  id
+|  |  |  |  |  |  |  x
+|  |  |  |  |  |  TypeNode
+|  |  |  |  |  |  |  integer
+|  |  |  |  |  |  Dimensions
+|  |  |  |  |  |  |  Literal
+|  |  |  |  |  |  |  |  3
+|  |  |  |  |  |  |  |  TypeNode
+|  |  |  |  |  |  |  |  |  integer
+|  |  |  |  |  FParam
+|  |  |  |  |  |  id
+|  |  |  |  |  |  |  y
+|  |  |  |  |  |  TypeNode
+|  |  |  |  |  |  |  float
+|  |  |  |  |  |  Dimensions
 |  |  |  MemFuncDecl
 |  |  |  |  Visibility
 |  |  |  |  |  public
@@ -56,6 +80,44 @@ Program
 |  |  |  |  |  |  Dimensions
 |  |  |  |  TypeNode
 |  |  |  |  |  void
+|  |  ClassDef
+|  |  |  id
+|  |  |  |  SecondObj
+|  |  |  InheritanceList
+|  |  |  |  id
+|  |  |  |  |  MyObj
+|  |  |  MemVar
+|  |  |  |  Visibility
+|  |  |  |  |  private
+|  |  |  |  id
+|  |  |  |  |  z
+|  |  |  |  TypeNode
+|  |  |  |  |  integer
+|  |  |  |  Dimensions
+|  |  |  ConstructorDecl
+|  |  |  |  Visibility
+|  |  |  |  |  public
+|  |  |  |  FParamList
+|  |  |  |  |  FParam
+|  |  |  |  |  |  id
+|  |  |  |  |  |  |  a
+|  |  |  |  |  |  TypeNode
+|  |  |  |  |  |  |  integer
+|  |  |  |  |  |  Dimensions
+|  |  |  MemFuncDecl
+|  |  |  |  Visibility
+|  |  |  |  |  public
+|  |  |  |  id
+|  |  |  |  |  memFunc
+|  |  |  |  FParamList
+|  |  |  |  |  FParam
+|  |  |  |  |  |  id
+|  |  |  |  |  |  |  x
+|  |  |  |  |  |  TypeNode
+|  |  |  |  |  |  |  integer
+|  |  |  |  |  |  Dimensions
+|  |  |  |  TypeNode
+|  |  |  |  |  void
 |  FuncDefList
 |  |  MemFuncDef
 |  |  |  id
@@ -78,6 +140,75 @@ Program
 |  |  |  |  |  TypeNode
 |  |  |  |  |  |  integer
 |  |  |  |  |  Dimensions
+|  |  ConstructorDef
+|  |  |  TypeNode
+|  |  |  |  MyObj
+|  |  |  FParamList
+|  |  |  StatBlock
+|  |  |  |  VarDecl
+|  |  |  |  |  id
+|  |  |  |  |  |  x
+|  |  |  |  |  TypeNode
+|  |  |  |  |  |  integer
+|  |  |  |  |  Dimensions
+|  |  |  |  |  |  Literal
+|  |  |  |  |  |  |  3
+|  |  |  |  |  |  |  TypeNode
+|  |  |  |  |  |  |  |  integer
+|  |  ConstructorDef
+|  |  |  TypeNode
+|  |  |  |  SecondObj
+|  |  |  FParamList
+|  |  |  |  FParam
+|  |  |  |  |  id
+|  |  |  |  |  |  a
+|  |  |  |  |  TypeNode
+|  |  |  |  |  |  integer
+|  |  |  |  |  Dimensions
+|  |  |  StatBlock
+|  |  |  |  VarDecl
+|  |  |  |  |  id
+|  |  |  |  |  |  b
+|  |  |  |  |  TypeNode
+|  |  |  |  |  |  float
+|  |  |  |  |  Dimensions
+|  |  |  |  AssigStat
+|  |  |  |  |  Variable
+|  |  |  |  |  |  id
+|  |  |  |  |  |  |  x
+|  |  |  |  |  |  Dimensions
+|  |  |  |  |  Expr
+|  |  |  |  |  |  Variable
+|  |  |  |  |  |  |  id
+|  |  |  |  |  |  |  |  a
+|  |  |  |  |  |  |  Dimensions
+|  |  ConstructorDef
+|  |  |  TypeNode
+|  |  |  |  MyObj
+|  |  |  FParamList
+|  |  |  |  FParam
+|  |  |  |  |  id
+|  |  |  |  |  |  x
+|  |  |  |  |  TypeNode
+|  |  |  |  |  |  integer
+|  |  |  |  |  Dimensions
+|  |  |  |  |  |  Literal
+|  |  |  |  |  |  |  3
+|  |  |  |  |  |  |  TypeNode
+|  |  |  |  |  |  |  |  integer
+|  |  |  |  FParam
+|  |  |  |  |  id
+|  |  |  |  |  |  y
+|  |  |  |  |  TypeNode
+|  |  |  |  |  |  float
+|  |  |  |  |  Dimensions
+|  |  |  StatBlock
+|  |  |  |  VarDecl
+|  |  |  |  |  id
+|  |  |  |  |  |  z
+|  |  |  |  |  TypeNode
+|  |  |  |  |  |  float
+|  |  |  |  |  Dimensions
 |  |  MemFuncDef
 |  |  |  id
 |  |  |  |  MyObj
@@ -99,3 +230,46 @@ Program
 |  |  |  |  |  TypeNode
 |  |  |  |  |  |  integer
 |  |  |  |  |  Dimensions
+|  |  MemFuncDef
+|  |  |  id
+|  |  |  |  SecondObj
+|  |  |  id
+|  |  |  |  memFunc
+|  |  |  TypeNode
+|  |  |  |  void
+|  |  |  FParamList
+|  |  |  |  FParam
+|  |  |  |  |  id
+|  |  |  |  |  |  x
+|  |  |  |  |  TypeNode
+|  |  |  |  |  |  integer
+|  |  |  |  |  Dimensions
+|  |  |  StatBlock
+|  |  |  |  VarDecl
+|  |  |  |  |  id
+|  |  |  |  |  |  somme
+|  |  |  |  |  TypeNode
+|  |  |  |  |  |  integer
+|  |  |  |  |  Dimensions
+|  |  |  |  AssigStat
+|  |  |  |  |  Variable
+|  |  |  |  |  |  id
+|  |  |  |  |  |  |  somme
+|  |  |  |  |  |  Dimensions
+|  |  |  |  |  Expr
+|  |  |  |  |  |  AddOp
+|  |  |  |  |  |  |  Variable
+|  |  |  |  |  |  |  |  id
+|  |  |  |  |  |  |  |  |  x
+|  |  |  |  |  |  |  |  Dimensions
+|  |  |  |  |  |  |  +
+|  |  |  |  |  |  |  Literal
+|  |  |  |  |  |  |  |  20
+|  |  |  |  |  |  |  |  TypeNode
+|  |  |  |  |  |  |  |  |  integer
+|  |  |  |  WriteStat
+|  |  |  |  |  Expr
+|  |  |  |  |  |  Variable
+|  |  |  |  |  |  |  id
+|  |  |  |  |  |  |  |  somme
+|  |  |  |  |  |  |  Dimensions

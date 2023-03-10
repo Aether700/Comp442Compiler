@@ -25,6 +25,7 @@ public:
     virtual void Visit(MemFuncDeclNode* element) { }
     virtual void Visit(MemFuncDefNode* element) { }
     virtual void Visit(ConstructorDeclNode* element) { }
+    virtual void Visit(ConstructorDefNode* element) { }
     virtual void Visit(InheritanceListNode* element) { }
     virtual void Visit(ClassDefNode* element) { }
     virtual void Visit(ProgramNode* element) { }
@@ -49,6 +50,8 @@ public:
     virtual void Visit(MemVarNode* element) override;
     virtual void Visit(MemFuncDeclNode* element) override;
     virtual void Visit(MemFuncDefNode* element) override;
+    virtual void Visit(ConstructorDeclNode* element) override;
+    virtual void Visit(ConstructorDefNode* element) override;
     virtual void Visit(InheritanceListNode* element) override;
     virtual void Visit(ClassDefNode* element) override;
     virtual void Visit(ProgramNode* element) override;
@@ -57,8 +60,8 @@ public:
 
 private:
     // return true if a match was found, false otherwise
-    bool TryMatchMemFuncDeclAndDef(MemFuncTableEntry* decl);
     bool TryMatchMemFuncDeclAndDef(MemFuncDefEntry* def);
+    bool TryMatchMemFuncDeclAndDef(ConstructorDefEntry* def);
 
     SymbolTable* m_globalScopeTable;
     std::list<SymbolTableEntry*> m_workingList;

@@ -65,7 +65,7 @@ SymbolTableAssembler::~SymbolTableAssembler()
 
 void SymbolTableAssembler::Visit(VarDeclNode* element)
 {
-    SymbolTableEntry* entry = new VarSymbolTableEntry(element,
+    SymbolTableEntry* entry = new VarSymbolTableEntry(element, VarDeclToTypeStr(element),
         SymbolTableEntryKind::LocalVariable);
 
     m_workingList.push_front(entry);
@@ -73,7 +73,7 @@ void SymbolTableAssembler::Visit(VarDeclNode* element)
 
 void SymbolTableAssembler::Visit(FParamNode* element)
 {
-    SymbolTableEntry* entry = new VarSymbolTableEntry(element, 
+    SymbolTableEntry* entry = new VarSymbolTableEntry(element, VarDeclToTypeStr(element),
         SymbolTableEntryKind::Parameter);
 
     m_workingList.push_front(entry);
@@ -88,7 +88,7 @@ void SymbolTableAssembler::Visit(FunctionDefNode* element)
         if (entry->GetKind() == SymbolTableEntryKind::LocalVariable 
             || entry->GetKind() == SymbolTableEntryKind::Parameter)
         {
-            functionTable->AddEntry(entry);
+            functionTable->AddEntryFirst(entry);
         }
         else
         {
@@ -99,7 +99,7 @@ void SymbolTableAssembler::Visit(FunctionDefNode* element)
     m_workingList.clear();
     m_workingList = entriesToKeep;
 
-    SymbolTableEntry* entry = new FreeFuncTableEntry(element, 
+    FreeFuncTableEntry* entry = new FreeFuncTableEntry(element, 
         FunctionParamTypeToStr(element->GetParameters()), functionTable);
 
     m_workingList.push_front(entry);
@@ -107,7 +107,7 @@ void SymbolTableAssembler::Visit(FunctionDefNode* element)
 
 void SymbolTableAssembler::Visit(MemVarNode* element)
 {
-    MemVarTableEntry* entry = new MemVarTableEntry(element);
+    MemVarTableEntry* entry = new MemVarTableEntry(element, VarDeclToTypeStr(element));
     m_workingList.push_front(entry);
 }
 
@@ -140,7 +140,6 @@ void SymbolTableAssembler::Visit(MemFuncDeclNode* element)
 
     MemFuncTableEntry* entry = new MemFuncTableEntry(element, 
         FunctionParamTypeToStr(element->GetParameters()));
-    TryMatchMemFuncDeclAndDef(entry);
     m_workingList.push_front(entry);
 }
 
@@ -160,7 +159,7 @@ void SymbolTableAssembler::Visit(MemFuncDefNode* element)
         if (entry->GetKind() == SymbolTableEntryKind::LocalVariable 
             || entry->GetKind() == SymbolTableEntryKind::Parameter)
         {
-            functionTable->AddEntry(entry);
+            functionTable->AddEntryFirst(entry);
         }
         else
         {
@@ -172,6 +171,73 @@ void SymbolTableAssembler::Visit(MemFuncDefNode* element)
     m_workingList = entriesToKeep;
 
     MemFuncDefEntry* entry = new MemFuncDefEntry(element, 
+        FunctionParamTypeToStr(element->GetParameters()), functionTable);
+    
+    if (!TryMatchMemFuncDeclAndDef(entry))
+    {
+        m_workingList.push_front(entry);
+    }
+}
+
+void SymbolTableAssembler::Visit(ConstructorDeclNode* element)
+{
+    // delete all parameters for this node since we will use 
+    // the entries from the definition node
+    std::list<SymbolTableEntry*> entriesToDelete;
+    std::list<SymbolTableEntry*> entriesToKeep;
+    
+    for (SymbolTableEntry* entry : m_workingList)
+    {
+        if (entry->GetKind() == SymbolTableEntryKind::Parameter)
+        {
+            entriesToDelete.push_front(entry);
+        }
+        else
+        {
+            entriesToKeep.push_back(entry);
+        }
+    }
+
+    m_workingList.clear();
+    m_workingList = entriesToKeep;
+
+    for (SymbolTableEntry* entry : entriesToDelete)
+    {
+        delete entry;
+    }
+
+    ConstructorTableEntry* entry = new ConstructorTableEntry(element, 
+        FunctionParamTypeToStr(element->GetParameters()));
+    m_workingList.push_front(entry);
+}
+
+void SymbolTableAssembler::Visit(ConstructorDefNode* element)
+{
+    SymbolTable* functionTable;
+    
+    {
+        const std::string& className = element->GetID()->GetID().GetLexeme();
+        functionTable = new SymbolTable(className + "::constructor");
+    }
+
+    std::list<SymbolTableEntry*> entriesToKeep;
+    for (SymbolTableEntry* entry : m_workingList)
+    {
+        if (entry->GetKind() == SymbolTableEntryKind::LocalVariable 
+            || entry->GetKind() == SymbolTableEntryKind::Parameter)
+        {
+            functionTable->AddEntryFirst(entry);
+        }
+        else
+        {
+            entriesToKeep.push_back(entry);
+        }
+    }
+
+    m_workingList.clear();
+    m_workingList = entriesToKeep;
+
+    ConstructorDefEntry* entry = new ConstructorDefEntry(element, 
         FunctionParamTypeToStr(element->GetParameters()), functionTable);
     
     if (!TryMatchMemFuncDeclAndDef(entry))
@@ -195,6 +261,7 @@ void SymbolTableAssembler::Visit(ClassDefNode* element)
     InheritanceListEntry* inheritanceList = nullptr;
     std::list<MemVarTableEntry*> memVarEntries;
     std::list<MemFuncTableEntry*> memFuncEntries;
+    std::list<ConstructorTableEntry*> constructorEntries;
 
     std::list<SymbolTableEntry*> entriesToKeep;
     for (SymbolTableEntry* entry : m_workingList)
@@ -236,6 +303,18 @@ void SymbolTableAssembler::Visit(ClassDefNode* element)
                 entriesToKeep.push_front(entry);
             }
         }
+        else if (entry->GetKind() == SymbolTableEntryKind::ConstructorDecl)
+        {
+            ConstructorTableEntry* constructor = (ConstructorTableEntry*)entry;
+            if (constructor->GetClassID() == className)
+            {
+                constructorEntries.push_front(constructor);
+            }
+            else
+            {
+                entriesToKeep.push_front(entry);
+            }
+        }
         else 
         {
             entriesToKeep.push_front(entry);
@@ -250,6 +329,11 @@ void SymbolTableAssembler::Visit(ClassDefNode* element)
     for (MemVarTableEntry* memVarEntry : memVarEntries)
     {
         classTable->AddEntry(memVarEntry);
+    }
+
+    for (ConstructorTableEntry* constructor : constructorEntries)
+    {
+        classTable->AddEntry(constructor);
     }
 
     for (MemFuncTableEntry* memFuncEntry : memFuncEntries)
@@ -276,34 +360,12 @@ void SymbolTableAssembler::Visit(ProgramNode* element)
 
 SymbolTable* SymbolTableAssembler::GetGlobalSymbolTable() { return m_globalScopeTable; }
 
-bool SymbolTableAssembler::TryMatchMemFuncDeclAndDef(MemFuncTableEntry* decl)
-{
-    for (auto it = m_workingList.begin(); it != m_workingList.end(); it++)
-    {
-        MemFuncDefEntry* def = dynamic_cast<MemFuncDefEntry*>(*it);
-        if (def != nullptr)
-        {
-            if (decl->GetName() == def->GetName() 
-                && decl->GetClassID() == def->GetClassID() 
-                && decl->GetParamTypes() == def->GetParamTypes() 
-                && decl->GetReturnType() == def->GetReturnType())
-            {
-                decl->SetDefinition(def);
-                m_workingList.erase(it);
-                delete def;
-                return true;
-            }
-        }
-    }
-    return false;
-}
-
 bool SymbolTableAssembler::TryMatchMemFuncDeclAndDef(MemFuncDefEntry* def)
 {
     for (SymbolTableEntry* entry : m_workingList)
     {
         ClassTableEntry* classDefEntry = dynamic_cast<ClassTableEntry*>(entry);
-        if (classDefEntry != nullptr)
+        if (classDefEntry != nullptr && classDefEntry->GetName() == def->GetClassID())
         {
             for (SymbolTableEntry* classEntry : *classDefEntry->GetSubTable())
             {
@@ -311,6 +373,28 @@ bool SymbolTableAssembler::TryMatchMemFuncDeclAndDef(MemFuncDefEntry* def)
                 if (decl != nullptr && decl->GetName() == def->GetName() 
                     && decl->GetParamTypes() == def->GetParamTypes() 
                     && decl->GetReturnType() == def->GetReturnType())
+                {
+                    decl->SetDefinition(def);
+                    return true;
+                }
+            }
+            break;
+        }
+    }
+    return false;
+}
+
+bool SymbolTableAssembler::TryMatchMemFuncDeclAndDef(ConstructorDefEntry* def)
+{
+    for (SymbolTableEntry* entry : m_workingList)
+    {
+        ClassTableEntry* classDefEntry = dynamic_cast<ClassTableEntry*>(entry);
+        if (classDefEntry != nullptr && classDefEntry->GetName() == def->GetClassID())
+        {
+            for (SymbolTableEntry* classEntry : *classDefEntry->GetSubTable())
+            {
+                ConstructorTableEntry* decl = dynamic_cast<ConstructorTableEntry*>(classEntry);
+                if (decl != nullptr && decl->GetParamTypes() == def->GetParamTypes())
                 {
                     decl->SetDefinition(def);
                     return true;

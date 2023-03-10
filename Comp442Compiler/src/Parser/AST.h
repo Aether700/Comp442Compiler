@@ -496,7 +496,7 @@ public:
     ConstructorDeclNode(VisibilityNode* visibility, FParamListNode* params);
 
     VisibilityNode* GetVisibility();
-    FParamListNode* GetParams();
+    FParamListNode* GetParameters();
 
     virtual std::string ToString(size_t indent = 0) override;
     virtual void AcceptVisit(Visitor* visitor) override;

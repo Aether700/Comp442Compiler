@@ -33,6 +33,10 @@ std::ostream& operator<<(std::ostream& stream, SymbolTableEntryKind kind)
         stream << "member function";
         break;
 
+    case SymbolTableEntryKind::ConstructorDecl:
+        stream << "constructor";
+        break;
+
     case SymbolTableEntryKind::InheritanceList:
         stream << "inherites";
         break;
@@ -56,8 +60,8 @@ SymbolTableEntryKind SymbolTableEntry::GetKind() const { return m_kind; }
 void SymbolTableEntry::SetName(const std::string& name) { m_name = name; }
 
 // VarSymbolTableEntry /////////////////////////////////////////////////////////////////
-VarSymbolTableEntry::VarSymbolTableEntry(VarDeclNode* node, 
-    SymbolTableEntryKind kind) : SymbolTableEntry(kind), m_node(node)
+VarSymbolTableEntry::VarSymbolTableEntry(VarDeclNode* node, const std::string& typeStr,
+    SymbolTableEntryKind kind) : SymbolTableEntry(kind), m_node(node), m_typeStr(typeStr)
 {
     SetName(m_node->GetID()->GetID().GetLexeme());
 }
@@ -65,7 +69,7 @@ VarSymbolTableEntry::VarSymbolTableEntry(VarDeclNode* node,
 
 const std::string& VarSymbolTableEntry::GetType() const 
 { 
-    return m_node->GetType()->GetType().GetLexeme(); 
+    return m_typeStr; 
 }
 
 SymbolTable* VarSymbolTableEntry::GetSubTable() { return nullptr; }
@@ -188,8 +192,8 @@ InheritanceListNode* InheritanceListEntry::GetNonConstNode() const
 
 // MemVarTableEntry /////////////////////////////////////////////////////////////////
 
-MemVarTableEntry::MemVarTableEntry(MemVarNode* node) 
-    : VarSymbolTableEntry(node, SymbolTableEntryKind::MemVar) { }
+MemVarTableEntry::MemVarTableEntry(MemVarNode* node, const std::string& typeStr) 
+    : VarSymbolTableEntry(node, typeStr, SymbolTableEntryKind::MemVar) { }
 
 const std::string& MemVarTableEntry::GetClassID() const
 {
@@ -258,7 +262,7 @@ void MemFuncTableEntry::SetDefinition(MemFuncDefEntry* defEntry)
 }
 
 bool MemFuncTableEntry::HasDefinition() const { return m_definition != nullptr; }
-ASTNode* MemFuncTableEntry::GetNode() { return m_declaration; }
+ASTNode* MemFuncTableEntry::GetNode() { return m_definition; }
 SymbolTable* MemFuncTableEntry::GetSubTable() { return m_definitionSubTable; }
 
 std::string MemFuncTableEntry::ToString()
@@ -307,6 +311,98 @@ std::string MemFuncDefEntry::ToString()
     return "";
 }
 
+// ConstructorTableEntry ///////////////////////////////////////////////////////////////
+ConstructorTableEntry::ConstructorTableEntry(ConstructorDeclNode* node, 
+    const std::string& parameterTypes) : SymbolTableEntry(SymbolTableEntryKind::ConstructorDecl), 
+    m_declaration(node), m_definition(nullptr), m_definitionSubTable(nullptr), 
+    m_parameterTypes(parameterTypes) 
+{
+    SetName("constructor");
+}
+
+ConstructorTableEntry::~ConstructorTableEntry()
+{
+    delete m_definitionSubTable;
+}
+
+const std::string& ConstructorTableEntry::GetClassID() const
+{
+    return ((ClassDefNode*)m_declaration->GetParent())->GetID()->GetID().GetLexeme();
+}
+
+const std::string& ConstructorTableEntry::GetVisibility() const
+{
+    return m_declaration->GetVisibility()->GetVisibility();
+}
+
+const std::string& ConstructorTableEntry::GetReturnType() const
+{
+    return GetClassID();
+}
+
+const std::string& ConstructorTableEntry::GetParamTypes() const { return m_parameterTypes; }
+
+void ConstructorTableEntry::SetDefinition(ConstructorDefEntry* defEntry)
+{
+    m_definition = defEntry->m_defNode;
+    m_definitionSubTable = defEntry->m_subTable;
+    defEntry->m_defNode = nullptr;
+    defEntry->m_subTable = nullptr;
+}
+
+bool ConstructorTableEntry::HasDefinition() const 
+{
+    return m_definition != nullptr;
+}
+
+ASTNode* ConstructorTableEntry::GetNode() { return m_definition; }
+
+SymbolTable* ConstructorTableEntry::GetSubTable() { return m_definitionSubTable; }
+std::string ConstructorTableEntry::ToString() 
+{
+    ASSERT(HasDefinition());
+    std::stringstream ss;
+    ss << GetKind() << s_seperator << GetName() << s_seperator 
+        << "(" << GetParamTypes() << "):" << GetReturnType() 
+        << s_seperator << GetVisibility();
+
+    return ss.str();
+}
+
+// ConstructorDefEntry ////////////////////////////////////////////////////////////////////
+ConstructorDefEntry::ConstructorDefEntry(ConstructorDefNode* node, 
+    const std::string& parameterTypes, SymbolTable* subTable) 
+    : SymbolTableEntry(SymbolTableEntryKind::ConstructorDef), m_defNode(node), 
+    m_parameterTypes(parameterTypes), m_subTable(subTable) 
+{
+    SetName("constructor");
+}
+
+ConstructorDefEntry::~ConstructorDefEntry()
+{
+    delete m_subTable;
+}
+
+const std::string& ConstructorDefEntry::GetClassID() const
+{
+    return m_defNode->GetID()->GetID().GetLexeme();
+}
+
+const std::string& ConstructorDefEntry::GetReturnType() const
+{
+    return GetClassID();
+}
+
+const std::string& ConstructorDefEntry::GetParamTypes() const { return m_parameterTypes; }
+ASTNode* ConstructorDefEntry::GetNode() { return m_defNode; }
+SymbolTable* ConstructorDefEntry::GetSubTable() { return m_subTable; }
+std::string ConstructorDefEntry::ToString() 
+{
+    DEBUG_BREAK();
+    return "";
+}
+
+
 // SymbolTable ////////////////////////////////////////////////////////////////////
 
 SymbolTable::SymbolTable(const std::string& name) : m_name(name) { }
@@ -322,6 +418,7 @@ SymbolTable::~SymbolTable()
 const std::string& SymbolTable::GetName() const { return m_name; }
 
 void SymbolTable::AddEntry(SymbolTableEntry* entry) { m_entries.push_back(entry); }
+void SymbolTable::AddEntryFirst(SymbolTableEntry* entry) { m_entries.push_front(entry); }
 
 SymbolTable::TableIterator SymbolTable::begin() { return m_entries.begin(); }
 SymbolTable::TableIterator SymbolTable::end() { return m_entries.end(); }

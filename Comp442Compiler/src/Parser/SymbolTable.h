@@ -9,11 +9,14 @@ class MemVarNode;
 class FunctionDefNode;
 class MemFuncDeclNode;
 class MemFuncDefNode;
+class ConstructorDeclNode;
+class ConstructorDefNode;
 class ClassDefNode;
 class InheritanceListNode;
 
 class SymbolTable;
 class MemFuncDefEntry;
+class ConstructorDefEntry;
 
 enum class SymbolTableEntryKind
 {
@@ -22,7 +25,8 @@ enum class SymbolTableEntryKind
     Class,
     InheritanceList,
     MemVar,
-    Constructor,
+    ConstructorDecl,
+    ConstructorDef,
     MemFuncDecl,
     MemFuncDef,
     Parameter
@@ -55,7 +59,8 @@ private:
 class VarSymbolTableEntry : public SymbolTableEntry
 {
 public:
-    VarSymbolTableEntry(VarDeclNode* node, SymbolTableEntryKind kind);
+    VarSymbolTableEntry(VarDeclNode* node, const std::string& typeStr, 
+        SymbolTableEntryKind kind);
 
     const std::string& GetType() const;
     virtual SymbolTable* GetSubTable() override;
@@ -65,6 +70,7 @@ public:
 
 private:
     VarDeclNode* m_node;
+    std::string m_typeStr;
 };
 
 class FreeFuncTableEntry : public SymbolTableEntry
@@ -124,7 +130,7 @@ private:
 class MemVarTableEntry : public VarSymbolTableEntry
 {
 public:
-    MemVarTableEntry(MemVarNode* node);
+    MemVarTableEntry(MemVarNode* node, const std::string& typeStr);
     const std::string& GetClassID() const;
     const std::string& GetVisibility() const;
     virtual std::string ToString() override;
@@ -182,6 +188,55 @@ private:
     std::string m_parameterTypes;
 };
 
+class ConstructorTableEntry : public SymbolTableEntry
+{
+public:
+    ConstructorTableEntry(ConstructorDeclNode* node, const std::string& parameterTypes);
+    ~ConstructorTableEntry();
+
+    const std::string& GetClassID() const;
+    const std::string& GetVisibility() const;
+    const std::string& GetReturnType() const;
+    const std::string& GetParamTypes() const;
+
+    void SetDefinition(ConstructorDefEntry* defEntry);
+
+    bool HasDefinition() const;
+    virtual ASTNode* GetNode() override;
+    virtual SymbolTable* GetSubTable() override;
+
+    virtual std::string ToString() override;
+
+private:
+    std::string m_parameterTypes;
+    ConstructorDeclNode* m_declaration;
+    ConstructorDefNode* m_definition;
+    SymbolTable* m_definitionSubTable;
+};
+
+// temporary entry used to store the definition of a constructor
+class ConstructorDefEntry : public SymbolTableEntry
+{
+    friend class ConstructorTableEntry;
+public:
+    ConstructorDefEntry(ConstructorDefNode* node, const std::string& parameterTypes, 
+        SymbolTable* subTable);
+    ~ConstructorDefEntry();
+
+    const std::string& GetClassID() const;
+    const std::string& GetReturnType() const;
+    const std::string& GetParamTypes() const;
+
+    virtual ASTNode* GetNode() override;
+    virtual SymbolTable* GetSubTable() override;
+
+    virtual std::string ToString() override;
+private:
+    ConstructorDefNode* m_defNode;
+    SymbolTable* m_subTable;
+    std::string m_parameterTypes;  
+};
+
 class SymbolTable
 {
 public:
@@ -193,6 +248,7 @@ public:
     const std::string& GetName() const;
 
     void AddEntry(SymbolTableEntry* entry);
+    void AddEntryFirst(SymbolTableEntry* entry);
 
     TableIterator begin();
     TableIterator end();
