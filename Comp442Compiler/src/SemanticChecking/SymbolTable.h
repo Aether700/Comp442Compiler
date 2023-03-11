@@ -36,12 +36,14 @@ std::ostream& operator<<(std::ostream& stream, SymbolTableEntryKind kind);
 
 class SymbolTableEntry
 {
+    friend class SymbolTable;
 public:
     SymbolTableEntry(SymbolTableEntryKind kind);
     virtual ~SymbolTableEntry();
 
     const std::string& GetName() const;
     SymbolTableEntryKind GetKind() const;
+    SymbolTable* GetParentTable();
     virtual ASTNode* GetNode() = 0;
     virtual SymbolTable* GetSubTable() = 0;
     
@@ -54,6 +56,7 @@ protected:
 private:
     std::string m_name;
     SymbolTableEntryKind m_kind;
+    SymbolTable* m_parentTable;
 };
 
 class VarSymbolTableEntry : public SymbolTableEntry
@@ -247,15 +250,34 @@ public:
 
     const std::string& GetName() const;
 
-    void AddEntry(SymbolTableEntry* entry);
-    void AddEntryFirst(SymbolTableEntry* entry);
+    // returns the a pointer to an existing entry in the table with the same 
+    // name or nullptr if no such entry was found
+    SymbolTableEntry* AddEntry(SymbolTableEntry* entry);
+    SymbolTableEntry* AddEntryFirst(SymbolTableEntry* entry);
+    
+    SymbolTable* GetParentTable();
+    SymbolTableEntry* GetParentEntry();
+    void SetParentEntry(SymbolTableEntry* entry);
+
+    // returns the entry with the provided name if it exists in the scope/ table 
+    // or nullptr if it could not be found
+    SymbolTableEntry* FindEntryInTable(const std::string& name);
+    SymbolTableEntry* FindEntryInScope(const std::string& name);
+
+    bool TableContainsName(const std::string& name);
+    bool ScopeContainsName(const std::string& name);
 
     TableIterator begin();
     TableIterator end();
 
 private:
+    // returns the existing with the same name and, if applicable parameters, 
+    // if such an entry already exists in the table or nullptr otherwise
+    SymbolTableEntry* FindExistingEntry(SymbolTableEntry* entry);
+
     std::string m_name;
     TableList m_entries;
+    SymbolTableEntry* m_parentEntry;
 };
 
 class SymbolTableDisplayManager

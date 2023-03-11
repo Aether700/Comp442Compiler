@@ -3,7 +3,7 @@
 #include <string>
 #include <sstream>
 
-#include "Visitor.h"
+#include "../SemanticChecking/Visitor.h"
 #include "../Core/Token.h"
 
 class StatBlockNode;

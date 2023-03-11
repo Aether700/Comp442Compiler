@@ -1,13 +1,14 @@
-#include <iostream>
-#include <sstream>
-#include <filesystem>
-
 #include "Lexer/Lexer.h"
 #include "Core/Core.h"
 #include "Parser/Parser.h"
 #include "Core/Util.h"
+#include "SemanticChecking/SemanticErrors.h"
 
-start working on semantic checking
+#include <iostream>
+#include <sstream>
+#include <filesystem>
+
+//start working on semantic checking
 
 void ExitPrompt()
 {
@@ -20,20 +21,41 @@ void Compile(const std::string& filepath)
 	ProgramNode* program = Parser::Parse(filepath);
 	if (program == nullptr)
 	{
-		std::cout << "Parsing error was found, check logs for detail\n";
+		std::cout << "Parsing error was found in file \"" << filepath 
+			<< "\", check logs for detail\n";
 		return;
 	}
 
+	SemanticErrorManager::Clear();
+
+	// semantic checking
 	SymbolTableAssembler* assembler = new SymbolTableAssembler();
 	program->AcceptVisit(assembler);
-	
+
+	if (SemanticErrorManager::HasError())
+	{
+		SemanticErrorManager::LogErrors();
+		return;
+	}
+
 	{
 		std::ofstream symbolTableFile = std::ofstream(SimplifyFilename(filepath) 
 			+ ".outsymboltables");
 		symbolTableFile << SymbolTableDisplayManager::TableToStr(assembler->
 			GetGlobalSymbolTable());
 	}
+
+	SemanticChecker* checker = new SemanticChecker(assembler->GetGlobalSymbolTable());
+	program->AcceptVisit(checker);
 	
+	if (SemanticErrorManager::HasError())
+	{
+		SemanticErrorManager::LogErrors();
+		return;
+	}
+
+	delete checker;
+	delete assembler;
 	delete program;
 }
 

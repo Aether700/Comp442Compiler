@@ -1,5 +1,6 @@
 #include "Visitor.h"
-#include "AST.h"
+#include "SemanticErrors.h"
+#include "../Parser/AST.h"
 #include "../Core/Core.h"
 
 #include <sstream>
@@ -83,12 +84,22 @@ void SymbolTableAssembler::Visit(FunctionDefNode* element)
 {
     SymbolTable* functionTable = new SymbolTable(element->GetID()->GetID().GetLexeme());
     std::list<SymbolTableEntry*> entriesToKeep;
+    std::list<SymbolTableEntry*> toDelete;
     for (SymbolTableEntry* entry : m_workingList)
     {
         if (entry->GetKind() == SymbolTableEntryKind::LocalVariable 
             || entry->GetKind() == SymbolTableEntryKind::Parameter)
         {
-            functionTable->AddEntryFirst(entry);
+            SymbolTableEntry* originalEntry = functionTable->AddEntryFirst(entry);
+            if (originalEntry != nullptr)
+            {
+                VarDeclNode* originalNode = (VarDeclNode*)originalEntry->GetNode();
+                VarDeclNode* errorNode = (VarDeclNode*)entry->GetNode();
+                SemanticErrorManager::AddError(
+                    new DuplicateSymbolError(originalNode->GetID()->GetID(), 
+                    errorNode->GetID()->GetID()));
+                toDelete.push_front(entry);
+            }
         }
         else
         {
@@ -98,6 +109,11 @@ void SymbolTableAssembler::Visit(FunctionDefNode* element)
 
     m_workingList.clear();
     m_workingList = entriesToKeep;
+
+    for (SymbolTableEntry* entry : toDelete)
+    {
+        delete entry;
+    }
 
     FreeFuncTableEntry* entry = new FreeFuncTableEntry(element, 
         FunctionParamTypeToStr(element->GetParameters()), functionTable);
@@ -154,12 +170,22 @@ void SymbolTableAssembler::Visit(MemFuncDefNode* element)
     }
 
     std::list<SymbolTableEntry*> entriesToKeep;
+    std::list<SymbolTableEntry*> toDelete;
     for (SymbolTableEntry* entry : m_workingList)
     {
         if (entry->GetKind() == SymbolTableEntryKind::LocalVariable 
             || entry->GetKind() == SymbolTableEntryKind::Parameter)
         {
-            functionTable->AddEntryFirst(entry);
+            SymbolTableEntry* originalEntry = functionTable->AddEntryFirst(entry);
+            if (originalEntry != nullptr)
+            {
+                VarDeclNode* originalNode = (VarDeclNode*)originalEntry->GetNode();
+                VarDeclNode* errorNode = (VarDeclNode*)entry->GetNode();
+                SemanticErrorManager::AddError(
+                    new DuplicateSymbolError(originalNode->GetID()->GetID(), 
+                    errorNode->GetID()->GetID()));
+                toDelete.push_front(entry);
+            }
         }
         else
         {
@@ -170,12 +196,18 @@ void SymbolTableAssembler::Visit(MemFuncDefNode* element)
     m_workingList.clear();
     m_workingList = entriesToKeep;
 
+    for (SymbolTableEntry* entry : toDelete)
+    {
+        delete entry;
+    }
+
     MemFuncDefEntry* entry = new MemFuncDefEntry(element, 
         FunctionParamTypeToStr(element->GetParameters()), functionTable);
     
     if (!TryMatchMemFuncDeclAndDef(entry))
     {
-        m_workingList.push_front(entry);
+        // no function declaration here
+        DEBUG_BREAK();
     }
 }
 
@@ -221,12 +253,22 @@ void SymbolTableAssembler::Visit(ConstructorDefNode* element)
     }
 
     std::list<SymbolTableEntry*> entriesToKeep;
+    std::list<SymbolTableEntry*> toDelete;
     for (SymbolTableEntry* entry : m_workingList)
     {
         if (entry->GetKind() == SymbolTableEntryKind::LocalVariable 
             || entry->GetKind() == SymbolTableEntryKind::Parameter)
         {
-            functionTable->AddEntryFirst(entry);
+            SymbolTableEntry* originalEntry = functionTable->AddEntryFirst(entry);
+            if (originalEntry != nullptr)
+            {
+                VarDeclNode* originalNode = (VarDeclNode*)originalEntry->GetNode();
+                VarDeclNode* errorNode = (VarDeclNode*)entry->GetNode();
+                SemanticErrorManager::AddError(
+                    new DuplicateSymbolError(originalNode->GetID()->GetID(), 
+                    errorNode->GetID()->GetID()));
+                toDelete.push_front(entry);
+            }
         }
         else
         {
@@ -237,12 +279,18 @@ void SymbolTableAssembler::Visit(ConstructorDefNode* element)
     m_workingList.clear();
     m_workingList = entriesToKeep;
 
+    for (SymbolTableEntry* entry : toDelete)
+    {
+        delete entry;
+    }
+
     ConstructorDefEntry* entry = new ConstructorDefEntry(element, 
         FunctionParamTypeToStr(element->GetParameters()), functionTable);
     
     if (!TryMatchMemFuncDeclAndDef(entry))
     {
-        m_workingList.push_front(entry);
+        // no function declaration here
+        DEBUG_BREAK();
     }
 }
 
@@ -326,13 +374,30 @@ void SymbolTableAssembler::Visit(ClassDefNode* element)
 
     classTable->AddEntry(inheritanceList);
 
+    std::list<SymbolTableEntry*> toDelete;
+
     for (MemVarTableEntry* memVarEntry : memVarEntries)
     {
-        classTable->AddEntry(memVarEntry);
+        SymbolTableEntry* originalEntry = classTable->AddEntry(memVarEntry);
+        if (originalEntry != nullptr)
+        {
+            VarDeclNode* originalNode = (VarDeclNode*)originalEntry->GetNode();
+            VarDeclNode* errorNode = (VarDeclNode*)memVarEntry->GetNode();
+            SemanticErrorManager::AddError(
+                new DuplicateSymbolError(originalNode->GetID()->GetID(), 
+                errorNode->GetID()->GetID()));
+            toDelete.push_front(memVarEntry);
+        }
     }
 
     for (ConstructorTableEntry* constructor : constructorEntries)
     {
+        not finished need to check for existing entries with the same name/parameters 
+        (check how memvars did above but will need to adapt it since we might not 
+        have a constructor here)
+
+        Still more AddEntry checks to verify below once this function is done
+
         classTable->AddEntry(constructor);
     }
 
@@ -404,4 +469,50 @@ bool SymbolTableAssembler::TryMatchMemFuncDeclAndDef(ConstructorDefEntry* def)
         }
     }
     return false;
+}
+
+// SemanticChecker //////////////////////////////////////////
+SemanticChecker::SemanticChecker(SymbolTable* globalTable) 
+    : m_globalTable(globalTable), m_currTable(globalTable) { }
+    
+void SemanticChecker::Visit(IDNode* element)
+{
+    SymbolTable* currTable = FindTableOfID(element);
+    ASSERT(currTable != nullptr);
+    if (!currTable->ScopeContainsName(element->GetID().GetLexeme()))
+    {
+        SemanticErrorManager::AddError(new UnknownSymbolError(element->GetID()));
+    }
+}
+
+SymbolTable* SemanticChecker::FindTableOfID(IDNode* id)
+{
+    const std::string& idName = id->GetID().GetLexeme();
+    if (m_currTable->ScopeContainsName(idName))
+    {
+        return m_currTable;
+    }
+
+    ASTNode* currParentNode = id->GetParent();
+    while (currParentNode != nullptr)
+    {
+        if (dynamic_cast<FunctionDefNode*>(currParentNode) != nullptr)
+        {
+            FunctionDefNode* funcDef = (FunctionDefNode*)currParentNode;
+            const std::string& funcName = funcDef->GetID()->GetID().GetLexeme();
+            SymbolTableEntry* entry = m_globalTable->FindEntryInScope(funcName);
+            ASSERT(entry != nullptr);
+
+            if (funcName == idName)
+            {
+                m_currTable = entry->GetParentTable();
+                return m_currTable;
+            }
+            m_currTable = entry->GetSubTable();
+            return m_currTable;
+        }
+        currParentNode = currParentNode->GetParent();
+    }
+
+    return nullptr;
 }

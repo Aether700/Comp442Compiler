@@ -66,3 +66,18 @@ private:
     SymbolTable* m_globalScopeTable;
     std::list<SymbolTableEntry*> m_workingList;
 };
+
+class SemanticChecker : public Visitor
+{
+public:
+    SemanticChecker(SymbolTable* globalTable);
+
+    virtual void Visit(IDNode* element) override;
+
+private:
+
+    SymbolTable* FindTableOfID(IDNode* id);
+
+    SymbolTable* m_globalTable;
+    SymbolTable* m_currTable;
+};
