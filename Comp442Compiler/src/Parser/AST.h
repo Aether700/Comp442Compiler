@@ -6,6 +6,8 @@
 #include "../SemanticChecking/Visitor.h"
 #include "../Core/Token.h"
 
+class SymbolTable;
+
 class StatBlockNode;
 class ExprNode;
 class AParamListNode;
@@ -20,6 +22,9 @@ public:
     virtual void SetParent(ASTNode* parent) = 0;
 
     virtual size_t GetNumChild() const = 0;
+
+    // retrieves the symbol table containing this node
+    virtual SymbolTable* GetSymbolTable();
 
     virtual std::string ToString(size_t indent = 0) = 0;
 };
@@ -424,9 +429,14 @@ public:
     TypeNode* GetReturnType();
     FParamListNode* GetParameters();
     StatBlockNode* GetBody();
+    SymbolTable* GetSymbolTable() override;
+    void SetSymbolTable(SymbolTable* table);
 
     virtual std::string ToString(size_t indent = 0) override;
     virtual void AcceptVisit(Visitor* visitor) override;
+
+private:
+    SymbolTable* m_symbolTable;
 };
 
 class VisibilityNode : public LeafNode
@@ -534,6 +544,8 @@ public:
     void AddVarDecl(MemVarNode* var);
     void AddConstructor(ConstructorDeclNode* constructor);
     void AddFuncDecl(MemFuncDeclNode* func);
+    SymbolTable* GetSymbolTable() override;
+    void SetSymbolTable(SymbolTable* table);
 
     IDNode* GetID();
     InheritanceListNode* GetInheritanceList();
@@ -545,6 +557,7 @@ public:
     virtual void AcceptVisit(Visitor* visitor) override;
 
 private:
+    SymbolTable* m_symbolTable;
     std::list<MemVarNode*> m_varDeclarations;
     std::list<ConstructorDeclNode*> m_constructors;
     std::list<MemFuncDeclNode*> m_functionDeclarations;
@@ -575,7 +588,12 @@ public:
 
     ClassDefListNode* GetClassList();
     FunctionDefListNode* GetFunctionList();
+    SymbolTable* GetSymbolTable() override;
+    void SetSymbolTable(SymbolTable* table);
 
     virtual std::string ToString(size_t indent = 0) override;
     virtual void AcceptVisit(Visitor* visitor) override;
+
+private:
+    SymbolTable* m_globalTable;
 };

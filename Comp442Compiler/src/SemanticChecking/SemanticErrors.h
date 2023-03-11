@@ -48,12 +48,14 @@ private:
     Token m_originalToken;
 };
 
+/*
 class UnknownSymbolError : public TokenBasedError
 {
 public:
     UnknownSymbolError(const Token& token);
     virtual std::string GetMessage() const override;
 };
+*/
 
 class SemanticErrorManager
 {

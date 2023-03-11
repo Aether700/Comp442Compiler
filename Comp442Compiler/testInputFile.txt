@@ -1,4 +1,4 @@
 function freeFunc(x : integer) => void
 {
-    y = 4;
+    x = 4;
 }

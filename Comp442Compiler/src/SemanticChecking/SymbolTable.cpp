@@ -514,20 +514,24 @@ SymbolTable::TableIterator SymbolTable::end() { return m_entries.end(); }
 SymbolTableEntry* SymbolTable::FindExistingEntry(SymbolTableEntry* entry)
 {
     SymbolTableEntry* originalEntry = FindEntryInTable(entry->GetName());
-    if (entry->GetKind() == SymbolTableEntryKind::ConstructorDecl 
+    if (originalEntry == nullptr)
+    {
+        return nullptr;
+    }
+    else if (entry->GetKind() == SymbolTableEntryKind::ConstructorDecl 
         && originalEntry->GetKind() == SymbolTableEntryKind::ConstructorDecl)
-        
-        ConstructorTableEntry* constructor = (ConstructorTableEntry*)entry;
+    { 
+        ConstructorTableEntry* entryConstructor = (ConstructorTableEntry*)entry;
         ConstructorTableEntry* originalConstructor = (ConstructorTableEntry*)originalEntry;
 
-        ASSERT(constructor->GetClassID() == originalConstructor->GetClassID());
-        if (constructor->GetParamTypes() == originalConstructor->GetParamTypes())
+        ASSERT(entryConstructor->GetClassID() == originalConstructor->GetClassID());
+        if (entryConstructor->GetParamTypes() == originalConstructor->GetParamTypes())
         {
             return originalEntry;
         }
     }
-    else if (entry->GetKind() == SymbolTableEntryKind::FreeFunc 
-        && originalEntry->GetKind() == SymbolTableEntryKind::FreeFunc)
+    else if (entry->GetKind() == SymbolTableEntryKind::FreeFunction 
+        && originalEntry->GetKind() == SymbolTableEntryKind::FreeFunction)
     {
         FreeFuncTableEntry* func = (FreeFuncTableEntry*)entry;
         FreeFuncTableEntry* originalFunc = (FreeFuncTableEntry*)originalEntry;
@@ -549,12 +553,8 @@ SymbolTableEntry* SymbolTable::FindExistingEntry(SymbolTableEntry* entry)
             return originalEntry;
         }
     }
-    else if (originalEntry != nullptr)
-    {
-        return originalEntry;
-    }
 
-    return nullptr;
+    return originalEntry;
 }
 
 

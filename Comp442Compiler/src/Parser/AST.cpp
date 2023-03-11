@@ -13,6 +13,11 @@ void WriteIndentToStream(std::stringstream& ss, size_t indent)
 // ASTNode //////////////////////////////////////////////////
 ASTNode::~ASTNode() { }
 
+SymbolTable* ASTNode::GetSymbolTable()
+{
+    return GetParent()->GetSymbolTable();
+}
+
 // ASTNodeBase ///////////////////////////////////////////
 
 ASTNodeBase::ASTNodeBase() : m_parent(nullptr) { }
@@ -724,6 +729,9 @@ TypeNode* FunctionDefNode::GetReturnType() { return (TypeNode*)GetChild(1); }
 FParamListNode* FunctionDefNode::GetParameters() { return (FParamListNode*)GetChild(2); }
 StatBlockNode* FunctionDefNode::GetBody() { return (StatBlockNode*)GetChild(3); }
 
+SymbolTable* FunctionDefNode::GetSymbolTable() { return m_symbolTable; }
+void FunctionDefNode::SetSymbolTable(SymbolTable* table) { m_symbolTable = table; }
+
 std::string FunctionDefNode::ToString(size_t indent)
 {
     std::stringstream ss;
@@ -885,7 +893,6 @@ ConstructorDeclNode::ConstructorDeclNode(VisibilityNode* visibility, FParamListN
 }
 
 VisibilityNode* ConstructorDeclNode::GetVisibility() { return (VisibilityNode*)GetChild(0); }
-
 FParamListNode* ConstructorDeclNode::GetParameters() { return (FParamListNode*)GetChild(1); }
 
 std::string ConstructorDeclNode::ToString(size_t indent)
@@ -1019,6 +1026,9 @@ void ClassDefNode::AddFuncDecl(MemFuncDeclNode* func)
     func->SetParent(this);
 }
 
+SymbolTable* ClassDefNode::GetSymbolTable() { return m_symbolTable; }
+void ClassDefNode::SetSymbolTable(SymbolTable* table) { m_symbolTable = table; }
+
 std::list<MemVarNode*>& ClassDefNode::GetVarDecls() { return m_varDeclarations; }
 std::list<ConstructorDeclNode*>& ClassDefNode::GetConstructors() { return m_constructors; }
 std::list<MemFuncDeclNode*>& ClassDefNode::GetFuncDecls() { return m_functionDeclarations; }
@@ -1136,6 +1146,9 @@ FunctionDefListNode* ProgramNode::GetFunctionList()
 {
     return (FunctionDefListNode*)GetChild(1);
 }
+
+SymbolTable* ProgramNode::GetSymbolTable() { return m_globalTable; }
+void ProgramNode::SetSymbolTable(SymbolTable* table) { m_globalTable = table; }
 
 std::string ProgramNode::ToString(size_t indent)
 {

@@ -118,6 +118,8 @@ void SymbolTableAssembler::Visit(FunctionDefNode* element)
     FreeFuncTableEntry* entry = new FreeFuncTableEntry(element, 
         FunctionParamTypeToStr(element->GetParameters()), functionTable);
 
+    element->SetSymbolTable(functionTable);
+
     m_workingList.push_front(entry);
 }
 
@@ -204,6 +206,8 @@ void SymbolTableAssembler::Visit(MemFuncDefNode* element)
     MemFuncDefEntry* entry = new MemFuncDefEntry(element, 
         FunctionParamTypeToStr(element->GetParameters()), functionTable);
     
+    element->SetSymbolTable(functionTable);
+
     if (!TryMatchMemFuncDeclAndDef(entry))
     {
         // no function declaration here
@@ -287,6 +291,8 @@ void SymbolTableAssembler::Visit(ConstructorDefNode* element)
     ConstructorDefEntry* entry = new ConstructorDefEntry(element, 
         FunctionParamTypeToStr(element->GetParameters()), functionTable);
     
+    element->SetSymbolTable(functionTable);
+
     if (!TryMatchMemFuncDeclAndDef(entry))
     {
         // no function declaration here
@@ -392,11 +398,13 @@ void SymbolTableAssembler::Visit(ClassDefNode* element)
 
     for (ConstructorTableEntry* constructor : constructorEntries)
     {
+        /*
         not finished need to check for existing entries with the same name/parameters 
         (check how memvars did above but will need to adapt it since we might not 
         have a constructor here)
 
         Still more AddEntry checks to verify below once this function is done
+        */
 
         classTable->AddEntry(constructor);
     }
@@ -407,6 +415,8 @@ void SymbolTableAssembler::Visit(ClassDefNode* element)
     }
 
     SymbolTableEntry* classEntry = new ClassTableEntry(element, classTable);
+
+    element->SetSymbolTable(classTable);
 
     m_workingList.push_front(classEntry);
 }
@@ -420,6 +430,7 @@ void SymbolTableAssembler::Visit(ProgramNode* element)
         m_globalScopeTable->AddEntry(entry);
     }
     
+    element->SetSymbolTable(m_globalScopeTable);
     m_workingList.clear();
 }
 

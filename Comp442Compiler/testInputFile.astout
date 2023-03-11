@@ -17,7 +17,7 @@ Program
 |  |  |  |  AssigStat
 |  |  |  |  |  Variable
 |  |  |  |  |  |  id
-|  |  |  |  |  |  |  y
+|  |  |  |  |  |  |  x
 |  |  |  |  |  |  Dimensions
 |  |  |  |  |  Expr
 |  |  |  |  |  |  Literal
