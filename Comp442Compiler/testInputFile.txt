@@ -1,4 +1,10 @@
 function freeFunc(x : integer) => void
 {
+    localvar x : float;
     x = 4;
+}
+
+function freeFunc(y : integer) =>float
+{
+    return(2.4);
 }

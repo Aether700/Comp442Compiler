@@ -63,6 +63,9 @@ private:
     bool TryMatchMemFuncDeclAndDef(MemFuncDefEntry* def);
     bool TryMatchMemFuncDeclAndDef(ConstructorDefEntry* def);
 
+    // returns the idnode of the node provided or the nullptr if there is no such node
+    IDNode* GetIDFromEntry(SymbolTableEntry* entry);
+
     SymbolTable* m_globalScopeTable;
     std::list<SymbolTableEntry*> m_workingList;
 };
@@ -75,9 +78,6 @@ public:
     virtual void Visit(IDNode* element) override;
 
 private:
-
-    SymbolTable* FindTableOfID(IDNode* id);
-
     SymbolTable* m_globalTable;
     SymbolTable* m_currTable;
 };

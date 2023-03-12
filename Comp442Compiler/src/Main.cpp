@@ -8,8 +8,6 @@
 #include <sstream>
 #include <filesystem>
 
-//start working on semantic checking
-
 void ExitPrompt()
 {
 	std::cout << "\nPress enter to exit\n";

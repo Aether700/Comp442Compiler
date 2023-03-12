@@ -14,6 +14,12 @@ Program
 |  |  |  |  |  |  integer
 |  |  |  |  |  Dimensions
 |  |  |  StatBlock
+|  |  |  |  VarDecl
+|  |  |  |  |  id
+|  |  |  |  |  |  x
+|  |  |  |  |  TypeNode
+|  |  |  |  |  |  float
+|  |  |  |  |  Dimensions
 |  |  |  |  AssigStat
 |  |  |  |  |  Variable
 |  |  |  |  |  |  id
@@ -24,3 +30,22 @@ Program
 |  |  |  |  |  |  |  4
 |  |  |  |  |  |  |  TypeNode
 |  |  |  |  |  |  |  |  integer
+|  |  FuncDef
+|  |  |  id
+|  |  |  |  freeFunc
+|  |  |  TypeNode
+|  |  |  |  float
+|  |  |  FParamList
+|  |  |  |  FParam
+|  |  |  |  |  id
+|  |  |  |  |  |  y
+|  |  |  |  |  TypeNode
+|  |  |  |  |  |  integer
+|  |  |  |  |  Dimensions
+|  |  |  StatBlock
+|  |  |  |  ReturnStat
+|  |  |  |  |  Expr
+|  |  |  |  |  |  Literal
+|  |  |  |  |  |  |  2.4
+|  |  |  |  |  |  |  TypeNode
+|  |  |  |  |  |  |  |  float

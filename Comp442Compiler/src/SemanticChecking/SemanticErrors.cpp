@@ -25,15 +25,26 @@ std::string UnknownSymbolError::GetMessage() const
 }
 
 // DuplicateSymbolError ///////////////////////////////////////////////////////////////
-DuplicateSymbolError::DuplicateSymbolError(const Token& originalToken, 
-    const Token& erroneousToken) : TokenBasedError(SemanticErrorCode::DuplicateSymbolName, 
-    erroneousToken), m_originalToken(originalToken) { }
+DuplicateSymbolError::DuplicateSymbolError(const Token& token1, 
+    const Token& token2) : SemanticError(SemanticErrorCode::DuplicateSymbolName)
+{
+    if (token1.GetLine() < token2.GetLine())
+    {
+        m_originalToken = token1;
+        m_duplicateToken = token2;
+    }
+    else
+    {
+        m_originalToken = token2;
+        m_duplicateToken = token1;
+    }
+}
 
 std::string DuplicateSymbolError::GetMessage() const
 {
     std::stringstream ss;
     ss << "Duplicate token \"" << m_originalToken.GetLexeme() << "\" found at line " 
-        << GetToken().GetLine() << ": " << GetToken().GetStrOfLine() 
+        << m_duplicateToken.GetLine() << ": " << m_duplicateToken.GetStrOfLine() 
         << ". Symbol has already been defined at line " << m_originalToken.GetLine() 
         << ": " << m_originalToken.GetStrOfLine(); 
 

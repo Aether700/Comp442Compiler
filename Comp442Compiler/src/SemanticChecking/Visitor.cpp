@@ -397,21 +397,36 @@ void SymbolTableAssembler::Visit(ClassDefNode* element)
     }
 
     for (ConstructorTableEntry* constructor : constructorEntries)
-    {
-        /*
-        not finished need to check for existing entries with the same name/parameters 
-        (check how memvars did above but will need to adapt it since we might not 
-        have a constructor here)
-
-        Still more AddEntry checks to verify below once this function is done
-        */
-
-        classTable->AddEntry(constructor);
+    {        
+        SymbolTableEntry* originalEntry = classTable->AddEntry(constructor);
+        if (originalEntry != nullptr)
+        {
+            IDNode* originalNode = GetIDFromEntry(originalEntry);
+            IDNode* errorNode = GetIDFromEntry(constructor);
+            SemanticErrorManager::AddError(
+                new DuplicateSymbolError(originalNode->GetID(), 
+                errorNode->GetID()));
+            toDelete.push_front(constructor);
+        }
     }
 
     for (MemFuncTableEntry* memFuncEntry : memFuncEntries)
     {
-        classTable->AddEntry(memFuncEntry);
+        SymbolTableEntry* originalEntry = classTable->AddEntry(memFuncEntry);
+        if (originalEntry != nullptr)
+        {
+            IDNode* originalNode = GetIDFromEntry(originalEntry);
+            IDNode* errorNode = GetIDFromEntry(memFuncEntry);
+            SemanticErrorManager::AddError(
+                new DuplicateSymbolError(originalNode->GetID(), 
+                errorNode->GetID()));
+            toDelete.push_front(memFuncEntry);
+        }
+    }
+
+    for (SymbolTableEntry* entry : toDelete)
+    {
+        delete entry;
     }
 
     SymbolTableEntry* classEntry = new ClassTableEntry(element, classTable);
@@ -425,11 +440,26 @@ void SymbolTableAssembler::Visit(ProgramNode* element)
 {
     m_globalScopeTable = new SymbolTable("Global");
 
+    std::list<SymbolTableEntry*> toDelete;
     for (SymbolTableEntry* entry : m_workingList)
     {
-        m_globalScopeTable->AddEntry(entry);
+        SymbolTableEntry* originalEntry = m_globalScopeTable->AddEntry(entry);
+        if (originalEntry != nullptr)
+        {
+            IDNode* originalNode = GetIDFromEntry(originalEntry);
+            IDNode* errorNode = GetIDFromEntry(entry);
+            SemanticErrorManager::AddError(
+                new DuplicateSymbolError(originalNode->GetID(), 
+                errorNode->GetID()));
+            toDelete.push_front(entry);
+        }
     }
     
+    for (SymbolTableEntry* entry : toDelete)
+    {
+        delete entry;
+    }
+
     element->SetSymbolTable(m_globalScopeTable);
     m_workingList.clear();
 }
@@ -482,48 +512,32 @@ bool SymbolTableAssembler::TryMatchMemFuncDeclAndDef(ConstructorDefEntry* def)
     return false;
 }
 
+IDNode* SymbolTableAssembler::GetIDFromEntry(SymbolTableEntry* entry)
+{
+    if (entry->GetKind() == SymbolTableEntryKind::LocalVariable 
+        || entry->GetKind() == SymbolTableEntryKind::MemVar)
+    {
+        return ((VarDeclNode*)entry->GetNode())->GetID();
+    }
+    else if (entry->GetKind() == SymbolTableEntryKind::FreeFunction 
+        || entry->GetKind() == SymbolTableEntryKind::MemFuncDecl
+        || entry->GetKind() == SymbolTableEntryKind::ConstructorDecl)
+    {
+        return ((FunctionDefNode*)entry->GetNode())->GetID();
+    }
+    return nullptr;
+}
+
 // SemanticChecker //////////////////////////////////////////
 SemanticChecker::SemanticChecker(SymbolTable* globalTable) 
     : m_globalTable(globalTable), m_currTable(globalTable) { }
     
 void SemanticChecker::Visit(IDNode* element)
 {
-    SymbolTable* currTable = FindTableOfID(element);
+    SymbolTable* currTable = element->GetSymbolTable();
     ASSERT(currTable != nullptr);
     if (!currTable->ScopeContainsName(element->GetID().GetLexeme()))
     {
         SemanticErrorManager::AddError(new UnknownSymbolError(element->GetID()));
     }
-}
-
-SymbolTable* SemanticChecker::FindTableOfID(IDNode* id)
-{
-    const std::string& idName = id->GetID().GetLexeme();
-    if (m_currTable->ScopeContainsName(idName))
-    {
-        return m_currTable;
-    }
-
-    ASTNode* currParentNode = id->GetParent();
-    while (currParentNode != nullptr)
-    {
-        if (dynamic_cast<FunctionDefNode*>(currParentNode) != nullptr)
-        {
-            FunctionDefNode* funcDef = (FunctionDefNode*)currParentNode;
-            const std::string& funcName = funcDef->GetID()->GetID().GetLexeme();
-            SymbolTableEntry* entry = m_globalTable->FindEntryInScope(funcName);
-            ASSERT(entry != nullptr);
-
-            if (funcName == idName)
-            {
-                m_currTable = entry->GetParentTable();
-                return m_currTable;
-            }
-            m_currTable = entry->GetSubTable();
-            return m_currTable;
-        }
-        currParentNode = currParentNode->GetParent();
-    }
-
-    return nullptr;
 }

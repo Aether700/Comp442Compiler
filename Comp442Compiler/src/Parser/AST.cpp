@@ -52,6 +52,7 @@ void ASTNodeBase::AddChildFirst(ASTNode* child)
 
 ASTNode* ASTNodeBase::GetChild(size_t index)
 {
+    ASSERT(index < m_children.size());
     auto it = m_children.begin();
     for (size_t i = 0; i < index; i++)
     {

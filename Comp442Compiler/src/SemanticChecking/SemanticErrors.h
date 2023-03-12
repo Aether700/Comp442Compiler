@@ -8,6 +8,7 @@ enum class SemanticErrorCode
 {
     UnknownSymbol,
     DuplicateSymbolName,
+    MemberFunctionDeclNotFound,
 };
 
 class SemanticError
@@ -38,24 +39,24 @@ public:
     virtual std::string GetMessage() const override;
 };
 
-class DuplicateSymbolError : public TokenBasedError
+class DuplicateSymbolError : public SemanticError
 {
 public:
-    DuplicateSymbolError(const Token& originalToken, const Token& erroneousToken);
+    DuplicateSymbolError(const Token& token1, const Token& token2);
     virtual std::string GetMessage() const override;
 
 private:
     Token m_originalToken;
+    Token m_duplicateToken;
 };
 
-/*
-class UnknownSymbolError : public TokenBasedError
+
+class MemberFunctionDeclNotFound : public TokenBasedError
 {
 public:
-    UnknownSymbolError(const Token& token);
-    virtual std::string GetMessage() const override;
+    not finished needs to be designed and implemented
 };
-*/
+
 
 class SemanticErrorManager
 {
