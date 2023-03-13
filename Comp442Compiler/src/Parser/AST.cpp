@@ -13,6 +13,8 @@ void WriteIndentToStream(std::stringstream& ss, size_t indent)
 // ASTNode //////////////////////////////////////////////////
 ASTNode::~ASTNode() { }
 
+std::string ASTNode::GetEvaluatedType() { return s_invalidType; }
+
 SymbolTable* ASTNode::GetSymbolTable()
 {
     return GetParent()->GetSymbolTable();
@@ -173,6 +175,17 @@ BaseBinaryOperator::BaseBinaryOperator(const std::string& name, ASTNode* left,
 ASTNode* BaseBinaryOperator::GetLeft() { return GetChild(0); }
 OperatorNode* BaseBinaryOperator::GetOperator() { return (OperatorNode*)GetChild(1); }
 ASTNode* BaseBinaryOperator::GetRight() { return GetChild(2); }
+
+std::string BaseBinaryOperator::GetEvaluatedType()
+{
+    std::string leftEvalType = GetLeft()->GetEvaluatedType();
+    if (leftEvalType == GetRight()->GetEvaluatedType())
+    {
+        return leftEvalType;
+    }
+
+    return s_invalidType;
+}
 
 std::string BaseBinaryOperator::ToString(size_t indent)
 {

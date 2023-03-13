@@ -17,6 +17,7 @@ class ASTNode : public IVisitableElement
 public:
     virtual ~ASTNode();
 
+    virtual std::string GetEvaluatedType();
     virtual ASTNode* GetParent() = 0;
     virtual const ASTNode* GetParent() const = 0;
     virtual void SetParent(ASTNode* parent) = 0;
@@ -27,6 +28,9 @@ public:
     virtual SymbolTable* GetSymbolTable();
 
     virtual std::string ToString(size_t indent = 0) = 0;
+
+protected:
+    static constexpr const char* s_invalidType = "";
 };
 
 class ASTNodeBase : public ASTNode
@@ -158,6 +162,8 @@ public:
     OperatorNode* GetOperator();
     ASTNode* GetRight();
 
+    virtual std::string GetEvaluatedType() override;
+
     virtual std::string ToString(size_t indent = 0) override;
 
 private:
@@ -168,7 +174,6 @@ class AddOpNode : public BaseBinaryOperator
 {
 public:
     AddOpNode(ASTNode* left, OperatorNode* op, ASTNode* right);
-
     virtual void AcceptVisit(Visitor* visitor) override;
 };
 
@@ -177,6 +182,7 @@ class MultOpNode : public BaseBinaryOperator
 public:
     MultOpNode(ASTNode* left, OperatorNode* op, ASTNode* right);
 
+    virtual std::string GetEvaluatedType() override;
     virtual void AcceptVisit(Visitor* visitor) override;
 };
 
@@ -196,6 +202,8 @@ public:
     IDNode* GetLexemeNode();
     TypeNode* GetType();
 
+    not finished keep adding 
+    "virtual std::string GetEvaluatedType() override;" function to different node classes
     virtual std::string ToString(size_t indent = 0) override;
     virtual void AcceptVisit(Visitor* visitor) override;
 };

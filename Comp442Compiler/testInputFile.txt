@@ -1,15 +1,23 @@
-class A
+class A isa B
 {
     attribute x : integer;
-    function f : () => void;
+    function g:()=>void;
 };
 
-function A::f() =>void { }
+function A::g()=>void{}
 
 class B isa A
 {
-    attribute x : float;
-    function f : (x : integer) => void;
+    
 };
 
-function B::f(x : integer) =>void { }
+class C isa B
+{
+    function f:()=>void;
+};
+
+function C::f() =>void 
+{
+    x = 3;
+    g(x);
+}

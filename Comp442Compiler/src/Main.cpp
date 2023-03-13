@@ -9,9 +9,7 @@
 #include <filesystem>
 
 /*
-To Do
-- issue error for circular dependancy
-- allow child class to use member from parent class (currently not the case) 
+To Do 
 - type check operators and expressions
 - type check parameters passed to function calls
 - need checks for main (should be exactly 1 main func)

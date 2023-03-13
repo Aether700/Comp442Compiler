@@ -277,6 +277,8 @@ private:
     // if such an entry already exists in the table or nullptr otherwise
     SymbolTableEntry* FindExistingEntry(SymbolTableEntry* entry);
 
+    SymbolTableEntry* FindInInheritanceScope(const std::string& name);
+
     std::string m_name;
     TableList m_entries;
     SymbolTableEntry* m_parentEntry;

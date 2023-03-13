@@ -78,6 +78,8 @@ public:
     virtual void Visit(MemFuncDefNode* element) override;
     virtual void Visit(ConstructorDefNode* element) override;
     virtual void Visit(InheritanceListNode* element) override;
+    virtual void Visit(ClassDefNode* element) override;
+    
 
 private:
     bool HasFoundOverLoadedFunc(const std::list<std::string>& funcList, 

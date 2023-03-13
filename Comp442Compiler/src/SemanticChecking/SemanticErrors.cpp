@@ -200,6 +200,21 @@ std::string ConstructorDefNotFoundError::GetMessage() const
     return ss.str(); 
 }
 
+// CircularClassDependencyError ////////////////////////////////////////////////
+CircularClassDependencyError::CircularClassDependencyError(const Token& classID) 
+    : TokenBasedError(SemanticErrorCode::CircularClassDependency, classID) { }
+
+std::string CircularClassDependencyError::GetMessage() const
+{
+    std::stringstream ss;
+    ss << "Circular dependancy in the inheritance tree of class \"" 
+        << GetToken().GetLexeme() 
+        << "\" detected. At line " << GetToken().GetLine() 
+        << ": " << GetToken().GetStrOfLine();
+
+    return ss.str(); 
+}
+
 // SemanticErrorManager ////////////////////////////////////////////////////////
 void SemanticErrorManager::AddError(SemanticError* error)
 {

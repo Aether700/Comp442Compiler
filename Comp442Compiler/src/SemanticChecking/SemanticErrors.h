@@ -13,6 +13,7 @@ enum class SemanticErrorCode
     MemberFunctionDeclNotFound,
     MemFuncDefNotFound,
     ConstructorDefNotFound,
+    CircularClassDependency,
 };
 
 enum class SemanticWarningCode
@@ -166,6 +167,13 @@ public:
 private:
     Token m_classID;
     Token m_constructor;
+};
+
+class CircularClassDependencyError : public TokenBasedError
+{
+public:
+    CircularClassDependencyError(const Token& classID);
+    virtual std::string GetMessage() const override;
 };
 
 class SemanticErrorManager

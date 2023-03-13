@@ -480,6 +480,7 @@ SymbolTableEntry* SymbolTable::FindEntryInTable(const std::string& name)
             return entry;
         }
     }
+
     return nullptr;
 }
 
@@ -488,6 +489,16 @@ SymbolTableEntry* SymbolTable::FindEntryInScope(const std::string& name)
     {
         SymbolTableEntry* entry = FindEntryInTable(name);
 
+        if (entry != nullptr)
+        {
+            return entry;
+        }
+    }
+
+    SymbolTableEntry* parentEntry = GetParentEntry();
+    if (parentEntry != nullptr && parentEntry->GetKind() == SymbolTableEntryKind::Class)
+    {
+        SymbolTableEntry* entry = FindInInheritanceScope(name);
         if (entry != nullptr)
         {
             return entry;
@@ -562,6 +573,58 @@ SymbolTableEntry* SymbolTable::FindExistingEntry(SymbolTableEntry* entry)
     return nullptr;
 }
 
+SymbolTableEntry* SymbolTable::FindInInheritanceScope(const std::string& name)
+{
+    ASSERT(GetParentEntry()->GetKind() == SymbolTableEntryKind::Class);
+    SymbolTable* globalTable = GetParentEntry()->GetParentTable();
+
+    std::list<ClassDefNode*> visitedClasses;
+    std::list<ClassDefNode*> stack;
+
+    visitedClasses.push_front((ClassDefNode*)GetParentEntry()->GetNode());
+    stack.push_front((ClassDefNode*)GetParentEntry()->GetNode());
+
+    while (stack.size() > 0)
+    {
+        ClassDefNode* currClass = stack.front();
+        stack.pop_front();
+
+        SymbolTableEntry* entry = currClass->GetSymbolTable()->FindEntryInTable(name);
+        if (entry != nullptr)
+        {
+            return entry;
+        }
+
+        // push on stack other classes
+        for (ASTNode* baseNode : currClass->GetInheritanceList()->GetChildren())
+        {
+            IDNode* id = (IDNode*) baseNode;
+            SymbolTableEntry* classEntry = globalTable->
+                FindEntryInTable(id->GetID().GetLexeme());
+
+            ClassDefNode* classDef = (ClassDefNode*)classEntry->GetNode();
+
+            bool found = false;
+
+            for (ClassDefNode* classNode : visitedClasses)
+            {
+                if (classNode == classDef)
+                {
+                    found = true;
+                    break;
+                }
+            }
+
+            if (!found)
+            { 
+                visitedClasses.push_front(classDef);
+                stack.push_front(classDef);
+            }
+        }
+    }
+
+    return nullptr;
+}
 
 // SymbolTableDisplayManager //////////////////////////////////////////////////////////////
 std::string SymbolTableDisplayManager::TableToStr(SymbolTable* table, size_t depth)

@@ -4,6 +4,8 @@ Program
 |  |  |  id
 |  |  |  |  A
 |  |  |  InheritanceList
+|  |  |  |  id
+|  |  |  |  |  B
 |  |  |  MemVar
 |  |  |  |  Visibility
 |  |  |  |  |  default
@@ -16,7 +18,7 @@ Program
 |  |  |  |  Visibility
 |  |  |  |  |  default
 |  |  |  |  id
-|  |  |  |  |  f
+|  |  |  |  |  g
 |  |  |  |  FParamList
 |  |  |  |  TypeNode
 |  |  |  |  |  void
@@ -26,26 +28,18 @@ Program
 |  |  |  InheritanceList
 |  |  |  |  id
 |  |  |  |  |  A
-|  |  |  MemVar
-|  |  |  |  Visibility
-|  |  |  |  |  default
+|  |  ClassDef
+|  |  |  id
+|  |  |  |  C
+|  |  |  InheritanceList
 |  |  |  |  id
-|  |  |  |  |  x
-|  |  |  |  TypeNode
-|  |  |  |  |  float
-|  |  |  |  Dimensions
+|  |  |  |  |  B
 |  |  |  MemFuncDecl
 |  |  |  |  Visibility
 |  |  |  |  |  default
 |  |  |  |  id
 |  |  |  |  |  f
 |  |  |  |  FParamList
-|  |  |  |  |  FParam
-|  |  |  |  |  |  id
-|  |  |  |  |  |  |  x
-|  |  |  |  |  |  TypeNode
-|  |  |  |  |  |  |  integer
-|  |  |  |  |  |  Dimensions
 |  |  |  |  TypeNode
 |  |  |  |  |  void
 |  FuncDefList
@@ -53,23 +47,36 @@ Program
 |  |  |  id
 |  |  |  |  A
 |  |  |  id
-|  |  |  |  f
+|  |  |  |  g
 |  |  |  TypeNode
 |  |  |  |  void
 |  |  |  FParamList
 |  |  |  StatBlock
 |  |  MemFuncDef
 |  |  |  id
-|  |  |  |  B
+|  |  |  |  C
 |  |  |  id
 |  |  |  |  f
 |  |  |  TypeNode
 |  |  |  |  void
 |  |  |  FParamList
-|  |  |  |  FParam
-|  |  |  |  |  id
-|  |  |  |  |  |  x
-|  |  |  |  |  TypeNode
-|  |  |  |  |  |  integer
-|  |  |  |  |  Dimensions
 |  |  |  StatBlock
+|  |  |  |  AssigStat
+|  |  |  |  |  Variable
+|  |  |  |  |  |  id
+|  |  |  |  |  |  |  x
+|  |  |  |  |  |  Dimensions
+|  |  |  |  |  Expr
+|  |  |  |  |  |  Literal
+|  |  |  |  |  |  |  3
+|  |  |  |  |  |  |  TypeNode
+|  |  |  |  |  |  |  |  integer
+|  |  |  |  FuncCall
+|  |  |  |  |  id
+|  |  |  |  |  |  g
+|  |  |  |  |  AParams
+|  |  |  |  |  |  Expr
+|  |  |  |  |  |  |  Variable
+|  |  |  |  |  |  |  |  id
+|  |  |  |  |  |  |  |  |  x
+|  |  |  |  |  |  |  |  Dimensions

@@ -793,7 +793,7 @@ void SemanticChecker::Visit(InheritanceListNode* element)
         {
             param = ((MemFuncTableEntry*)entry)->GetParamTypes();
         }
-        
+
         SymbolTableEntry* overshadowedEntry 
             = FindEntryInInheritanceTree(m_globalTable, table, entry->GetName(), 
                 entry->GetKind(), param);
@@ -803,6 +803,65 @@ void SemanticChecker::Visit(InheritanceListNode* element)
             SemanticErrorManager::AddWarning(new OverShadowedMemWarn(
                 ((ClassDefNode*)element->GetParent())->GetID()->GetID(), 
                 GetIDFromEntry(entry)->GetID()));
+        }
+    }
+}
+
+void SemanticChecker::Visit(ClassDefNode* element)
+{
+    std::list<ClassDefNode*> visited;
+    std::list<ClassDefNode*> stack;
+    
+    {
+        InheritanceListNode* inheritanceList = element->GetInheritanceList();
+        for (ASTNode* baseNode : inheritanceList->GetChildren())
+        {
+            IDNode* id = (IDNode*) baseNode;
+            SymbolTableEntry* entry = m_globalTable->FindEntryInTable(id->GetID().GetLexeme());
+            ASSERT(entry != nullptr);
+            
+            visited.push_front((ClassDefNode*)entry->GetNode());
+            stack.push_front((ClassDefNode*)entry->GetNode());
+        }
+    }
+
+    while (stack.size() > 0)
+    {
+        ClassDefNode* currClass = stack.front();
+        stack.pop_front();
+
+        if (currClass == element)
+        {
+            SemanticErrorManager::AddError(new CircularClassDependencyError(element->
+                GetID()->GetID()));
+            break;
+        }
+
+        // push on stack inherited classes
+        InheritanceListNode* inheritanceList = currClass->GetInheritanceList();
+        for (ASTNode* baseNode : inheritanceList->GetChildren())
+        {
+            IDNode* id = (IDNode*) baseNode;
+            SymbolTableEntry* entry = m_globalTable->FindEntryInTable(id->GetID().GetLexeme());
+            ASSERT(entry != nullptr);
+            
+            bool found = false;
+
+            ClassDefNode* classDef = (ClassDefNode*)entry->GetNode();
+            for (ClassDefNode* def : visited)
+            {
+                if (def == classDef)
+                {
+                    found = true;
+                    break;
+                }
+            }
+
+            if (!found)
+            {
+                visited.push_front(classDef);
+                stack.push_front(classDef);
+            }
         }
     }
 }
