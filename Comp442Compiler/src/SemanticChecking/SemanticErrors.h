@@ -4,6 +4,10 @@
 #include <string>
 #include <list>
 
+class BaseBinaryOperator;
+class AssignStatNode;
+class FuncCallNode;
+
 // Codes ////////////////////////////////////////////////////////////////////////
 enum class SemanticErrorCode
 {
@@ -14,6 +18,9 @@ enum class SemanticErrorCode
     MemFuncDefNotFound,
     ConstructorDefNotFound,
     CircularClassDependency,
+    InvalidOperandForOperator,
+    InvalidTypeMatchupForAssign,
+    IncorrectParametersProvidedToFreeFuncCall,
 };
 
 enum class SemanticWarningCode
@@ -174,6 +181,36 @@ class CircularClassDependencyError : public TokenBasedError
 public:
     CircularClassDependencyError(const Token& classID);
     virtual std::string GetMessage() const override;
+};
+
+class InvalidOperandForOperatorError : public SemanticError
+{
+public:
+    InvalidOperandForOperatorError(BaseBinaryOperator* operatorNode);
+    virtual std::string GetMessage() const override;
+
+private:
+    BaseBinaryOperator* m_node;
+};
+
+class InvalidTypeMatchupForAssignError : public SemanticError
+{
+public:
+    InvalidTypeMatchupForAssignError(AssignStatNode* assignNode);
+    virtual std::string GetMessage() const override;
+
+private:
+    AssignStatNode* m_node;
+};
+
+class IncorrectParametersProvidedToFreeFuncCallError : public SemanticError
+{
+public:
+    IncorrectParametersProvidedToFreeFuncCallError(FuncCallNode* funcCall);
+    virtual std::string GetMessage() const override;
+
+private:
+    FuncCallNode* m_node;
 };
 
 class SemanticErrorManager

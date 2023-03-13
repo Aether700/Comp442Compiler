@@ -42,6 +42,7 @@ public:
     virtual ~SymbolTableEntry();
 
     const std::string& GetName() const;
+    virtual std::string GetEvaluatedType() const;
     SymbolTableEntryKind GetKind() const;
     SymbolTable* GetParentTable();
     virtual ASTNode* GetNode() = 0;
@@ -66,6 +67,7 @@ public:
         SymbolTableEntryKind kind);
 
     const std::string& GetType() const;
+    virtual std::string GetEvaluatedType() const;
     virtual SymbolTable* GetSubTable() override;
     virtual ASTNode* GetNode() override;
     
@@ -85,6 +87,7 @@ public:
 
     const std::string& GetReturnType() const;
     const std::string& GetParamTypes() const;
+    virtual std::string GetEvaluatedType() const;
 
     virtual SymbolTable* GetSubTable() override;
     virtual ASTNode* GetNode() override;
@@ -102,7 +105,9 @@ public:
     ClassTableEntry(ClassDefNode* node, SymbolTable* subTable);
     ~ClassTableEntry();
 
+    virtual std::string GetEvaluatedType() const;
     virtual SymbolTable* GetSubTable() override;
+    
     virtual ASTNode* GetNode() override;
     
     virtual std::string ToString() override;
@@ -152,6 +157,7 @@ public:
     const std::string& GetVisibility() const;
     const std::string& GetReturnType() const;
     const std::string& GetParamTypes() const;
+    virtual std::string GetEvaluatedType() const;
 
     void SetDefinition(MemFuncDefEntry* defEntry);
 
@@ -202,6 +208,7 @@ public:
     const std::string& GetVisibility() const;
     const std::string& GetReturnType() const;
     const std::string& GetParamTypes() const;
+    virtual std::string GetEvaluatedType() const;
 
     void SetDefinition(ConstructorDefEntry* defEntry);
 

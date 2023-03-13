@@ -1,7 +1,27 @@
 #include "SemanticErrors.h"
+#include "../Parser/AST.h"
 
 #include <sstream>
 #include <fstream>
+
+// Helpers ///////////////////////////////////////////////////////////////////
+std::string AParamToTypeList(AParamListNode* param)
+{
+    std::stringstream ss;
+    bool hasParam = false;
+    for (ASTNode* node : param->GetChildren())
+    {
+        ss << node->GetEvaluatedType() << ", ";
+        hasParam = true;
+    }
+
+    if (hasParam)
+    {
+        std::string temp = ss.str();
+        ss.str(temp.substr(0, temp.length() - 2));
+    }
+    return ss.str();
+}
 
 // SemanticWarning ///////////////////////////////////////////////////////////
 SemanticWarning::SemanticWarning(SemanticWarningCode code) : m_warningCode(code) { }
@@ -213,6 +233,105 @@ std::string CircularClassDependencyError::GetMessage() const
         << ": " << GetToken().GetStrOfLine();
 
     return ss.str(); 
+}
+
+// InvalidOperandForOperatorError ///////////////////////////////////////////////////////
+InvalidOperandForOperatorError::InvalidOperandForOperatorError(
+    BaseBinaryOperator* operatorNode) 
+    : SemanticError(SemanticErrorCode::InvalidOperandForOperator), 
+    m_node(operatorNode) { }
+
+std::string InvalidOperandForOperatorError::GetMessage() const
+{
+    std::string typeLeft = m_node->GetLeft()->GetEvaluatedType();
+    std::string typeRight = m_node->GetRight()->GetEvaluatedType();
+
+    if (typeLeft == ASTNode::InvalidType)
+    {
+        typeLeft = "Unknown Type";
+    }
+
+    if (typeRight == ASTNode::InvalidType)
+    {
+        typeRight = "Unknown Type";
+    }
+
+    const Token& op = m_node->GetOperator()->GetOperator();
+
+    std::stringstream ss;
+    ss << "The operator \"" 
+        << op.GetLexeme() 
+        << "\" is undefined for operands of type \"" << typeLeft << "\" and \"" << typeRight 
+        << "\". At Line " << op.GetLine() << ": \"" << op.GetStrOfLine() 
+        << "\"";
+
+    return ss.str(); 
+}
+
+// InvalidTypeMatchupForAssignError ////////////////////////////////////////////////
+InvalidTypeMatchupForAssignError::InvalidTypeMatchupForAssignError(
+    AssignStatNode* assignNode) 
+    : SemanticError(SemanticErrorCode::InvalidTypeMatchupForAssign), 
+    m_node(assignNode) { }
+
+std::string InvalidTypeMatchupForAssignError::GetMessage() const
+{
+    std::string typeLeft = m_node->GetLeft()->GetEvaluatedType();
+    std::string typeRight = m_node->GetRight()->GetEvaluatedType();
+
+    if (typeLeft == ASTNode::InvalidType)
+    {
+        typeLeft = "Unknown Type";
+    }
+
+    if (typeRight == ASTNode::InvalidType)
+    {
+        typeRight = "Unknown Type";
+    }
+
+    const Token& t = m_node->GetFirstToken();
+
+    std::stringstream ss;
+    ss << "Cannot assign an expression of type \"" 
+        << typeRight 
+        << "\" to a variable of type \"" << typeLeft << "\". At Line " 
+        << t.GetLine() << ": \"" << t.GetStrOfLine() 
+        << "\"";
+
+    return ss.str();
+}
+
+// IncorrectParametersProvidedToFreeFuncCallError /////////////////////////////////
+IncorrectParametersProvidedToFreeFuncCallError
+    ::IncorrectParametersProvidedToFreeFuncCallError(FuncCallNode* funcCall) 
+    : SemanticError(SemanticErrorCode::IncorrectParametersProvidedToFreeFuncCall), 
+    m_node(funcCall) { }
+
+std::string IncorrectParametersProvidedToFreeFuncCallError::GetMessage() const
+{
+    const Token& t = m_node->GetFirstToken();
+
+    std::string paramStr = AParamToTypeList(m_node->GetParameters());
+
+    std::stringstream ss;
+    ss << "Incorrect parameters provided when calling function \"" 
+        << t.GetLexeme() 
+        << "\".";
+
+    if (paramStr == "")
+    {
+        ss << " No arguments were provided as arguments but no function \"" 
+            << t.GetLexeme() << "\" with no arguments is defined.";
+    }
+    else
+    {
+        ss << " Provided \"(" << paramStr << ")\" as arguments but no function \"" 
+            << t.GetLexeme() << "\" with such arguments is defined.";
+    }
+
+    ss << " At Line " << t.GetLine() << ": \"" << t.GetStrOfLine() << "\"";
+
+    return ss.str();
 }
 
 // SemanticErrorManager ////////////////////////////////////////////////////////

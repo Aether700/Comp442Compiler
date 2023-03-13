@@ -12,17 +12,21 @@ std::string VarDeclToTypeStr(VarDeclNode* var)
     ASSERT(var != nullptr);
     std::stringstream ss;
     ss << var->GetType()->GetType().GetLexeme();
-    for (ASTNode* dimension : *var->GetDimension())
+
+    if (var->GetDimension() != nullptr)
     {
-        LiteralNode* literal = dynamic_cast<LiteralNode*>(dimension);
-        if (literal != nullptr)
+        for (ASTNode* dimension : *var->GetDimension())
         {
-            ss << "[" << literal->GetLexemeNode()->GetID().GetLexeme() << "]";
-        }   
-        else 
-        {
-            ASSERT(dynamic_cast<UnspecificedDimensionNode*>(dimension) != nullptr);
-            ss << "[]";
+            LiteralNode* literal = dynamic_cast<LiteralNode*>(dimension);
+            if (literal != nullptr)
+            {
+                ss << "[" << literal->GetLexemeNode()->GetID().GetLexeme() << "]";
+            }   
+            else 
+            {
+                ASSERT(dynamic_cast<UnspecificedDimensionNode*>(dimension) != nullptr);
+                ss << "[]";
+            }
         }
     }
     return ss.str();
@@ -676,6 +680,117 @@ void SemanticChecker::Visit(IDNode* element)
     }
 }
 
+void SemanticChecker::Visit(DotNode* element)
+{
+
+    std::string leftType = element->GetLeft()->GetEvaluatedType();
+
+    //check left side
+    
+    // temp
+    auto t = element->GetSymbolTable();
+    auto l = element->GetLeft()->ToString();
+    //
+
+    current implementation assumes all variables are in function but 
+    need to be based off of left side when is the case
+
+    SymbolTableEntry* entry = m_globalTable->FindEntryInTable(leftType);
+    if (entry == nullptr || entry->GetKind() != SymbolTableEntryKind::Class)
+    {
+        DEBUG_BREAK(); // add error here
+        return;
+    }
+
+    SymbolTable* classTable = entry->GetNode()->GetSymbolTable();
+
+    // check right side
+    ASTNode* currRight = element->GetRight();
+
+    if (dynamic_cast<DotNode*>(currRight) != nullptr)
+    {
+        ASTNode* currNode = currRight;
+        while (dynamic_cast<DotNode*>(currNode) != nullptr)
+        {
+            DotNode* currDot = (DotNode*)currNode;
+            currNode = currDot->GetLeft();
+        }
+
+        currRight = currNode;
+    }
+
+    if (dynamic_cast<VariableNode*>(currRight) != nullptr)
+    {
+        VariableNode* var = (VariableNode*)currRight;
+        SymbolTableEntry* varEntry = classTable->FindEntryInScope(var->
+            GetVariable()->GetID().GetLexeme());
+
+        if (varEntry == nullptr || varEntry->GetKind() != SymbolTableEntryKind::MemVar)
+        {
+            DEBUG_BREAK(); // error here
+        }
+    }
+    else if (dynamic_cast<FuncCallNode*>(currRight) != nullptr)
+    {
+        FuncCallNode* funcCall = (FuncCallNode*)currRight;
+        SymbolTableEntry* funcEntry = classTable->FindEntryInScope(funcCall->
+            GetID()->GetID().GetLexeme());
+
+        if (funcEntry == nullptr || funcEntry->GetKind() != SymbolTableEntryKind::MemFuncDecl)
+        {
+            DEBUG_BREAK(); // error here
+        }
+    }
+    else
+    {
+        DEBUG_BREAK(); // error here
+    }
+}
+
+void SemanticChecker::Visit(BaseBinaryOperator* element)
+{
+    if (element->GetEvaluatedType() == ASTNode::InvalidType)
+    {
+        SemanticErrorManager::AddError(new InvalidOperandForOperatorError(element));
+    }
+}
+
+void SemanticChecker::Visit(AssignStatNode* element)
+{
+    if (element->GetLeft()->GetEvaluatedType() != element->GetRight()->GetEvaluatedType())
+    {
+        SemanticErrorManager::AddError(new InvalidTypeMatchupForAssignError(element));
+    } 
+}
+
+void SemanticChecker::Visit(FuncCallNode* element)
+{
+    const std::string& funcName = element->GetID()->GetID().GetLexeme();
+
+    // for free functions
+    bool found = false;
+    for (SymbolTableEntry* entry : *m_globalTable)
+    {
+        if (entry->GetKind() == SymbolTableEntryKind::FreeFunction 
+            && entry->GetName() == funcName)
+        {
+            FParamListNode* fparams = ((FunctionDefNode*)((FreeFuncTableEntry*)entry)->
+                GetNode())->GetParameters();
+            if (HasMatchingParameters(fparams, element->GetParameters()))
+            {
+                found = true;
+                break;
+            }
+        }
+    }
+
+    if (!found)
+    {
+        SemanticErrorManager::AddError(
+            new IncorrectParametersProvidedToFreeFuncCallError(element));
+    }
+}
+
 void SemanticChecker::Visit(FunctionDefNode* element)
 {
     const std::string& funcName = element->GetID()->GetID().GetLexeme();
@@ -877,4 +992,25 @@ bool SemanticChecker::HasFoundOverLoadedFunc(const std::list<std::string>& funcL
         }
     }
     return false;
+}
+
+bool SemanticChecker::HasMatchingParameters(FParamListNode* fparam, AParamListNode* aparam)
+{
+    if (fparam->GetNumChild() != aparam->GetNumChild())
+    {
+        return false;
+    }
+
+    auto it = aparam->GetChildren().begin();
+    for (ASTNode* f : fparam->GetChildren())
+    {
+        FParamNode* currParam = (FParamNode*)f;
+        if (currParam->GetEvaluatedType() != (*it)->GetEvaluatedType())
+        {
+            return false;
+        }
+        it++;
+    }
+
+    return true;
 }

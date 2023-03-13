@@ -13,7 +13,7 @@ void WriteIndentToStream(std::stringstream& ss, size_t indent)
 // ASTNode //////////////////////////////////////////////////
 ASTNode::~ASTNode() { }
 
-std::string ASTNode::GetEvaluatedType() { return s_invalidType; }
+std::string ASTNode::GetEvaluatedType() { return InvalidType; }
 
 SymbolTable* ASTNode::GetSymbolTable()
 {
@@ -35,6 +35,11 @@ ASTNodeBase::~ASTNodeBase()
 ASTNode* ASTNodeBase::GetParent() { return m_parent; }
 const ASTNode* ASTNodeBase::GetParent() const { return m_parent; }
 void ASTNodeBase::SetParent(ASTNode* parent) { m_parent = parent; }
+
+Token ASTNodeBase::GetFirstToken() const 
+{ 
+    return m_children.front()->GetFirstToken(); 
+}
 
 size_t ASTNodeBase::GetNumChild() const { return m_children.size(); }
 
@@ -95,6 +100,13 @@ void EmptyNodeBase::SetParent(ASTNode* parent) { }
 size_t EmptyNodeBase::GetNumChild() const { return 0; }
 std::string EmptyNodeBase::ToString(size_t indent) { return ""; };
 
+Token EmptyNodeBase::GetFirstToken() const
+{
+    //this function should never be called
+    DEBUG_BREAK();
+    return Token();
+}
+
 void EmptyNodeBase::AcceptVisit(Visitor* visitor) 
 {
     //this function should never be called
@@ -102,6 +114,13 @@ void EmptyNodeBase::AcceptVisit(Visitor* visitor)
 }
 
 // UnspecificedDimensionNode //////////////////////////////////////////
+Token UnspecificedDimensionNode::GetFirstToken() const
+{
+    //this function should never be called
+    DEBUG_BREAK();
+    return Token();
+}
+
 std::string UnspecificedDimensionNode::ToString(size_t indent)
 {
     std::stringstream ss;
@@ -117,6 +136,18 @@ void UnspecificedDimensionNode::AcceptVisit(Visitor* visitor) { visitor->Visit(t
 IDNode::IDNode(const Token& id) : m_id(id) { }
 
 const Token& IDNode::GetID() const { return m_id; }
+
+std::string IDNode::GetEvaluatedType()
+{
+    SymbolTableEntry* entry = GetSymbolTable()->FindEntryInScope(GetID().GetLexeme());
+    if (entry == nullptr)
+    {
+        return InvalidType;
+    }
+    return entry->GetEvaluatedType();
+}
+
+Token IDNode::GetFirstToken() const { return m_id; }
 
 std::string IDNode::ToString(size_t indent)
 {
@@ -136,6 +167,13 @@ TypeNode::TypeNode(const Token& type) : m_type(type) { }
 
 const Token& TypeNode::GetType() const { return m_type; }
 
+std::string TypeNode::GetEvaluatedType() 
+{
+    return GetType().GetLexeme();
+}
+
+Token TypeNode::GetFirstToken() const { return GetType(); }
+
 std::string TypeNode::ToString(size_t indent)
 {
     std::stringstream ss;
@@ -152,6 +190,8 @@ void TypeNode::AcceptVisit(Visitor* visitor) { visitor->Visit(this); }
 // OperatorNode ////////////////////////////////////////
 OperatorNode::OperatorNode(const Token& op) : m_operator(op) { }
 const Token& OperatorNode::GetOperator() const { return m_operator; }
+
+Token OperatorNode::GetFirstToken() const { return m_operator; }
 
 std::string OperatorNode::ToString(size_t indent)
 {
@@ -179,12 +219,13 @@ ASTNode* BaseBinaryOperator::GetRight() { return GetChild(2); }
 std::string BaseBinaryOperator::GetEvaluatedType()
 {
     std::string leftEvalType = GetLeft()->GetEvaluatedType();
-    if (leftEvalType == GetRight()->GetEvaluatedType())
+    if (leftEvalType == GetRight()->GetEvaluatedType() 
+        && (leftEvalType == "integer" || leftEvalType == "float"))
     {
         return leftEvalType;
     }
 
-    return s_invalidType;
+    return InvalidType;
 }
 
 std::string BaseBinaryOperator::ToString(size_t indent)
@@ -222,6 +263,15 @@ void MultOpNode::AcceptVisit(Visitor* visitor)
 RelOpNode::RelOpNode(ASTNode* left, OperatorNode* op, ASTNode* right) 
     : BaseBinaryOperator("RelOp", left, op, right) { }
 
+std::string RelOpNode::GetEvaluatedType()
+{
+    if (GetLeft()->GetEvaluatedType() == GetRight()->GetEvaluatedType())
+    {
+        return "boolean";
+    }
+    return InvalidType;
+}
+
 void RelOpNode::AcceptVisit(Visitor* visitor) 
 {
     ChildrenAcceptVisit(visitor); 
@@ -238,6 +288,8 @@ LiteralNode::LiteralNode(IDNode* lexeme, TypeNode* type)
 IDNode* LiteralNode::GetLexemeNode() { return (IDNode*)GetChild(0); }
 
 TypeNode* LiteralNode::GetType() { return (TypeNode*)GetChild(1); }
+
+std::string LiteralNode::GetEvaluatedType() { return GetType()->GetEvaluatedType(); }
 
 std::string LiteralNode::ToString(size_t indent)
 {
@@ -341,6 +393,11 @@ ASTNode* DotNode::GetLeft() { return GetChild(0); }
 
 ASTNode* DotNode::GetRight() { return GetChild(1); }
 
+std::string DotNode::GetEvaluatedType() 
+{
+    return GetRight()->GetEvaluatedType();
+}
+
 std::string DotNode::ToString(size_t indent)
 {
     std::stringstream ss;
@@ -361,7 +418,7 @@ void DotNode::AcceptVisit(Visitor* visitor)
 // ExprNode ////////////////////////////////////////
 ExprNode::ExprNode(ASTNode* exprRoot) { AddChild(exprRoot); }
 
-ExprNode::ExprNode() { }
+std::string ExprNode::GetEvaluatedType() { return GetChild(0)->GetEvaluatedType(); }
 
 std::string ExprNode::ToString(size_t indent)
 {
@@ -378,10 +435,14 @@ void ExprNode::AcceptVisit(Visitor* visitor)
     visitor->Visit(this); 
 }
 
+ExprNode::ExprNode() { }
+
 // SignNode ////////////////////////////////////////////
 SignNode::SignNode(const Token& sign) : m_sign(sign) { }
 
 const Token& SignNode::GetSign() { return m_sign; }
+
+Token SignNode::GetFirstToken() const { return m_sign; }
 
 std::string SignNode::ToString(size_t indent)
 {
@@ -397,6 +458,9 @@ std::string SignNode::ToString(size_t indent)
 void SignNode::AcceptVisit(Visitor* visitor) { visitor->Visit(this); }
 
 // NotNode ///////////////////////////////////////////////////////
+NotNode::NotNode(const Token& t) : m_notToken(t) { }
+Token NotNode::GetFirstToken() const { return m_notToken; }
+
 std::string NotNode::ToString(size_t indent)
 {
     std::stringstream ss;
@@ -466,8 +530,10 @@ VariableNode::VariableNode(IDNode* var, DimensionNode* dimension)
     AddChild(dimension);
 }
 
-ASTNode* VariableNode::GetVariable() { return GetChild(0); }
+IDNode* VariableNode::GetVariable() { return (IDNode*)GetChild(0); }
 DimensionNode* VariableNode::GetDimension() { return (DimensionNode*)GetChild(1); }
+
+std::string VariableNode::GetEvaluatedType() { return GetVariable()->GetEvaluatedType(); }
 
 std::string VariableNode::ToString(size_t indent)
 {
@@ -615,6 +681,11 @@ void AParamListNode::AddLoopingChild(ASTNode* param)
     AddChildFirst(param);
 }
 
+const std::list<ASTNode*>& AParamListNode::GetChildren() const 
+{ 
+    return ASTNodeBase::GetChildren(); 
+}
+
 std::string AParamListNode::ToString(size_t indent)
 {
     std::stringstream ss;
@@ -685,6 +756,8 @@ void StatBlockNode::AcceptVisit(Visitor* visitor)
 FParamNode::FParamNode(IDNode* id, TypeNode* type, DimensionNode* dimension)
     : VarDeclNode(id, type, dimension) { }
 
+std::string FParamNode::GetEvaluatedType()  { return GetID()->GetEvaluatedType(); }
+
 std::string FParamNode::ToString(size_t indent)
 {
     std::stringstream ss;
@@ -707,6 +780,11 @@ void FParamNode::AcceptVisit(Visitor* visitor)
 void FParamListNode::AddLoopingChild(ASTNode* param)
 {
     AddChildFirst(param);
+}
+
+const std::list<ASTNode*>& FParamListNode::GetChildren() const
+{
+    return ASTNodeBase::GetChildren();
 }
 
 std::string FParamListNode::ToString(size_t indent)
@@ -769,6 +847,13 @@ void FunctionDefNode::AcceptVisit(Visitor* visitor)
 VisibilityNode::VisibilityNode(const std::string& visibility) : m_visibility(visibility) { }
 
 const std::string& VisibilityNode::GetVisibility() const { return m_visibility; }
+
+Token VisibilityNode::GetFirstToken() const
+{
+    // should never be called
+    DEBUG_BREAK();
+    return Token();
+}
 
 std::string VisibilityNode::ToString(size_t indent)
 {

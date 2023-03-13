@@ -21,6 +21,7 @@ public:
     virtual ASTNode* GetParent() = 0;
     virtual const ASTNode* GetParent() const = 0;
     virtual void SetParent(ASTNode* parent) = 0;
+    virtual Token GetFirstToken() const = 0;
 
     virtual size_t GetNumChild() const = 0;
 
@@ -29,8 +30,7 @@ public:
 
     virtual std::string ToString(size_t indent = 0) = 0;
 
-protected:
-    static constexpr const char* s_invalidType = "";
+    static constexpr const char* InvalidType = "";
 };
 
 class ASTNodeBase : public ASTNode
@@ -42,6 +42,8 @@ public:
     virtual ASTNode* GetParent() override;
     virtual const ASTNode* GetParent() const override;
     virtual void SetParent(ASTNode* parent) override;
+
+    virtual Token GetFirstToken() const override;
 
     virtual size_t GetNumChild() const override;
 
@@ -93,6 +95,7 @@ public:
     virtual size_t GetNumChild() const override;
 
     virtual std::string ToString(size_t indent = 0) override;
+    virtual Token GetFirstToken() const override;
 
     virtual void AcceptVisit(Visitor* visitor) override;
 };
@@ -109,6 +112,7 @@ class ConstructorMarkerNode : public EmptyNodeBase { };
 class UnspecificedDimensionNode : public LeafNode 
 { 
 public:
+    virtual Token GetFirstToken() const override;
     virtual std::string ToString(size_t indent = 0) override;
     virtual void AcceptVisit(Visitor* visitor) override;
 };
@@ -119,6 +123,8 @@ public:
     IDNode(const Token& id);
 
     const Token& GetID() const;
+    virtual std::string GetEvaluatedType() override;
+    virtual Token GetFirstToken() const override;
 
     virtual std::string ToString(size_t indent = 0) override;
     virtual void AcceptVisit(Visitor* visitor) override;
@@ -133,6 +139,9 @@ public:
 
     const Token& GetType() const;
 
+    virtual std::string GetEvaluatedType() override; 
+    virtual Token GetFirstToken() const override;
+
     virtual std::string ToString(size_t indent = 0) override;
     virtual void AcceptVisit(Visitor* visitor) override;
 private:
@@ -144,6 +153,7 @@ class OperatorNode : public LeafNode
 public:
     OperatorNode(const Token& op);
     const Token& GetOperator() const;
+    virtual Token GetFirstToken() const override;
 
     virtual std::string ToString(size_t indent = 0) override;
     virtual void AcceptVisit(Visitor* visitor) override;
@@ -182,7 +192,6 @@ class MultOpNode : public BaseBinaryOperator
 public:
     MultOpNode(ASTNode* left, OperatorNode* op, ASTNode* right);
 
-    virtual std::string GetEvaluatedType() override;
     virtual void AcceptVisit(Visitor* visitor) override;
 };
 
@@ -191,6 +200,7 @@ class RelOpNode : public BaseBinaryOperator
 public:
     RelOpNode(ASTNode* left, OperatorNode* op, ASTNode* right);
 
+    virtual std::string GetEvaluatedType() override;
     virtual void AcceptVisit(Visitor* visitor) override;
 };
 
@@ -201,9 +211,7 @@ public:
 
     IDNode* GetLexemeNode();
     TypeNode* GetType();
-
-    not finished keep adding 
-    "virtual std::string GetEvaluatedType() override;" function to different node classes
+    virtual std::string GetEvaluatedType() override;
     virtual std::string ToString(size_t indent = 0) override;
     virtual void AcceptVisit(Visitor* visitor) override;
 };
@@ -239,6 +247,7 @@ public:
 
     ASTNode* GetLeft();
     ASTNode* GetRight();
+    virtual std::string GetEvaluatedType() override;
 
     virtual std::string ToString(size_t indent = 0) override;
     virtual void AcceptVisit(Visitor* visitor) override;
@@ -249,6 +258,7 @@ class ExprNode : public ASTNodeBase
 public:
     ExprNode(ASTNode* exprRoot);
 
+    virtual std::string GetEvaluatedType() override;
     virtual std::string ToString(size_t indent = 0) override;
     virtual void AcceptVisit(Visitor* visitor) override;
 
@@ -265,6 +275,7 @@ public:
     SignNode(const Token& sign);
 
     const Token& GetSign();
+    virtual Token GetFirstToken() const override;
 
     virtual std::string ToString(size_t indent = 0) override;
     virtual void AcceptVisit(Visitor* visitor) override;
@@ -276,8 +287,13 @@ private:
 class NotNode : public LeafNode 
 {
 public:
+    NotNode(const Token& t);
+    virtual Token GetFirstToken() const override;
     virtual std::string ToString(size_t indent = 0) override;
     virtual void AcceptVisit(Visitor* visitor) override;
+
+private:
+    Token m_notToken;
 };
 
 // represents an expression being modified by a modifier such as a sign or the "not" keyword
@@ -316,8 +332,9 @@ class VariableNode : public ASTNodeBase
 public:
     VariableNode(IDNode* var, DimensionNode* dimension);
 
-    ASTNode* GetVariable();    
+    IDNode* GetVariable();    
     DimensionNode* GetDimension();
+    virtual std::string GetEvaluatedType() override;
 
     virtual std::string ToString(size_t indent = 0) override;
     virtual void AcceptVisit(Visitor* visitor) override;
@@ -384,8 +401,10 @@ class AParamListNode : public ASTNodeBase
 public:
     void AddLoopingChild(ASTNode* param);
 
+    const std::list<ASTNode*>& GetChildren() const;
     virtual std::string ToString(size_t indent = 0) override;
     virtual void AcceptVisit(Visitor* visitor) override;
+
 };
 
 class FuncCallNode : public ASTNodeBase
@@ -414,6 +433,7 @@ class FParamNode : public VarDeclNode
 public:
     FParamNode(IDNode* id, TypeNode* type, DimensionNode* dimension);
 
+    virtual std::string GetEvaluatedType() override;
     virtual std::string ToString(size_t indent = 0) override;
     virtual void AcceptVisit(Visitor* visitor) override;
 };
@@ -423,6 +443,7 @@ class FParamListNode : public IterableNode
 public:
     void AddLoopingChild(ASTNode* param);
 
+    const std::list<ASTNode*>& GetChildren() const;
     virtual std::string ToString(size_t indent = 0) override;
     virtual void AcceptVisit(Visitor* visitor) override;
 };
@@ -453,6 +474,7 @@ public:
     VisibilityNode(const std::string& visibility);
 
     const std::string& GetVisibility() const;
+    virtual Token GetFirstToken() const override;
 
     virtual std::string ToString(size_t indent = 0) override;
     virtual void AcceptVisit(Visitor* visitor) override;

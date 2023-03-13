@@ -55,6 +55,12 @@ SymbolTableEntry::SymbolTableEntry(SymbolTableEntryKind kind)
 SymbolTableEntry::~SymbolTableEntry() { }
 
 const std::string& SymbolTableEntry::GetName() const { return m_name; }
+
+std::string SymbolTableEntry::GetEvaluatedType() const
+{
+    return ASTNode::InvalidType;
+}
+
 SymbolTableEntryKind SymbolTableEntry::GetKind() const { return m_kind; }
 SymbolTable* SymbolTableEntry::GetParentTable() { return m_parentTable; }
 void SymbolTableEntry::SetName(const std::string& name) { m_name = name; }
@@ -71,6 +77,8 @@ const std::string& VarSymbolTableEntry::GetType() const
 { 
     return m_typeStr; 
 }
+
+std::string VarSymbolTableEntry::GetEvaluatedType() const { return GetType(); }
 
 SymbolTable* VarSymbolTableEntry::GetSubTable() { return nullptr; }
 
@@ -102,6 +110,8 @@ const std::string& FreeFuncTableEntry::GetReturnType() const
 
 const std::string& FreeFuncTableEntry::GetParamTypes() const { return m_paramTypes; }
 
+std::string FreeFuncTableEntry::GetEvaluatedType() const { return GetReturnType(); }
+
 SymbolTable* FreeFuncTableEntry::GetSubTable() { return m_subTable; }
 
 ASTNode* FreeFuncTableEntry::GetNode() { return m_funcNode; }
@@ -126,6 +136,11 @@ ClassTableEntry::ClassTableEntry(ClassDefNode* node, SymbolTable* subTable)
 ClassTableEntry::~ClassTableEntry()
 {
     delete m_subTable;
+}
+
+std::string ClassTableEntry::GetEvaluatedType() const
+{
+    return m_classNode->GetID()->GetID().GetLexeme();
 }
 
 SymbolTable* ClassTableEntry::GetSubTable() { return m_subTable; }
@@ -255,6 +270,8 @@ const std::string& MemFuncTableEntry::GetParamTypes() const
     return m_parameterTypes;
 }
 
+std::string MemFuncTableEntry::GetEvaluatedType() const { return GetReturnType(); }
+
 void MemFuncTableEntry::SetDefinition(MemFuncDefEntry* defEntry)
 {
     m_definition = defEntry->m_defNode;
@@ -348,6 +365,8 @@ const std::string& ConstructorTableEntry::GetReturnType() const
 }
 
 const std::string& ConstructorTableEntry::GetParamTypes() const { return m_parameterTypes; }
+
+std::string ConstructorTableEntry::GetEvaluatedType() const { return GetReturnType(); }
 
 void ConstructorTableEntry::SetDefinition(ConstructorDefEntry* defEntry)
 {

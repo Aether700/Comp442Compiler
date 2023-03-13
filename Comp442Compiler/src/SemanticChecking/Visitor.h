@@ -6,20 +6,31 @@
 
 class IVisitableElement;
 class IDNode;
+class DotNode;
+class BaseBinaryOperator;
+class AssignStatNode;
 class FParamNode;
+class FParamListNode;
+class AParamListNode;
+class FuncCallNode;
 class MemVarNode;
 class MemFuncDeclNode;
 class MemFuncDefNode;
 class ConstructorDeclNode;
 class ProgramNode;
 
+
 class Visitor
 {
 public:
     virtual void Visit(IVisitableElement* element) { }
     virtual void Visit(IDNode* element) { }
+    virtual void Visit(DotNode* element) { }
+    virtual void Visit(BaseBinaryOperator* element) { }
+    virtual void Visit(AssignStatNode* element) { }
     virtual void Visit(VarDeclNode* element) { }
     virtual void Visit(FParamNode* element) { }
+    virtual void Visit(FuncCallNode* element) { }
     virtual void Visit(FunctionDefNode* element) { }
     virtual void Visit(MemVarNode* element) { }
     virtual void Visit(MemFuncDeclNode* element) { }
@@ -74,6 +85,10 @@ public:
     SemanticChecker(SymbolTable* globalTable);
 
     virtual void Visit(IDNode* element) override;
+    virtual void Visit(DotNode* element) override;
+    virtual void Visit(BaseBinaryOperator* element) override;
+    virtual void Visit(AssignStatNode* element) override;
+    virtual void Visit(FuncCallNode* element) override;
     virtual void Visit(FunctionDefNode* element) override;
     virtual void Visit(MemFuncDefNode* element) override;
     virtual void Visit(ConstructorDefNode* element) override;
@@ -84,6 +99,8 @@ public:
 private:
     bool HasFoundOverLoadedFunc(const std::list<std::string>& funcList, 
         const std::string& name);
+
+    bool HasMatchingParameters(FParamListNode* fparam, AParamListNode* aparam);
 
     SymbolTable* m_globalTable;
     std::list<std::string> m_overloadedFreeFuncFound;

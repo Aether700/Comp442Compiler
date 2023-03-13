@@ -1,4 +1,0 @@
-Warning: The member "x" of the "A" is overshadowing a member from a parent class. At line 3: "attribute x : integer;"
-Warning: The member "g" of the "A" is overshadowing a member from a parent class. At line 4: "function g:()=>void;"
-Error: Circular dependancy in the inheritance tree of class "A" detected. At line 1: class A isa B
-Error: Circular dependancy in the inheritance tree of class "B" detected. At line 9: class B isa A

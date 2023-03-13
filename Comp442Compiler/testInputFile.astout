@@ -4,8 +4,6 @@ Program
 |  |  |  id
 |  |  |  |  A
 |  |  |  InheritanceList
-|  |  |  |  id
-|  |  |  |  |  B
 |  |  |  MemVar
 |  |  |  |  Visibility
 |  |  |  |  |  default
@@ -14,26 +12,14 @@ Program
 |  |  |  |  TypeNode
 |  |  |  |  |  integer
 |  |  |  |  Dimensions
-|  |  |  MemFuncDecl
+|  |  |  MemVar
 |  |  |  |  Visibility
 |  |  |  |  |  default
 |  |  |  |  id
-|  |  |  |  |  g
-|  |  |  |  FParamList
+|  |  |  |  |  y
 |  |  |  |  TypeNode
-|  |  |  |  |  void
-|  |  ClassDef
-|  |  |  id
-|  |  |  |  B
-|  |  |  InheritanceList
-|  |  |  |  id
 |  |  |  |  |  A
-|  |  ClassDef
-|  |  |  id
-|  |  |  |  C
-|  |  |  InheritanceList
-|  |  |  |  id
-|  |  |  |  |  B
+|  |  |  |  Dimensions
 |  |  |  MemFuncDecl
 |  |  |  |  Visibility
 |  |  |  |  |  default
@@ -47,36 +33,41 @@ Program
 |  |  |  id
 |  |  |  |  A
 |  |  |  id
-|  |  |  |  g
-|  |  |  TypeNode
-|  |  |  |  void
-|  |  |  FParamList
-|  |  |  StatBlock
-|  |  MemFuncDef
-|  |  |  id
-|  |  |  |  C
-|  |  |  id
 |  |  |  |  f
 |  |  |  TypeNode
 |  |  |  |  void
 |  |  |  FParamList
 |  |  |  StatBlock
-|  |  |  |  AssigStat
+|  |  FuncDef
+|  |  |  id
+|  |  |  |  main
+|  |  |  TypeNode
+|  |  |  |  void
+|  |  |  FParamList
+|  |  |  StatBlock
+|  |  |  |  VarDecl
+|  |  |  |  |  id
+|  |  |  |  |  |  x
+|  |  |  |  |  TypeNode
+|  |  |  |  |  |  A
+|  |  |  |  |  AParams
+|  |  |  |  VarDecl
+|  |  |  |  |  id
+|  |  |  |  |  |  y
+|  |  |  |  |  TypeNode
+|  |  |  |  |  |  integer
+|  |  |  |  |  Dimensions
+|  |  |  |  Dot
 |  |  |  |  |  Variable
 |  |  |  |  |  |  id
 |  |  |  |  |  |  |  x
 |  |  |  |  |  |  Dimensions
-|  |  |  |  |  Expr
-|  |  |  |  |  |  Literal
-|  |  |  |  |  |  |  3
-|  |  |  |  |  |  |  TypeNode
-|  |  |  |  |  |  |  |  integer
-|  |  |  |  FuncCall
-|  |  |  |  |  id
-|  |  |  |  |  |  g
-|  |  |  |  |  AParams
-|  |  |  |  |  |  Expr
-|  |  |  |  |  |  |  Variable
-|  |  |  |  |  |  |  |  id
-|  |  |  |  |  |  |  |  |  x
-|  |  |  |  |  |  |  |  Dimensions
+|  |  |  |  |  Dot
+|  |  |  |  |  |  Variable
+|  |  |  |  |  |  |  id
+|  |  |  |  |  |  |  |  y
+|  |  |  |  |  |  |  Dimensions
+|  |  |  |  |  |  FuncCall
+|  |  |  |  |  |  |  id
+|  |  |  |  |  |  |  |  func
+|  |  |  |  |  |  |  AParams

@@ -1941,7 +1941,7 @@ void Parser::ProcessSemanticAction(SemanticAction action)
         break;
 
     case SemanticAction::PushNot:
-        Push<NotNode>(); 
+        Push<NotNode>(m_prevToken); 
         break;
 
     case SemanticAction::PushType:

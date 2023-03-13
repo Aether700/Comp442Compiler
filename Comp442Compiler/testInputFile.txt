@@ -1,23 +1,23 @@
-class A isa B
+class A 
 {
     attribute x : integer;
-    function g:()=>void;
-};
-
-function A::g()=>void{}
-
-class B isa A
-{
+    attribute y : A;
     
-};
-
-class C isa B
-{
     function f:()=>void;
 };
 
-function C::f() =>void 
+function A::f()=>void {}
+
+/*
+function freeFunc(x : float) =>void
 {
-    x = 3;
-    g(x);
+    x = 2.5*2.6;
+}
+*/
+
+function main() => void
+{
+    localvar x : A();
+    localvar y : integer;
+    x.y.func();
 }
