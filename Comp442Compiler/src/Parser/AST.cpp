@@ -837,6 +837,9 @@ FParamListNode* MemFuncDeclNode::GetParameters()
     return (FParamListNode*)GetChild(3);
 }
 
+SymbolTable* MemFuncDeclNode::GetSymbolTable() { return m_symbolTable; }
+void MemFuncDeclNode::SetSymbolTable(SymbolTable* table) { m_symbolTable = table; }
+
 std::string MemFuncDeclNode::ToString(size_t indent)
 {
     std::stringstream ss;
@@ -866,6 +869,9 @@ MemFuncDefNode::MemFuncDefNode(IDNode* classID, IDNode* id, TypeNode* returnType
 
 IDNode* MemFuncDefNode::GetClassID() { return (IDNode*)GetChild(4); }
 
+SymbolTable* MemFuncDefNode::GetSymbolTable() { return m_symbolTable; }
+void MemFuncDefNode::SetSymbolTable(SymbolTable* table) { m_symbolTable = table; }
+
 std::string MemFuncDefNode::ToString(size_t indent)
 {
     std::stringstream ss;
@@ -887,7 +893,8 @@ void MemFuncDefNode::AcceptVisit(Visitor* visitor)
 }
 
 // ConstructorDeclNode ////////////////////////////////////////////////////
-ConstructorDeclNode::ConstructorDeclNode(VisibilityNode* visibility, FParamListNode* params) 
+ConstructorDeclNode::ConstructorDeclNode(VisibilityNode* visibility, FParamListNode* params, 
+    const Token& token) : m_constructorToken(token) 
 {
     AddChild(visibility); 
     AddChild(params);
@@ -895,6 +902,10 @@ ConstructorDeclNode::ConstructorDeclNode(VisibilityNode* visibility, FParamListN
 
 VisibilityNode* ConstructorDeclNode::GetVisibility() { return (VisibilityNode*)GetChild(0); }
 FParamListNode* ConstructorDeclNode::GetParameters() { return (FParamListNode*)GetChild(1); }
+const Token& ConstructorDeclNode::GetToken() const { return m_constructorToken; }
+
+SymbolTable* ConstructorDeclNode::GetSymbolTable() { return m_symbolTable; }
+void ConstructorDeclNode::SetSymbolTable(SymbolTable* table) { m_symbolTable = table; }
 
 std::string ConstructorDeclNode::ToString(size_t indent)
 {

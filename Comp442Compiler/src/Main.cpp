@@ -8,6 +8,16 @@
 #include <sstream>
 #include <filesystem>
 
+/*
+To Do
+- issue error for circular dependancy
+- allow child class to use member from parent class (currently not the case) 
+- type check operators and expressions
+- type check parameters passed to function calls
+- need checks for main (should be exactly 1 main func)
+- issue warnings if the main has parameters
+*/
+
 void ExitPrompt()
 {
 	std::cout << "\nPress enter to exit\n";
@@ -25,6 +35,7 @@ void Compile(const std::string& filepath)
 	}
 
 	SemanticErrorManager::Clear();
+	SemanticErrorManager::SetFilePath(SimplifyFilename(filepath) + ".outsemanticerrors");
 
 	// semantic checking
 	SymbolTableAssembler* assembler = new SymbolTableAssembler();
@@ -32,7 +43,7 @@ void Compile(const std::string& filepath)
 
 	if (SemanticErrorManager::HasError())
 	{
-		SemanticErrorManager::LogErrors();
+		SemanticErrorManager::LogData();
 		return;
 	}
 
@@ -45,12 +56,8 @@ void Compile(const std::string& filepath)
 
 	SemanticChecker* checker = new SemanticChecker(assembler->GetGlobalSymbolTable());
 	program->AcceptVisit(checker);
-	
-	if (SemanticErrorManager::HasError())
-	{
-		SemanticErrorManager::LogErrors();
-		return;
-	}
+
+	SemanticErrorManager::LogData();
 
 	delete checker;
 	delete assembler;

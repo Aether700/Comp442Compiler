@@ -62,9 +62,7 @@ private:
     // return true if a match was found, false otherwise
     bool TryMatchMemFuncDeclAndDef(MemFuncDefEntry* def);
     bool TryMatchMemFuncDeclAndDef(ConstructorDefEntry* def);
-
-    // returns the idnode of the node provided or the nullptr if there is no such node
-    IDNode* GetIDFromEntry(SymbolTableEntry* entry);
+    void CheckForDeclWithoutDef(ClassTableEntry* classEntry);
 
     SymbolTable* m_globalScopeTable;
     std::list<SymbolTableEntry*> m_workingList;
@@ -76,8 +74,17 @@ public:
     SemanticChecker(SymbolTable* globalTable);
 
     virtual void Visit(IDNode* element) override;
+    virtual void Visit(FunctionDefNode* element) override;
+    virtual void Visit(MemFuncDefNode* element) override;
+    virtual void Visit(ConstructorDefNode* element) override;
+    virtual void Visit(InheritanceListNode* element) override;
 
 private:
+    bool HasFoundOverLoadedFunc(const std::list<std::string>& funcList, 
+        const std::string& name);
+
     SymbolTable* m_globalTable;
-    SymbolTable* m_currTable;
+    std::list<std::string> m_overloadedFreeFuncFound;
+    std::list<std::string> m_overloadedMemFuncFound;
+    std::list<std::string> m_overloadedConstructorFound;
 };

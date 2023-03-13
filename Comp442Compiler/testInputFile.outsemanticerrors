@@ -1,0 +1,1 @@
+Warning: The member "x" of the "B" is overshadowing a member from a parent class. At line 11: "attribute x : float;"

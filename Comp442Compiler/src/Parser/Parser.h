@@ -422,6 +422,7 @@ private:
 
     ProgramNode* m_currProgramRoot;
     Token m_prevToken;
+    Token m_lastConstructorToken;
     std::list<StackableItem> m_parsingStack; // front is top of stack
     std::list<ASTNode*> m_semanticStack;
     bool m_errorFound;

@@ -1,9 +1,68 @@
 Program
 |  ClassDefList
-|  FuncDefList
-|  |  FuncDef
+|  |  ClassDef
 |  |  |  id
-|  |  |  |  freeFunc
+|  |  |  |  A
+|  |  |  InheritanceList
+|  |  |  MemVar
+|  |  |  |  Visibility
+|  |  |  |  |  default
+|  |  |  |  id
+|  |  |  |  |  x
+|  |  |  |  TypeNode
+|  |  |  |  |  integer
+|  |  |  |  Dimensions
+|  |  |  MemFuncDecl
+|  |  |  |  Visibility
+|  |  |  |  |  default
+|  |  |  |  id
+|  |  |  |  |  f
+|  |  |  |  FParamList
+|  |  |  |  TypeNode
+|  |  |  |  |  void
+|  |  ClassDef
+|  |  |  id
+|  |  |  |  B
+|  |  |  InheritanceList
+|  |  |  |  id
+|  |  |  |  |  A
+|  |  |  MemVar
+|  |  |  |  Visibility
+|  |  |  |  |  default
+|  |  |  |  id
+|  |  |  |  |  x
+|  |  |  |  TypeNode
+|  |  |  |  |  float
+|  |  |  |  Dimensions
+|  |  |  MemFuncDecl
+|  |  |  |  Visibility
+|  |  |  |  |  default
+|  |  |  |  id
+|  |  |  |  |  f
+|  |  |  |  FParamList
+|  |  |  |  |  FParam
+|  |  |  |  |  |  id
+|  |  |  |  |  |  |  x
+|  |  |  |  |  |  TypeNode
+|  |  |  |  |  |  |  integer
+|  |  |  |  |  |  Dimensions
+|  |  |  |  TypeNode
+|  |  |  |  |  void
+|  FuncDefList
+|  |  MemFuncDef
+|  |  |  id
+|  |  |  |  A
+|  |  |  id
+|  |  |  |  f
+|  |  |  TypeNode
+|  |  |  |  void
+|  |  |  FParamList
+|  |  |  StatBlock
+|  |  MemFuncDef
+|  |  |  id
+|  |  |  |  B
+|  |  |  id
+|  |  |  |  f
 |  |  |  TypeNode
 |  |  |  |  void
 |  |  |  FParamList
@@ -14,38 +73,3 @@ Program
 |  |  |  |  |  |  integer
 |  |  |  |  |  Dimensions
 |  |  |  StatBlock
-|  |  |  |  VarDecl
-|  |  |  |  |  id
-|  |  |  |  |  |  x
-|  |  |  |  |  TypeNode
-|  |  |  |  |  |  float
-|  |  |  |  |  Dimensions
-|  |  |  |  AssigStat
-|  |  |  |  |  Variable
-|  |  |  |  |  |  id
-|  |  |  |  |  |  |  x
-|  |  |  |  |  |  Dimensions
-|  |  |  |  |  Expr
-|  |  |  |  |  |  Literal
-|  |  |  |  |  |  |  4
-|  |  |  |  |  |  |  TypeNode
-|  |  |  |  |  |  |  |  integer
-|  |  FuncDef
-|  |  |  id
-|  |  |  |  freeFunc
-|  |  |  TypeNode
-|  |  |  |  float
-|  |  |  FParamList
-|  |  |  |  FParam
-|  |  |  |  |  id
-|  |  |  |  |  |  y
-|  |  |  |  |  TypeNode
-|  |  |  |  |  |  integer
-|  |  |  |  |  Dimensions
-|  |  |  StatBlock
-|  |  |  |  ReturnStat
-|  |  |  |  |  Expr
-|  |  |  |  |  |  Literal
-|  |  |  |  |  |  |  2.4
-|  |  |  |  |  |  |  TypeNode
-|  |  |  |  |  |  |  |  float

@@ -263,9 +263,11 @@ void MemFuncTableEntry::SetDefinition(MemFuncDefEntry* defEntry)
     defEntry->m_subTable = nullptr;
 
     m_definitionSubTable->SetParentEntry(this);
+    m_declaration->SetSymbolTable(m_definitionSubTable);
 }
 
 bool MemFuncTableEntry::HasDefinition() const { return m_definition != nullptr; }
+MemFuncDeclNode* MemFuncTableEntry::GetDeclNode() { return m_declaration; }
 ASTNode* MemFuncTableEntry::GetNode() { return m_definition; }
 SymbolTable* MemFuncTableEntry::GetSubTable() { return m_definitionSubTable; }
 
@@ -355,12 +357,15 @@ void ConstructorTableEntry::SetDefinition(ConstructorDefEntry* defEntry)
     defEntry->m_subTable = nullptr;
 
     m_definitionSubTable->SetParentEntry(this);
+    m_declaration->SetSymbolTable(m_definitionSubTable);
 }
 
 bool ConstructorTableEntry::HasDefinition() const 
 {
     return m_definition != nullptr;
 }
+
+ConstructorDeclNode* ConstructorTableEntry::GetDeclNode() { return m_declaration; }
 
 ASTNode* ConstructorTableEntry::GetNode() { return m_definition; }
 
@@ -382,7 +387,7 @@ ConstructorDefEntry::ConstructorDefEntry(ConstructorDefNode* node,
     : SymbolTableEntry(SymbolTableEntryKind::ConstructorDef), m_defNode(node), 
     m_parameterTypes(parameterTypes), m_subTable(subTable) 
 {
-    SetName("constructor");
+    SetName(node->GetID()->GetID().GetLexeme());
 }
 
 ConstructorDefEntry::~ConstructorDefEntry()
@@ -554,7 +559,7 @@ SymbolTableEntry* SymbolTable::FindExistingEntry(SymbolTableEntry* entry)
         }
     }
 
-    return originalEntry;
+    return nullptr;
 }
 
 

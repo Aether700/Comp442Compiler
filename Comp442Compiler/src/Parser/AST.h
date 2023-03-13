@@ -483,9 +483,14 @@ public:
     IDNode* GetID();
     TypeNode* GetReturnType();
     FParamListNode* GetParameters();
+    SymbolTable* GetSymbolTable() override;
+    void SetSymbolTable(SymbolTable* table);
 
     virtual std::string ToString(size_t indent = 0) override;
     virtual void AcceptVisit(Visitor* visitor) override;
+
+private:
+    SymbolTable* m_symbolTable;
 };
 
 class MemFuncDefNode : public FunctionDefNode
@@ -495,21 +500,34 @@ public:
         FParamListNode* parameters, StatBlockNode* statBlock);
 
     IDNode* GetClassID();
+    SymbolTable* GetSymbolTable() override;
+    void SetSymbolTable(SymbolTable* table);
 
     virtual std::string ToString(size_t indent = 0) override;
     virtual void AcceptVisit(Visitor* visitor) override;
+
+private:
+    SymbolTable* m_symbolTable;
 };
 
 class ConstructorDeclNode : public ASTNodeBase
 {
 public:
-    ConstructorDeclNode(VisibilityNode* visibility, FParamListNode* params);
+    ConstructorDeclNode(VisibilityNode* visibility, FParamListNode* params, 
+        const Token& constructorToken);
 
     VisibilityNode* GetVisibility();
     FParamListNode* GetParameters();
+    const Token& GetToken() const;
+
+    SymbolTable* GetSymbolTable() override;
+    void SetSymbolTable(SymbolTable* table);
 
     virtual std::string ToString(size_t indent = 0) override;
     virtual void AcceptVisit(Visitor* visitor) override;
+private:
+    Token m_constructorToken;
+    SymbolTable* m_symbolTable;
 };
 
 class ConstructorDefNode : public FunctionDefNode

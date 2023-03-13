@@ -52,6 +52,124 @@ std::string FunctionParamTypeToStr(FParamListNode* params)
     return typeStr.str();
 }
 
+// returns the idnode of the node provided or the nullptr if there is no such node
+IDNode* GetIDFromEntry(SymbolTableEntry* entry)
+{
+    switch(entry->GetKind())
+    {
+    case SymbolTableEntryKind::LocalVariable:
+    case SymbolTableEntryKind::MemVar:
+        return ((VarDeclNode*)entry->GetNode())->GetID();
+    
+    case SymbolTableEntryKind::FreeFunction:
+        return ((FunctionDefNode*)entry->GetNode())->GetID();
+
+    case SymbolTableEntryKind::MemFuncDecl:
+        return ((MemFuncTableEntry*)entry)->GetDeclNode()->GetID();
+    
+    case SymbolTableEntryKind::ConstructorDecl:
+        {
+            ASTNode* parent = ((ConstructorTableEntry*)entry)->GetDeclNode()->GetParent();
+            return ((ClassDefNode*)parent)->GetID();
+        }
+
+    case SymbolTableEntryKind::Class:
+        return ((ClassDefNode*)entry->GetNode())->GetID();
+    
+    default:
+        return nullptr;
+    }
+}
+
+// returns nullptr if there is no such inheritance in the inheritance tree
+SymbolTableEntry* FindEntryInInheritanceTree(SymbolTable* globalTable, 
+    SymbolTable* firstClassTable, const std::string& name, SymbolTableEntryKind kind, 
+    const std::string& params = "")
+{
+    if (kind != SymbolTableEntryKind::MemVar 
+        && kind != SymbolTableEntryKind::MemFuncDecl
+        && kind != SymbolTableEntryKind::ConstructorDecl)
+    {
+        return nullptr;
+    }
+
+    std::list<std::string> classesVerified;
+    std::list<IDNode*> queue;
+    {
+        InheritanceListEntry* inheritanceList = (InheritanceListEntry*)*firstClassTable->begin();
+        InheritanceListNode* node = (InheritanceListNode*)inheritanceList->GetNode();
+        for (ASTNode* baseNode : node->GetChildren())
+        {
+            IDNode* id = (IDNode*) baseNode;
+            queue.push_front(id);
+            classesVerified.push_back(id->GetID().GetLexeme());
+        }
+    }
+
+    while (queue.size() > 0)
+    {
+        // pop currClassID
+        IDNode* currClassID = queue.front();
+        queue.pop_front();
+        SymbolTable* currClassTable = globalTable->FindEntryInTable(
+            currClassID->GetID().GetLexeme())->GetSubTable();
+        
+        // check in current class if we find a member of the given kind and name
+        {
+            SymbolTableEntry* entry = currClassTable->FindEntryInTable(name);
+            if (entry != nullptr && entry->GetKind() == kind)
+            {
+                switch (kind)
+                {
+                case SymbolTableEntryKind::MemVar:
+                    return entry;
+                
+                case SymbolTableEntryKind::MemFuncDecl:
+                    if (params == ((MemFuncTableEntry*)entry)->GetParamTypes())
+                    {
+                        return entry;
+                    }
+                    break;
+
+                case SymbolTableEntryKind::ConstructorDecl:
+                    if (params == ((ConstructorTableEntry*)entry)->GetParamTypes())
+                    {
+                        return entry;
+                    }
+                    break;
+                }
+            }
+        }
+
+        // enqueue child nodes that were not visited yet
+        InheritanceListNode* inheritanceList = (InheritanceListNode*)((InheritanceListEntry*)
+            *currClassTable->begin())->GetNode();
+        
+        for (ASTNode* baseNode : inheritanceList->GetChildren())
+        {
+            IDNode* id = (IDNode*) baseNode;
+
+            bool found = false;
+            for (std::string& currID : classesVerified)
+            {
+                if (currID == id->GetID().GetLexeme())
+                {
+                    found  = true;
+                    break;
+                }
+            }
+
+            if (!found)
+            {
+                queue.push_front(id);
+                classesVerified.push_back(id->GetID().GetLexeme());
+            }
+        }
+    }
+
+    return nullptr;
+}
+
 // SymbolTableAssembler ////////////////////////////////////////
 SymbolTableAssembler::SymbolTableAssembler() : m_globalScopeTable(nullptr) { }
 
@@ -210,8 +328,9 @@ void SymbolTableAssembler::Visit(MemFuncDefNode* element)
 
     if (!TryMatchMemFuncDeclAndDef(entry))
     {
-        // no function declaration here
-        DEBUG_BREAK();
+        SemanticErrorManager::AddError(new MemberFunctionDeclNotFound(
+            element->GetClassID()->GetID(), 
+            element->GetID()->GetID()));
     }
 }
 
@@ -295,8 +414,7 @@ void SymbolTableAssembler::Visit(ConstructorDefNode* element)
 
     if (!TryMatchMemFuncDeclAndDef(entry))
     {
-        // no function declaration here
-        DEBUG_BREAK();
+        SemanticErrorManager::AddError(new ConstructorDeclNotFound(element->GetID()->GetID()));
     }
 }
 
@@ -310,7 +428,6 @@ void SymbolTableAssembler::Visit(ClassDefNode* element)
 {
     const std::string& className = element->GetID()->GetID().GetLexeme();
     SymbolTable* classTable = new SymbolTable(className);
-
 
     InheritanceListEntry* inheritanceList = nullptr;
     std::list<MemVarTableEntry*> memVarEntries;
@@ -453,6 +570,11 @@ void SymbolTableAssembler::Visit(ProgramNode* element)
                 errorNode->GetID()));
             toDelete.push_front(entry);
         }
+
+        if (entry->GetKind() == SymbolTableEntryKind::Class)
+        {
+            CheckForDeclWithoutDef((ClassTableEntry*)entry);
+        }
     }
     
     for (SymbolTableEntry* entry : toDelete)
@@ -512,25 +634,37 @@ bool SymbolTableAssembler::TryMatchMemFuncDeclAndDef(ConstructorDefEntry* def)
     return false;
 }
 
-IDNode* SymbolTableAssembler::GetIDFromEntry(SymbolTableEntry* entry)
+void SymbolTableAssembler::CheckForDeclWithoutDef(ClassTableEntry* classEntry)
 {
-    if (entry->GetKind() == SymbolTableEntryKind::LocalVariable 
-        || entry->GetKind() == SymbolTableEntryKind::MemVar)
+    for (SymbolTableEntry* entry : *classEntry->GetSubTable())
     {
-        return ((VarDeclNode*)entry->GetNode())->GetID();
+        if (entry->GetKind() == SymbolTableEntryKind::ConstructorDecl)
+        {
+            if (!((ConstructorTableEntry*)entry)->HasDefinition())
+            {
+                IDNode* classID = GetIDFromEntry(entry);
+                ConstructorDeclNode* constructor 
+                    = ((ConstructorTableEntry*)entry)->GetDeclNode();
+                SemanticErrorManager::AddError(new ConstructorDefNotFoundError(classID->GetID(), 
+                    constructor->GetToken()));
+            }
+        }
+        else if (entry->GetKind() == SymbolTableEntryKind::MemFuncDecl)
+        {
+            if (!((MemFuncTableEntry*)entry)->HasDefinition())
+            {
+                MemFuncDeclNode* memFunc = ((MemFuncTableEntry*)entry)->GetDeclNode();
+                SemanticErrorManager::AddError(new MemFuncDefNotFoundError(
+                    ((ClassDefNode*)memFunc->GetParent())->GetID()->GetID(), 
+                    memFunc->GetID()->GetID()));
+            }
+        }
     }
-    else if (entry->GetKind() == SymbolTableEntryKind::FreeFunction 
-        || entry->GetKind() == SymbolTableEntryKind::MemFuncDecl
-        || entry->GetKind() == SymbolTableEntryKind::ConstructorDecl)
-    {
-        return ((FunctionDefNode*)entry->GetNode())->GetID();
-    }
-    return nullptr;
 }
 
 // SemanticChecker //////////////////////////////////////////
 SemanticChecker::SemanticChecker(SymbolTable* globalTable) 
-    : m_globalTable(globalTable), m_currTable(globalTable) { }
+    : m_globalTable(globalTable) { }
     
 void SemanticChecker::Visit(IDNode* element)
 {
@@ -538,6 +672,150 @@ void SemanticChecker::Visit(IDNode* element)
     ASSERT(currTable != nullptr);
     if (!currTable->ScopeContainsName(element->GetID().GetLexeme()))
     {
-        SemanticErrorManager::AddError(new UnknownSymbolError(element->GetID()));
+        SemanticErrorManager::AddError(new UndeclaredSymbolError(element->GetID()));
     }
+}
+
+void SemanticChecker::Visit(FunctionDefNode* element)
+{
+    const std::string& funcName = element->GetID()->GetID().GetLexeme();
+    if (HasFoundOverLoadedFunc(m_overloadedFreeFuncFound, funcName))
+    {
+        return;
+    }
+
+
+    bool foundEntry = false;
+    for (SymbolTableEntry* entry : *m_globalTable)
+    {
+        if (entry->GetKind() == SymbolTableEntryKind::FreeFunction)
+        {
+            if (entry->GetName() == funcName)
+            {
+                if (foundEntry)
+                {
+                    m_overloadedFreeFuncFound.push_front(funcName);
+                    SemanticErrorManager::AddWarning(
+                        new OverloadedFreeFuncWarn(GetIDFromEntry(entry)->GetID()));
+                    break;
+                }
+                foundEntry = true;
+            }
+        }
+    }
+}
+
+void SemanticChecker::Visit(MemFuncDefNode* element)
+{
+    const std::string& funcName = element->GetID()->GetID().GetLexeme();
+    const std::string& classID = element->GetClassID()->GetID().GetLexeme();
+    std::string idStr = classID + "::" + funcName;
+    if (HasFoundOverLoadedFunc(m_overloadedMemFuncFound, idStr))
+    {
+        return;
+    }
+
+
+    SymbolTable* table = m_globalTable->FindEntryInTable(classID)->GetSubTable();
+
+    bool foundEntry = false;
+    for (SymbolTableEntry* entry : *table)
+    {
+        if (entry->GetKind() == SymbolTableEntryKind::MemFuncDecl)
+        {
+            MemFuncTableEntry* memFuncEntry = (MemFuncTableEntry*)entry;
+            std::string entryID = memFuncEntry->GetClassID() + "::" + memFuncEntry->GetName();
+            if (entryID == idStr)
+            {
+                if (foundEntry)
+                {
+                    m_overloadedMemFuncFound.push_front(idStr);
+                    SemanticErrorManager::AddWarning(
+                        new OverloadedMemFuncWarn(
+                            ((ClassDefNode*)memFuncEntry->GetDeclNode()->
+                            GetParent())->GetID()->GetID(), 
+                            GetIDFromEntry(entry)->GetID()));
+                    break;
+                }
+                foundEntry = true;
+            }
+        }
+    }
+}
+
+void SemanticChecker::Visit(ConstructorDefNode* element)
+{
+    const std::string& classID = element->GetID()->GetID().GetLexeme();
+    std::string idStr = classID + "::" + "constructor";
+    if (HasFoundOverLoadedFunc(m_overloadedConstructorFound, idStr))
+    {
+        return;
+    }
+
+
+    SymbolTable* table = m_globalTable->FindEntryInTable(classID)->GetSubTable();
+
+    bool foundEntry = false;
+    for (SymbolTableEntry* entry : *table)
+    {
+        if (entry->GetKind() == SymbolTableEntryKind::ConstructorDecl)
+        {
+            ConstructorTableEntry* constructor = (ConstructorTableEntry*)entry;
+            if (constructor->GetName() == idStr)
+            {
+                if (foundEntry)
+                {
+                    m_overloadedConstructorFound.push_front(idStr);
+                    SemanticErrorManager::AddWarning(
+                        new OverloadedConstructorWarn(
+                            ((ClassDefNode*)constructor->GetDeclNode()->
+                            GetParent())->GetID()->GetID()));
+                    break;
+                }
+                foundEntry = true;
+            }
+        }
+    }
+}
+
+void SemanticChecker::Visit(InheritanceListNode* element)
+{
+    SymbolTable* table = element->GetSymbolTable();
+    for (SymbolTableEntry* entry : *table)
+    {
+        if (entry->GetKind() == SymbolTableEntryKind::ConstructorDecl)
+        {
+            continue;
+        }
+
+        std::string param = "";
+        if (entry->GetKind() == SymbolTableEntryKind::MemFuncDecl)
+        {
+            param = ((MemFuncTableEntry*)entry)->GetParamTypes();
+        }
+        
+        SymbolTableEntry* overshadowedEntry 
+            = FindEntryInInheritanceTree(m_globalTable, table, entry->GetName(), 
+                entry->GetKind(), param);
+        
+        if (overshadowedEntry != nullptr)
+        {
+            SemanticErrorManager::AddWarning(new OverShadowedMemWarn(
+                ((ClassDefNode*)element->GetParent())->GetID()->GetID(), 
+                GetIDFromEntry(entry)->GetID()));
+        }
+    }
+}
+
+bool SemanticChecker::HasFoundOverLoadedFunc(const std::list<std::string>& funcList, 
+    const std::string& name)
+{
+    for (const std::string& funcName : funcList)
+    {
+        if (funcName == name)
+        {
+            return true;
+        }
+    }
+    return false;
 }

@@ -156,6 +156,7 @@ public:
     void SetDefinition(MemFuncDefEntry* defEntry);
 
     bool HasDefinition() const;
+    MemFuncDeclNode* GetDeclNode();
     virtual ASTNode* GetNode() override;
     virtual SymbolTable* GetSubTable() override;
 
@@ -205,6 +206,7 @@ public:
     void SetDefinition(ConstructorDefEntry* defEntry);
 
     bool HasDefinition() const;
+    ConstructorDeclNode* GetDeclNode();
     virtual ASTNode* GetNode() override;
     virtual SymbolTable* GetSubTable() override;
 
