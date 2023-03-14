@@ -334,6 +334,22 @@ std::string IncorrectParametersProvidedToFreeFuncCallError::GetMessage() const
     return ss.str();
 }
 
+// UnknownMemberError ///////////////////////////////////////////////////////////
+UnknownMemberError::UnknownMemberError(const std::string& classID, const Token& member) 
+    : TokenBasedError(SemanticErrorCode::UnknownMember, member), m_classID(classID) { }
+
+std::string UnknownMemberError::GetMessage() const
+{
+    std::stringstream ss;
+    ss << "The class \"" 
+        << m_classID 
+        << "\" does not contain a member \"" << GetToken().GetLexeme() << "\". At Line " 
+        << GetToken().GetLine() << ": \"" << GetToken().GetStrOfLine() 
+        << "\"";
+
+    return ss.str();
+}
+
 // SemanticErrorManager ////////////////////////////////////////////////////////
 void SemanticErrorManager::AddError(SemanticError* error)
 {

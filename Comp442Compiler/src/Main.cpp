@@ -10,11 +10,7 @@
 
 /*
 To Do
-- dot should only be used on a class type (ex: class.something) also check that said 
-	class has member/func (finished logic but need to create and add errors)
-
 - check circular dependancy in memvar + parent memvar too
-- type check parameters passed to function calls (still need to do constructors and memfunc)
 - need checks for main (should be exactly 1 main func)
 - issue warnings if the main has parameters
 - check return type vs function return type

@@ -129,6 +129,8 @@ public:
     virtual std::string ToString(size_t indent = 0) override;
     virtual void AcceptVisit(Visitor* visitor) override;
 private:
+    std::string GetEvaluatedTypeWithoutDot();
+
     Token m_id;
 };
 

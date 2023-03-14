@@ -21,6 +21,7 @@ enum class SemanticErrorCode
     InvalidOperandForOperator,
     InvalidTypeMatchupForAssign,
     IncorrectParametersProvidedToFreeFuncCall,
+    UnknownMember,
 };
 
 enum class SemanticWarningCode
@@ -211,6 +212,16 @@ public:
 
 private:
     FuncCallNode* m_node;
+};
+
+class UnknownMemberError : public TokenBasedError
+{
+public:
+    UnknownMemberError(const std::string& classID, const Token& member);
+    virtual std::string GetMessage() const override;
+    
+private:
+    std::string m_classID;
 };
 
 class SemanticErrorManager

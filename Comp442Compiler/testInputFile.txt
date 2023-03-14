@@ -1,23 +1,36 @@
 class A 
 {
     attribute x : integer;
-    attribute y : A;
+    attribute y : B;
     
     function f:()=>void;
 };
 
-function A::f()=>void {}
-
-/*
-function freeFunc(x : float) =>void
+class B
 {
-    x = 2.5*2.6;
+    attribute z : integer;
+    function g:(x : integer)=>B;
+};
+
+function A::f()=>void {}
+function B::g(x : integer)=>B 
+{
+    localvar b : B;
+    return (b);
 }
-*/
+
+
+
+function freeFunc(x : float) => A
+{
+    localvar a : A;
+    return(a);
+}
+
 
 function main() => void
 {
     localvar x : A();
     localvar y : integer;
-    x.y.func();
+    y = freeFunc(5.6).y.g(5).z;
 }

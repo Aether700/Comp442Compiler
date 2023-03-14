@@ -1,5 +1,6 @@
 #include "AST.h"
 #include "../Core/Core.h"
+#include "ASTUtil.h"
 
 // Helpers /////////////////////////////////////////////////
 void WriteIndentToStream(std::stringstream& ss, size_t indent)
@@ -139,12 +140,34 @@ const Token& IDNode::GetID() const { return m_id; }
 
 std::string IDNode::GetEvaluatedType()
 {
-    SymbolTableEntry* entry = GetSymbolTable()->FindEntryInScope(GetID().GetLexeme());
-    if (entry == nullptr)
+    DotNode* dot = FindFirstDotNodeParent(this);
+    if (dot != nullptr)
     {
-        return InvalidType;
+        dot = GetRootDotNode(dot);
+        if (dot->GetLeft() == this)
+        {
+            return GetEvaluatedTypeWithoutDot();
+        }
+        SymbolTable* context = GetContextTableFromName(dot->GetSymbolTable(), 
+            dot, GetID().GetLexeme());
+
+        if (context == nullptr)
+        {
+            return InvalidType;
+        }
+
+        SymbolTableEntry* entry = context->FindEntryInScope(GetID().GetLexeme());
+        if (entry == nullptr)
+        {
+            return InvalidType;
+        }
+        return entry->GetEvaluatedType();
     }
-    return entry->GetEvaluatedType();
+    else
+    {
+        return GetEvaluatedTypeWithoutDot();
+    }
+    
 }
 
 Token IDNode::GetFirstToken() const { return m_id; }
@@ -161,6 +184,16 @@ std::string IDNode::ToString(size_t indent)
 }
 
 void IDNode::AcceptVisit(Visitor* visitor) { visitor->Visit(this); }
+
+std::string IDNode::GetEvaluatedTypeWithoutDot()
+{
+    SymbolTableEntry* entry = GetSymbolTable()->FindEntryInScope(GetID().GetLexeme());
+    if (entry == nullptr)
+    {
+        return InvalidType;
+    }
+    return entry->GetEvaluatedType();
+}
 
 // TypeNode //////////////////////////////////////////////////////
 TypeNode::TypeNode(const Token& type) : m_type(type) { }

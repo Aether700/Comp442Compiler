@@ -18,7 +18,7 @@ Program
 |  |  |  |  id
 |  |  |  |  |  y
 |  |  |  |  TypeNode
-|  |  |  |  |  A
+|  |  |  |  |  B
 |  |  |  |  Dimensions
 |  |  |  MemFuncDecl
 |  |  |  |  Visibility
@@ -28,6 +28,32 @@ Program
 |  |  |  |  FParamList
 |  |  |  |  TypeNode
 |  |  |  |  |  void
+|  |  ClassDef
+|  |  |  id
+|  |  |  |  B
+|  |  |  InheritanceList
+|  |  |  MemVar
+|  |  |  |  Visibility
+|  |  |  |  |  default
+|  |  |  |  id
+|  |  |  |  |  z
+|  |  |  |  TypeNode
+|  |  |  |  |  integer
+|  |  |  |  Dimensions
+|  |  |  MemFuncDecl
+|  |  |  |  Visibility
+|  |  |  |  |  default
+|  |  |  |  id
+|  |  |  |  |  g
+|  |  |  |  FParamList
+|  |  |  |  |  FParam
+|  |  |  |  |  |  id
+|  |  |  |  |  |  |  x
+|  |  |  |  |  |  TypeNode
+|  |  |  |  |  |  |  integer
+|  |  |  |  |  |  Dimensions
+|  |  |  |  TypeNode
+|  |  |  |  |  B
 |  FuncDefList
 |  |  MemFuncDef
 |  |  |  id
@@ -38,6 +64,58 @@ Program
 |  |  |  |  void
 |  |  |  FParamList
 |  |  |  StatBlock
+|  |  MemFuncDef
+|  |  |  id
+|  |  |  |  B
+|  |  |  id
+|  |  |  |  g
+|  |  |  TypeNode
+|  |  |  |  B
+|  |  |  FParamList
+|  |  |  |  FParam
+|  |  |  |  |  id
+|  |  |  |  |  |  x
+|  |  |  |  |  TypeNode
+|  |  |  |  |  |  integer
+|  |  |  |  |  Dimensions
+|  |  |  StatBlock
+|  |  |  |  VarDecl
+|  |  |  |  |  id
+|  |  |  |  |  |  b
+|  |  |  |  |  TypeNode
+|  |  |  |  |  |  B
+|  |  |  |  |  Dimensions
+|  |  |  |  ReturnStat
+|  |  |  |  |  Expr
+|  |  |  |  |  |  Variable
+|  |  |  |  |  |  |  id
+|  |  |  |  |  |  |  |  b
+|  |  |  |  |  |  |  Dimensions
+|  |  FuncDef
+|  |  |  id
+|  |  |  |  freeFunc
+|  |  |  TypeNode
+|  |  |  |  A
+|  |  |  FParamList
+|  |  |  |  FParam
+|  |  |  |  |  id
+|  |  |  |  |  |  x
+|  |  |  |  |  TypeNode
+|  |  |  |  |  |  float
+|  |  |  |  |  Dimensions
+|  |  |  StatBlock
+|  |  |  |  VarDecl
+|  |  |  |  |  id
+|  |  |  |  |  |  a
+|  |  |  |  |  TypeNode
+|  |  |  |  |  |  A
+|  |  |  |  |  Dimensions
+|  |  |  |  ReturnStat
+|  |  |  |  |  Expr
+|  |  |  |  |  |  Variable
+|  |  |  |  |  |  |  id
+|  |  |  |  |  |  |  |  a
+|  |  |  |  |  |  |  Dimensions
 |  |  FuncDef
 |  |  |  id
 |  |  |  |  main
@@ -57,17 +135,38 @@ Program
 |  |  |  |  |  TypeNode
 |  |  |  |  |  |  integer
 |  |  |  |  |  Dimensions
-|  |  |  |  Dot
+|  |  |  |  AssigStat
 |  |  |  |  |  Variable
 |  |  |  |  |  |  id
-|  |  |  |  |  |  |  x
+|  |  |  |  |  |  |  y
 |  |  |  |  |  |  Dimensions
-|  |  |  |  |  Dot
-|  |  |  |  |  |  Variable
-|  |  |  |  |  |  |  id
-|  |  |  |  |  |  |  |  y
-|  |  |  |  |  |  |  Dimensions
-|  |  |  |  |  |  FuncCall
-|  |  |  |  |  |  |  id
-|  |  |  |  |  |  |  |  func
-|  |  |  |  |  |  |  AParams
+|  |  |  |  |  Expr
+|  |  |  |  |  |  Dot
+|  |  |  |  |  |  |  FuncCall
+|  |  |  |  |  |  |  |  id
+|  |  |  |  |  |  |  |  |  freeFunc
+|  |  |  |  |  |  |  |  AParams
+|  |  |  |  |  |  |  |  |  Expr
+|  |  |  |  |  |  |  |  |  |  Literal
+|  |  |  |  |  |  |  |  |  |  |  5.6
+|  |  |  |  |  |  |  |  |  |  |  TypeNode
+|  |  |  |  |  |  |  |  |  |  |  |  float
+|  |  |  |  |  |  |  Dot
+|  |  |  |  |  |  |  |  Variable
+|  |  |  |  |  |  |  |  |  id
+|  |  |  |  |  |  |  |  |  |  y
+|  |  |  |  |  |  |  |  |  Dimensions
+|  |  |  |  |  |  |  |  Dot
+|  |  |  |  |  |  |  |  |  FuncCall
+|  |  |  |  |  |  |  |  |  |  id
+|  |  |  |  |  |  |  |  |  |  |  g
+|  |  |  |  |  |  |  |  |  |  AParams
+|  |  |  |  |  |  |  |  |  |  |  Expr
+|  |  |  |  |  |  |  |  |  |  |  |  Literal
+|  |  |  |  |  |  |  |  |  |  |  |  |  5
+|  |  |  |  |  |  |  |  |  |  |  |  |  TypeNode
+|  |  |  |  |  |  |  |  |  |  |  |  |  |  integer
+|  |  |  |  |  |  |  |  |  Variable
+|  |  |  |  |  |  |  |  |  |  id
+|  |  |  |  |  |  |  |  |  |  |  z
+|  |  |  |  |  |  |  |  |  |  Dimensions

@@ -1,6 +1,7 @@
 #include "Visitor.h"
 #include "SemanticErrors.h"
 #include "../Parser/AST.h"
+#include "../Parser/ASTUtil.h"
 #include "../Core/Core.h"
 
 #include <sstream>
@@ -672,6 +673,11 @@ SemanticChecker::SemanticChecker(SymbolTable* globalTable)
     
 void SemanticChecker::Visit(IDNode* element)
 {
+    if (HasDotForParent(element))
+    {
+        return;
+    }
+
     SymbolTable* currTable = element->GetSymbolTable();
     ASSERT(currTable != nullptr);
     if (!currTable->ScopeContainsName(element->GetID().GetLexeme()))
@@ -682,68 +688,11 @@ void SemanticChecker::Visit(IDNode* element)
 
 void SemanticChecker::Visit(DotNode* element)
 {
+    ASTNode* parent = element->GetParent();
 
-    std::string leftType = element->GetLeft()->GetEvaluatedType();
-
-    //check left side
-    
-    // temp
-    auto t = element->GetSymbolTable();
-    auto l = element->GetLeft()->ToString();
-    //
-
-    current implementation assumes all variables are in function but 
-    need to be based off of left side when is the case
-
-    SymbolTableEntry* entry = m_globalTable->FindEntryInTable(leftType);
-    if (entry == nullptr || entry->GetKind() != SymbolTableEntryKind::Class)
+    if (dynamic_cast<DotNode*>(parent) == nullptr)
     {
-        DEBUG_BREAK(); // add error here
-        return;
-    }
-
-    SymbolTable* classTable = entry->GetNode()->GetSymbolTable();
-
-    // check right side
-    ASTNode* currRight = element->GetRight();
-
-    if (dynamic_cast<DotNode*>(currRight) != nullptr)
-    {
-        ASTNode* currNode = currRight;
-        while (dynamic_cast<DotNode*>(currNode) != nullptr)
-        {
-            DotNode* currDot = (DotNode*)currNode;
-            currNode = currDot->GetLeft();
-        }
-
-        currRight = currNode;
-    }
-
-    if (dynamic_cast<VariableNode*>(currRight) != nullptr)
-    {
-        VariableNode* var = (VariableNode*)currRight;
-        SymbolTableEntry* varEntry = classTable->FindEntryInScope(var->
-            GetVariable()->GetID().GetLexeme());
-
-        if (varEntry == nullptr || varEntry->GetKind() != SymbolTableEntryKind::MemVar)
-        {
-            DEBUG_BREAK(); // error here
-        }
-    }
-    else if (dynamic_cast<FuncCallNode*>(currRight) != nullptr)
-    {
-        FuncCallNode* funcCall = (FuncCallNode*)currRight;
-        SymbolTableEntry* funcEntry = classTable->FindEntryInScope(funcCall->
-            GetID()->GetID().GetLexeme());
-
-        if (funcEntry == nullptr || funcEntry->GetKind() != SymbolTableEntryKind::MemFuncDecl)
-        {
-            DEBUG_BREAK(); // error here
-        }
-    }
-    else
-    {
-        DEBUG_BREAK(); // error here
+        TestDotRemainder(element->GetSymbolTable(), element);
     }
 }
 
@@ -765,9 +714,14 @@ void SemanticChecker::Visit(AssignStatNode* element)
 
 void SemanticChecker::Visit(FuncCallNode* element)
 {
+    if (HasDotForParent(element))
+    {
+        return;
+    }
+
     const std::string& funcName = element->GetID()->GetID().GetLexeme();
 
-    // for free functions
+    // for free functions (memfunc and constructors are handled by dot node)
     bool found = false;
     for (SymbolTableEntry* entry : *m_globalTable)
     {
@@ -1013,4 +967,132 @@ bool SemanticChecker::HasMatchingParameters(FParamListNode* fparam, AParamListNo
     }
 
     return true;
+}
+
+void SemanticChecker::TestDotRemainder(SymbolTable* contextTable, 
+    ASTNode* dotRemainder)
+{
+    ASTNode* left;
+    ASTNode* right;
+    if (dynamic_cast<DotNode*>(dotRemainder) != nullptr)
+    {
+        DotNode* dot = (DotNode*)dotRemainder;
+        left = dot->GetLeft();
+        right = dot->GetRight();
+    }
+    else
+    {
+        left = dotRemainder;
+        right = nullptr;
+    }
+
+
+    if (dynamic_cast<VariableNode*>(left) != nullptr)
+    {
+        VariableNode* var = (VariableNode*)left;
+        SymbolTableEntry* varEntry = contextTable->FindEntryInScope(var->
+            GetVariable()->GetID().GetLexeme());
+
+        if (varEntry == nullptr || (varEntry->GetKind() != SymbolTableEntryKind::MemVar 
+            && varEntry->GetKind() != SymbolTableEntryKind::LocalVariable))
+        {
+            if (contextTable == m_globalTable 
+                || contextTable->GetParentEntry()->GetKind() != SymbolTableEntryKind::Class)
+            {
+                SemanticErrorManager::AddError(new UndeclaredSymbolError
+                    (var->GetVariable()->GetID()));
+            }
+            else
+            {
+                SemanticErrorManager::AddError(new UnknownMemberError
+                    (contextTable->GetName(), var->GetVariable()->GetID()));
+            }
+            return;
+        }
+
+        if (right != nullptr)
+        {
+            SymbolTable* nextContext = GetContextTable(m_globalTable, contextTable, left);
+            if (nextContext != nullptr)
+            {
+                TestDotRemainder(nextContext, right);
+            }
+        }
+    }
+    else if (dynamic_cast<FuncCallNode*>(left) != nullptr)
+    {
+        FuncCallNode* funcCall = (FuncCallNode*)left;
+        
+        if (contextTable->GetParentEntry()->GetKind() != SymbolTableEntryKind::Class)
+        {
+            SymbolTableEntry* funcEntry = contextTable->FindEntryInScope(funcCall->
+                GetID()->GetID().GetLexeme());
+
+            if (funcEntry == nullptr 
+                || funcEntry->GetKind() != SymbolTableEntryKind::FreeFunction)
+            {
+                SemanticErrorManager::AddError(new UndeclaredSymbolError
+                    (funcCall->GetID()->GetID()));
+                return;
+            }
+        }
+        else // mem func call or constructor
+        {
+            const std::string& funcName = funcCall->GetID()->GetID().GetLexeme();
+            bool foundSameName = false;
+            bool foundSameArgs = false;
+            for (SymbolTableEntry* entry : *contextTable)
+            {
+                if ((entry->GetKind() == SymbolTableEntryKind::MemFuncDecl 
+                    && entry->GetName() == funcName) 
+                    || (entry->GetKind() == SymbolTableEntryKind::ConstructorDecl 
+                    && contextTable->GetName() == funcName))
+                {
+                    foundSameName = true;
+                    FParamListNode* fparams;
+                    if (entry->GetKind() == SymbolTableEntryKind::MemFuncDecl)
+                    {
+                        fparams = ((MemFuncDefNode*)
+                            ((MemFuncTableEntry*)entry)->GetNode())->GetParameters();
+                    }
+                    else
+                    {
+                        fparams = ((ConstructorDefNode*)
+                            ((ConstructorTableEntry*)entry)->GetNode())->GetParameters();
+                    }
+
+                    if (HasMatchingParameters(fparams, funcCall->GetParameters()))
+                    {
+                        foundSameArgs = true;
+                        break;
+                    }
+                }
+            }
+
+            if (!foundSameName)
+            {
+                SemanticErrorManager::AddError(
+                    new UnknownMemberError(contextTable->GetName(), 
+                    funcCall->GetID()->GetID()));
+            }
+            else if (!foundSameArgs)
+            {
+                SemanticErrorManager::AddError(
+                    new IncorrectParametersProvidedToFreeFuncCallError(funcCall));
+            }
+        }
+
+        if (right != nullptr)
+        {
+            SymbolTable* nextContext = GetContextTable(m_globalTable, contextTable, left);
+            if (nextContext != nullptr)
+            {
+                TestDotRemainder(nextContext, right);
+            }
+        }
+    }
+    else
+    {
+        DEBUG_BREAK(); // error here
+    }
 }
