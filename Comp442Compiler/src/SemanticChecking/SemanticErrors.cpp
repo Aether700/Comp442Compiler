@@ -101,6 +101,18 @@ std::string OverShadowedMemWarn::GetMessage() const
     return ss.str();
 }
 
+// MainHasParametersWarn /////////////////////////////////////////////////
+MainHasParametersWarn::MainHasParametersWarn() 
+    : SemanticWarning(SemanticWarningCode::MainHasParameters) { }
+
+std::string MainHasParametersWarn::GetMessage() const
+{
+    std::stringstream ss;
+    ss << "The definition of the main function takes parameters as input. ";
+    ss << "Note that the main function does not provide support for command line arguments";
+    return ss.str();
+}
+
 // SemanticError //////////////////////////////////////////////////////////////
 SemanticError::SemanticError(SemanticErrorCode errorCode) : m_errorCode(errorCode) { }
 SemanticErrorCode SemanticError::GetErrorCode() const { return m_errorCode; }
@@ -363,6 +375,78 @@ std::string UnknownMemberError::GetMessage() const
         << GetToken().GetLine() << ": \"" << GetToken().GetStrOfLine() 
         << "\"";
 
+    return ss.str();
+}
+
+// IncorrectReturnTypeError //////////////////////////////////////////////////////
+IncorrectReturnTypeError::IncorrectReturnTypeError(const std::string& functionName, 
+    const std::string& funcReturnType, const std::string providedType, 
+    const Token& returnStat) : TokenBasedError(SemanticErrorCode::IncorrectReturnType, 
+    returnStat), m_funcName(functionName), m_funcReturnType(funcReturnType), 
+    m_providedType(providedType) { }
+
+std::string IncorrectReturnTypeError::GetMessage() const
+{
+    std::stringstream ss;
+    ss << "The function \"" 
+        << m_funcName 
+        << "\" must return a value of type \"" << m_funcReturnType 
+        << "\" and not of type \"" << m_providedType << "\". At Line " 
+        << GetToken().GetLine() << ": \"" << GetToken().GetStrOfLine() 
+        << "\"";
+
+    return ss.str();
+}
+
+// MissingReturnStatError ////////////////////////////////////////////////////
+MissingReturnStatError::MissingReturnStatError(const Token& func) 
+    : TokenBasedError(SemanticErrorCode::MissingReturnStat, func) { }
+
+std::string MissingReturnStatError::GetMessage() const
+{
+    std::stringstream ss;
+    ss << "The function \"" 
+        << GetToken().GetLexeme() 
+        << "\" does not have a valid return statement for it's given return type. At Line " 
+        << GetToken().GetLine() << ": \"" << GetToken().GetStrOfLine() 
+        << "\"";
+    return ss.str();
+}
+
+// IncorrectNumberOfMainFuncError ////////////////////////////////////////////////
+IncorrectNumberOfMainFuncError::IncorrectNumberOfMainFuncError() 
+    : SemanticError(SemanticErrorCode::IncorrectNumberOfMainFunc) { }
+
+std::string IncorrectNumberOfMainFuncError::GetMessage() const
+{
+    std::stringstream ss;
+    ss << "The program does not contain the correct number of main function. ";
+    ss << "The program should contain exactly one main function";
+    return ss.str();
+}
+
+// OperationOnArrayError ///////////////////////////////////////////////////////
+OperationOnArrayError::OperationOnArrayError(const Token& t) 
+    : TokenBasedError(SemanticErrorCode::OperationOnArray, t) { }
+
+std::string OperationOnArrayError::GetMessage() const
+{
+    std::stringstream ss;
+    ss << "Operations on arrays are not supported. At Line " 
+        << GetToken().GetLine() << ": \"" << GetToken().GetStrOfLine() << "\"";
+    return ss.str();
+}
+
+// ArrayIndexingTypeError ////////////////////////////////////////////////////
+ArrayIndexingTypeError::ArrayIndexingTypeError(const Token& t) 
+    : TokenBasedError(SemanticErrorCode::ArrayIndexingType, t) { }
+
+std::string ArrayIndexingTypeError::GetMessage() const
+{
+    std::stringstream ss;
+    ss << "Invalid array index type provided. Arrays must be indexed using " 
+        << "an \"integer\" type. At Line " << GetToken().GetLine() 
+        << ": \"" << GetToken().GetStrOfLine() << "\"";
     return ss.str();
 }
 

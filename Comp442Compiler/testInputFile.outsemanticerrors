@@ -1,1 +1,1 @@
-Error: The member "B::z" creates a circular dependancy in class "B". At line 10: attribute z : integer;
+Error: Invalid array index type provided. Arrays must be indexed using an "integer" type. At Line 4: "x[2.3] = 3;"

@@ -10,11 +10,7 @@
 
 /*
 To Do
-- check circular dependancy in memvar + parent memvar too
-- need checks for main (should be exactly 1 main func)
-- issue warnings if the main has parameters
-- check return type vs function return type
-- need to check array types properly
+- add support for "self"
 */
 
 void ExitPrompt()

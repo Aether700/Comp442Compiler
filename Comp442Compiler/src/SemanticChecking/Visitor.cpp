@@ -688,6 +688,20 @@ void SemanticChecker::Visit(IDNode* element)
     }
 }
 
+void SemanticChecker::Visit(DimensionNode* element)
+{
+    for (ASTNode* node : element->GetChildren())
+    {
+        if (dynamic_cast<UnspecificedDimensionNode*>(node) == nullptr 
+            && node->GetEvaluatedType() != "integer")
+        {
+            SemanticErrorManager::AddError(
+                new ArrayIndexingTypeError(element->GetFirstToken()));
+            break;
+        }
+    }
+}
+
 void SemanticChecker::Visit(DotNode* element)
 {
     ASTNode* parent = element->GetParent();
@@ -700,18 +714,55 @@ void SemanticChecker::Visit(DotNode* element)
 
 void SemanticChecker::Visit(BaseBinaryOperator* element)
 {
-    if (element->GetEvaluatedType() == ASTNode::InvalidType)
+    // check for array type
+    if (IsArrayType(element->GetLeft()->GetEvaluatedType()) 
+        || IsArrayType(element->GetRight()->GetEvaluatedType()))
     {
+        SemanticErrorManager::AddError(new OperationOnArrayError(element->GetFirstToken()));
+    }
+    else if (element->GetEvaluatedType() == ASTNode::InvalidType) 
+    {
+        // check for invalid operands
         SemanticErrorManager::AddError(new InvalidOperandForOperatorError(element));
+    }
+
+}
+
+void SemanticChecker::Visit(ReturnStatNode* element)
+{
+    SymbolTableEntry* entry = element->GetSymbolTable()->GetParentEntry();
+    if (entry->GetEvaluatedType() 
+        != element->GetExpr()->GetEvaluatedType())
+    {
+        SemanticErrorManager::AddError(
+            new IncorrectReturnTypeError(element->GetSymbolTable()->GetName(), 
+            entry->GetEvaluatedType(), element->GetExpr()->GetEvaluatedType(), 
+            element->GetFirstToken()));
+    }
+    else
+    {
+        for (SymbolTableEntry* currEntry : m_functionWithCorrectReturnStat)
+        {
+            if (currEntry == entry)
+            {
+                return;
+            }
+        }
+        m_functionWithCorrectReturnStat.push_front(entry);
     }
 }
 
 void SemanticChecker::Visit(AssignStatNode* element)
 {
-    if (element->GetLeft()->GetEvaluatedType() != element->GetRight()->GetEvaluatedType())
+    if (IsArrayType(element->GetLeft()->GetEvaluatedType()) 
+        || IsArrayType(element->GetRight()->GetEvaluatedType()))
+    {
+        SemanticErrorManager::AddError(new OperationOnArrayError(element->GetFirstToken()));
+    }
+    else if (element->GetLeft()->GetEvaluatedType() != element->GetRight()->GetEvaluatedType())
     {
         SemanticErrorManager::AddError(new InvalidTypeMatchupForAssignError(element));
-    } 
+    }
 }
 
 void SemanticChecker::Visit(FuncCallNode* element)
@@ -749,12 +800,15 @@ void SemanticChecker::Visit(FuncCallNode* element)
 
 void SemanticChecker::Visit(FunctionDefNode* element)
 {
+    // check if a return statement is provided
+    CheckReturnStatement(element);
+
+    // check if function is overloaded
     const std::string& funcName = element->GetID()->GetID().GetLexeme();
     if (HasFoundOverLoadedFunc(m_overloadedFreeFuncFound, funcName))
     {
         return;
     }
-
 
     bool foundEntry = false;
     for (SymbolTableEntry* entry : *m_globalTable)
@@ -776,8 +830,45 @@ void SemanticChecker::Visit(FunctionDefNode* element)
     }
 }
 
+void SemanticChecker::Visit(ProgramNode* element)
+{
+    // check number of main functions
+    size_t numMainEncountered = 0;
+    SymbolTableEntry* mainEntry;
+    for (SymbolTableEntry* entry : *m_globalTable)
+    {
+        if (entry->GetKind() == SymbolTableEntryKind::FreeFunction 
+            && entry->GetNode()->GetSymbolTable()->GetName() == "main")
+        {
+            mainEntry = entry;
+            numMainEncountered++;
+            if (numMainEncountered > 1)
+            {
+                break;
+            }
+        }
+    }
+
+    if (numMainEncountered != 1)
+    {
+        SemanticErrorManager::AddError(new IncorrectNumberOfMainFuncError());
+    }
+    else
+    {
+        // check if main has parameters
+        if (((FunctionDefNode*)mainEntry->GetNode())->GetParameters()->GetNumChild() > 0)
+        {
+            SemanticErrorManager::AddWarning(new MainHasParametersWarn());
+        }
+    }
+}
+
 void SemanticChecker::Visit(MemFuncDefNode* element)
 {
+    // check if a return statement is provided
+    CheckReturnStatement(element);
+
+    //check for overloaded function
     const std::string& funcName = element->GetID()->GetID().GetLexeme();
     const std::string& classID = element->GetClassID()->GetID().GetLexeme();
     std::string idStr = classID + "::" + funcName;
@@ -882,6 +973,8 @@ void SemanticChecker::Visit(ClassDefNode* element)
 {
     std::list<ClassDefNode*> visited;
     std::list<ClassDefNode*> stack;
+
+    const Token& className = element->GetID()->GetID();
     
     {
         InheritanceListNode* inheritanceList = element->GetInheritanceList();
@@ -903,12 +996,33 @@ void SemanticChecker::Visit(ClassDefNode* element)
 
         if (currClass == element)
         {
-            SemanticErrorManager::AddError(new CircularInheritanceDependencyError(element->
-                GetID()->GetID()));
+            SemanticErrorManager::AddError(new CircularInheritanceDependencyError(className));
             break;
         }
 
-        check for circular member here
+        {
+            SymbolTable* currClassTable = currClass->GetSymbolTable();
+            bool found = false;
+            Token t;
+            for (SymbolTableEntry* entry : *currClassTable)
+            {
+                if (entry->GetKind() == SymbolTableEntryKind::MemVar 
+                    && entry->GetEvaluatedType() == className.GetLexeme())
+                {
+                    found = true;
+                    t = ((VarDeclNode*)entry->GetNode())->GetID()->GetID();
+                    break;
+                }
+            }
+
+            if (found)
+            {
+                SemanticErrorManager::AddError(
+                    new CircularClassMemberDependencyError(className.GetLexeme(), 
+                    currClass->GetID()->GetID().GetLexeme(), t));
+            break;
+            }
+        }
 
         // push on stack inherited classes
         InheritanceListNode* inheritanceList = currClass->GetInheritanceList();

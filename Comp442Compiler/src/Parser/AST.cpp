@@ -344,6 +344,11 @@ void LiteralNode::AcceptVisit(Visitor* visitor)
 // DimensionNode ////////////////////////////////////
 void DimensionNode::AddLoopingChild(ASTNode* dimension) { AddChildFirst(dimension); }
 
+const std::list<ASTNode*>& DimensionNode::GetChildren() const 
+{
+    return ASTNodeBase::GetChildren(); 
+}
+
 std::string DimensionNode::ToString(size_t indent)
 {
     std::stringstream ss;
@@ -566,7 +571,60 @@ VariableNode::VariableNode(IDNode* var, DimensionNode* dimension)
 IDNode* VariableNode::GetVariable() { return (IDNode*)GetChild(0); }
 DimensionNode* VariableNode::GetDimension() { return (DimensionNode*)GetChild(1); }
 
-std::string VariableNode::GetEvaluatedType() { return GetVariable()->GetEvaluatedType(); }
+std::string VariableNode::GetEvaluatedType() 
+{ 
+    SymbolTableEntry* entry = GetSymbolTable()
+        ->FindEntryInScope(GetVariable()->GetID().GetLexeme());
+
+    if (entry == nullptr)
+    {
+        return InvalidType;
+    }
+
+    VarDeclNode* node = (VarDeclNode*)entry->GetNode();
+    size_t numDim = node->GetDimension()->GetNumChild();
+
+    if (numDim == 0)
+    {
+        return entry->GetEvaluatedType();
+    }
+
+    TypeNode* type = node->GetType();
+    std::stringstream ss;
+    ss << type->GetType().GetLexeme();
+
+    size_t dimToSkip = GetDimension()->GetNumChild();
+    if (dimToSkip > numDim)
+    {
+        return InvalidType;
+    }
+    else if (dimToSkip == numDim)
+    {
+        return ss.str();
+    }
+
+    for (ASTNode* dimNode : node->GetDimension()->GetChildren())
+    {
+        if (dimToSkip > 0)
+        {
+            dimToSkip--;
+        }
+        else if (dynamic_cast<UnspecificedDimensionNode*>(dimNode) != nullptr)
+        {
+            ss << "[]";
+        }
+        else if (dynamic_cast<LiteralNode*>(dimNode) != nullptr)
+        {
+            LiteralNode* literal = (LiteralNode*) dimNode;
+            ss << "["<< literal->GetLexemeNode()->GetID().GetLexeme() << "]";
+        }
+        else
+        {
+            DEBUG_BREAK();
+        }
+    }
+    return ss.str();
+}
 
 std::string VariableNode::ToString(size_t indent)
 {
@@ -857,6 +915,11 @@ StatBlockNode* FunctionDefNode::GetBody() { return (StatBlockNode*)GetChild(3); 
 SymbolTable* FunctionDefNode::GetSymbolTable() { return m_symbolTable; }
 void FunctionDefNode::SetSymbolTable(SymbolTable* table) { m_symbolTable = table; }
 
+std::string FunctionDefNode::GetEvaluatedType()
+{
+    return GetReturnType()->GetEvaluatedType();
+}
+
 std::string FunctionDefNode::ToString(size_t indent)
 {
     std::stringstream ss;
@@ -999,9 +1062,6 @@ MemFuncDefNode::MemFuncDefNode(IDNode* classID, IDNode* id, TypeNode* returnType
 }
 
 IDNode* MemFuncDefNode::GetClassID() { return (IDNode*)GetChild(4); }
-
-SymbolTable* MemFuncDefNode::GetSymbolTable() { return m_symbolTable; }
-void MemFuncDefNode::SetSymbolTable(SymbolTable* table) { m_symbolTable = table; }
 
 std::string MemFuncDefNode::ToString(size_t indent)
 {

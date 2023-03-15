@@ -233,3 +233,16 @@ SymbolTable* GetContextTableFromName(SymbolTable* currContext,
 {
     return FindNameInDot(GetGlobalTable(currContext), currContext, dot, name);
 }
+
+
+bool IsArrayType(const std::string typeStr)
+{
+    for (char c : typeStr)
+    {
+        if (c == '[' || c == ']')
+        {
+            return true;
+        }
+    }
+    return false;
+}

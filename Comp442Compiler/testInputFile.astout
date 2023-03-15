@@ -1,39 +1,5 @@
 Program
 |  ClassDefList
-|  |  ClassDef
-|  |  |  id
-|  |  |  |  A
-|  |  |  InheritanceList
-|  |  |  MemVar
-|  |  |  |  Visibility
-|  |  |  |  |  default
-|  |  |  |  id
-|  |  |  |  |  x
-|  |  |  |  TypeNode
-|  |  |  |  |  integer
-|  |  |  |  Dimensions
-|  |  |  MemVar
-|  |  |  |  Visibility
-|  |  |  |  |  default
-|  |  |  |  id
-|  |  |  |  |  y
-|  |  |  |  TypeNode
-|  |  |  |  |  B
-|  |  |  |  Dimensions
-|  |  ClassDef
-|  |  |  id
-|  |  |  |  B
-|  |  |  InheritanceList
-|  |  |  |  id
-|  |  |  |  |  A
-|  |  |  MemVar
-|  |  |  |  Visibility
-|  |  |  |  |  default
-|  |  |  |  id
-|  |  |  |  |  z
-|  |  |  |  TypeNode
-|  |  |  |  |  integer
-|  |  |  |  Dimensions
 |  FuncDefList
 |  |  FuncDef
 |  |  |  id
@@ -42,3 +8,27 @@ Program
 |  |  |  |  void
 |  |  |  FParamList
 |  |  |  StatBlock
+|  |  |  |  VarDecl
+|  |  |  |  |  id
+|  |  |  |  |  |  x
+|  |  |  |  |  TypeNode
+|  |  |  |  |  |  integer
+|  |  |  |  |  Dimensions
+|  |  |  |  |  |  Literal
+|  |  |  |  |  |  |  2
+|  |  |  |  |  |  |  TypeNode
+|  |  |  |  |  |  |  |  integer
+|  |  |  |  AssigStat
+|  |  |  |  |  Variable
+|  |  |  |  |  |  id
+|  |  |  |  |  |  |  x
+|  |  |  |  |  |  Dimensions
+|  |  |  |  |  |  |  Literal
+|  |  |  |  |  |  |  |  2.3
+|  |  |  |  |  |  |  |  TypeNode
+|  |  |  |  |  |  |  |  |  float
+|  |  |  |  |  Expr
+|  |  |  |  |  |  Literal
+|  |  |  |  |  |  |  3
+|  |  |  |  |  |  |  TypeNode
+|  |  |  |  |  |  |  |  integer

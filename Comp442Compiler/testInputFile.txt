@@ -1,17 +1,5 @@
-class A 
+function main()=>void
 {
-    attribute x : integer;
-    attribute y : B;
-    
-};
-
-class B isa A
-{
-    attribute z : integer;
-};
-
-
-function main() => void
-{
-    
+    localvar x : integer[2];
+    x[2.3] = 3;
 }

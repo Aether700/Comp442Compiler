@@ -2,12 +2,15 @@
 #include <list>
 
 #include "SymbolTable.h"
+#include "SemanticErrors.h"
 
 
 class IVisitableElement;
 class IDNode;
+class DimensionNode;
 class DotNode;
 class BaseBinaryOperator;
+class ReturnStatNode;
 class AssignStatNode;
 class FParamNode;
 class FParamListNode;
@@ -25,8 +28,10 @@ class Visitor
 public:
     virtual void Visit(IVisitableElement* element) { }
     virtual void Visit(IDNode* element) { }
+    virtual void Visit(DimensionNode* element) { }
     virtual void Visit(DotNode* element) { }
     virtual void Visit(BaseBinaryOperator* element) { }
+    virtual void Visit(ReturnStatNode* element) { }
     virtual void Visit(AssignStatNode* element) { }
     virtual void Visit(VarDeclNode* element) { }
     virtual void Visit(FParamNode* element) { }
@@ -85,8 +90,10 @@ public:
     SemanticChecker(SymbolTable* globalTable);
 
     virtual void Visit(IDNode* element) override;
+    virtual void Visit(DimensionNode* element) override;
     virtual void Visit(DotNode* element) override;
     virtual void Visit(BaseBinaryOperator* element) override;
+    virtual void Visit(ReturnStatNode* element) override;
     virtual void Visit(AssignStatNode* element) override;
     virtual void Visit(FuncCallNode* element) override;
     virtual void Visit(FunctionDefNode* element) override;
@@ -94,6 +101,7 @@ public:
     virtual void Visit(ConstructorDefNode* element) override;
     virtual void Visit(InheritanceListNode* element) override;
     virtual void Visit(ClassDefNode* element) override;
+    virtual void Visit(ProgramNode* element) override;
     
 
 private:
@@ -105,8 +113,33 @@ private:
     // recursively go down the dot chain to try and find the type of the dot expression
     void TestDotRemainder(SymbolTable* contextTable, ASTNode* dotRemainder);
 
+    template<typename FuncNode>
+    void CheckReturnStatement(FuncNode* func)
+    {
+        if (func->GetEvaluatedType() != "void")
+        {
+            SymbolTableEntry* entry = func->GetSymbolTable()->GetParentEntry();
+            bool found = false;
+            for (SymbolTableEntry* curr : m_functionWithCorrectReturnStat)
+            {
+                if (entry == curr)
+                {
+                    found = true;
+                    break;
+                }
+            }
+
+            if (!found)
+            {
+                SemanticErrorManager::AddError(new MissingReturnStatError(
+                    func->GetID()->GetID()));
+            }
+        }
+    }
+
     SymbolTable* m_globalTable;
     std::list<std::string> m_overloadedFreeFuncFound;
     std::list<std::string> m_overloadedMemFuncFound;
     std::list<std::string> m_overloadedConstructorFound;
+    std::list<SymbolTableEntry*> m_functionWithCorrectReturnStat;
 };

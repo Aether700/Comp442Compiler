@@ -23,6 +23,11 @@ enum class SemanticErrorCode
     InvalidTypeMatchupForAssign,
     IncorrectParametersProvidedToFreeFuncCall,
     UnknownMember,
+    IncorrectReturnType,
+    MissingReturnStat,
+    IncorrectNumberOfMainFunc,
+    OperationOnArray,
+    ArrayIndexingType,
 };
 
 enum class SemanticWarningCode
@@ -31,6 +36,7 @@ enum class SemanticWarningCode
     OverloadedMemFunc,
     OverloadedConstructor,
     OverShadowedMem,
+    MainHasParameters,
 };
 
 // Warnings ////////////////////////////////////////////////////////////////////////
@@ -93,6 +99,13 @@ class OverShadowedMemWarn : public TokenPairBasedWarning
 {
 public:
     OverShadowedMemWarn(const Token& classID, const Token& member);
+    virtual std::string GetMessage() const override;
+};
+
+class MainHasParametersWarn : public SemanticWarning
+{
+public:
+    MainHasParametersWarn();
     virtual std::string GetMessage() const override;
 };
 
@@ -188,8 +201,8 @@ public:
 class CircularClassMemberDependencyError : public TokenBasedError
 {
 public:
-    CircularClassMemberDependencyError(const std::string& classID, const std::string& classOfMember, 
-        const Token& member);
+    CircularClassMemberDependencyError(const std::string& classID, 
+        const std::string& classOfMember, const Token& member);
     virtual std::string GetMessage() const override;
 
 private:
@@ -235,6 +248,48 @@ public:
     
 private:
     std::string m_classID;
+};
+
+class IncorrectReturnTypeError : public TokenBasedError
+{
+public:
+    IncorrectReturnTypeError(const std::string& functionName, 
+        const std::string& funcReturnType, const std::string providedType, 
+        const Token& returnStat);
+    virtual std::string GetMessage() const override;
+    
+private:
+    std::string m_funcName;
+    std::string m_funcReturnType;
+    std::string m_providedType;
+};
+
+class MissingReturnStatError : public TokenBasedError
+{
+public:
+    MissingReturnStatError(const Token& func);
+    virtual std::string GetMessage() const override;
+};
+
+class OperationOnArrayError : public TokenBasedError
+{
+public:
+    OperationOnArrayError(const Token& t);
+    virtual std::string GetMessage() const override;
+};
+
+class IncorrectNumberOfMainFuncError : public SemanticError
+{
+public:
+    IncorrectNumberOfMainFuncError();
+    virtual std::string GetMessage() const override;
+};
+
+class ArrayIndexingTypeError : public TokenBasedError
+{
+public:
+    ArrayIndexingTypeError(const Token& t);
+    virtual std::string GetMessage() const override;
 };
 
 class SemanticErrorManager

@@ -222,7 +222,8 @@ class DimensionNode : public IterableNode
 {
 public: 
     void AddLoopingChild(ASTNode* dimension);
-
+    
+    const std::list<ASTNode*>& GetChildren() const;
     virtual std::string ToString(size_t indent = 0) override;
     virtual void AcceptVisit(Visitor* visitor) override;
 };
@@ -462,6 +463,7 @@ public:
     StatBlockNode* GetBody();
     SymbolTable* GetSymbolTable() override;
     void SetSymbolTable(SymbolTable* table);
+    virtual std::string GetEvaluatedType() override;
 
     virtual std::string ToString(size_t indent = 0) override;
     virtual void AcceptVisit(Visitor* visitor) override;
@@ -532,14 +534,9 @@ public:
         FParamListNode* parameters, StatBlockNode* statBlock);
 
     IDNode* GetClassID();
-    SymbolTable* GetSymbolTable() override;
-    void SetSymbolTable(SymbolTable* table);
 
     virtual std::string ToString(size_t indent = 0) override;
     virtual void AcceptVisit(Visitor* visitor) override;
-
-private:
-    SymbolTable* m_symbolTable;
 };
 
 class ConstructorDeclNode : public ASTNodeBase
