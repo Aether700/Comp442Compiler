@@ -578,7 +578,18 @@ std::string VariableNode::GetEvaluatedType()
 
     if (entry == nullptr)
     {
-        return InvalidType;
+        if (GetVariable()->GetID().GetLexeme() == "self" 
+            && (GetSymbolTable()->GetParentEntry()->GetKind() 
+                == SymbolTableEntryKind::MemFuncDecl 
+            || GetSymbolTable()->GetParentEntry()->GetKind() 
+                == SymbolTableEntryKind::ConstructorDecl))
+        {
+            return GetSymbolTable()->GetParentTable()->GetName();
+        }
+        else
+        {
+            return InvalidType;
+        }
     }
 
     VarDeclNode* node = (VarDeclNode*)entry->GetNode();

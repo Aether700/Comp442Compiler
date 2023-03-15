@@ -17,4 +17,6 @@ SymbolTable* GetGlobalTable(SymbolTable* currTable);
 SymbolTable* GetContextTableFromName(SymbolTable* currContext, 
     DotNode* dot, const std::string& name);
 
+bool IsValidSelf(SymbolTable* contextTable, VariableNode* var);
+
 bool IsArrayType(const std::string typeStr);

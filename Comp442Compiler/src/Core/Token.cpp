@@ -63,10 +63,6 @@ std::ostream& operator<<(std::ostream& stream, TokenType token)
 			stream << "Class";
 			break;
 
-		case TokenType::Self:
-			stream << "Self";
-			break;
-
 		case TokenType::IsA:
 			stream << "IsA";
 			break;
@@ -282,9 +278,7 @@ std::string TokenTypeToStr(TokenType t)
 
 		case TokenType::Class:
 			return "class";
-
-		case TokenType::Self:
-
+			
 		case TokenType::IsA:
 			return "isa";
 

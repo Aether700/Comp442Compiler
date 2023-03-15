@@ -20,7 +20,6 @@ enum class TokenType
 	FloatKeyword,
 	Void,
 	Class,
-	Self,
 	IsA,
 	While,
 	If,

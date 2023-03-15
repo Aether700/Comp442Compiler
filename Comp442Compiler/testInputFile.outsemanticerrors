@@ -1,1 +1,2 @@
-Error: Invalid array index type provided. Arrays must be indexed using an "integer" type. At Line 4: "x[2.3] = 3;"
+Error: The class "A" does not contain a member "b". At Line 26: "self.b = 4;"
+Error: Cannot assign an expression of type "integer" to a variable of type "Unknown Type". At Line 26: "self.b = 4;"

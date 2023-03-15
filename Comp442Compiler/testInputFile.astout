@@ -1,6 +1,62 @@
 Program
 |  ClassDefList
+|  |  ClassDef
+|  |  |  id
+|  |  |  |  A
+|  |  |  InheritanceList
+|  |  |  MemVar
+|  |  |  |  Visibility
+|  |  |  |  |  default
+|  |  |  |  id
+|  |  |  |  |  x
+|  |  |  |  TypeNode
+|  |  |  |  |  integer
+|  |  |  |  Dimensions
+|  |  |  MemFuncDecl
+|  |  |  |  Visibility
+|  |  |  |  |  default
+|  |  |  |  id
+|  |  |  |  |  setX
+|  |  |  |  FParamList
+|  |  |  |  |  FParam
+|  |  |  |  |  |  id
+|  |  |  |  |  |  |  x
+|  |  |  |  |  |  TypeNode
+|  |  |  |  |  |  |  integer
+|  |  |  |  |  |  Dimensions
+|  |  |  |  TypeNode
+|  |  |  |  |  void
 |  FuncDefList
+|  |  MemFuncDef
+|  |  |  id
+|  |  |  |  A
+|  |  |  id
+|  |  |  |  setX
+|  |  |  TypeNode
+|  |  |  |  void
+|  |  |  FParamList
+|  |  |  |  FParam
+|  |  |  |  |  id
+|  |  |  |  |  |  x
+|  |  |  |  |  TypeNode
+|  |  |  |  |  |  integer
+|  |  |  |  |  Dimensions
+|  |  |  StatBlock
+|  |  |  |  AssigStat
+|  |  |  |  |  Dot
+|  |  |  |  |  |  Variable
+|  |  |  |  |  |  |  id
+|  |  |  |  |  |  |  |  self
+|  |  |  |  |  |  |  Dimensions
+|  |  |  |  |  |  Variable
+|  |  |  |  |  |  |  id
+|  |  |  |  |  |  |  |  b
+|  |  |  |  |  |  |  Dimensions
+|  |  |  |  |  Expr
+|  |  |  |  |  |  Literal
+|  |  |  |  |  |  |  4
+|  |  |  |  |  |  |  TypeNode
+|  |  |  |  |  |  |  |  integer
 |  |  FuncDef
 |  |  |  id
 |  |  |  |  main
@@ -8,27 +64,3 @@ Program
 |  |  |  |  void
 |  |  |  FParamList
 |  |  |  StatBlock
-|  |  |  |  VarDecl
-|  |  |  |  |  id
-|  |  |  |  |  |  x
-|  |  |  |  |  TypeNode
-|  |  |  |  |  |  integer
-|  |  |  |  |  Dimensions
-|  |  |  |  |  |  Literal
-|  |  |  |  |  |  |  2
-|  |  |  |  |  |  |  TypeNode
-|  |  |  |  |  |  |  |  integer
-|  |  |  |  AssigStat
-|  |  |  |  |  Variable
-|  |  |  |  |  |  id
-|  |  |  |  |  |  |  x
-|  |  |  |  |  |  Dimensions
-|  |  |  |  |  |  |  Literal
-|  |  |  |  |  |  |  |  2.3
-|  |  |  |  |  |  |  |  TypeNode
-|  |  |  |  |  |  |  |  |  float
-|  |  |  |  |  Expr
-|  |  |  |  |  |  Literal
-|  |  |  |  |  |  |  3
-|  |  |  |  |  |  |  TypeNode
-|  |  |  |  |  |  |  |  integer

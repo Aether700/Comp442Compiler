@@ -135,28 +135,49 @@ SymbolTable* GetContextTable(SymbolTable* globalTable, SymbolTable* prevContext,
         SymbolTableEntry* entry = prevContext->FindEntryInScope(
             var->GetVariable()->GetID().GetLexeme());
 
+        std::string type;
+
         if (entry == nullptr)
         {
-            if (logErrors)
+            bool hasError = false;
+            if (var->GetVariable()->GetID().GetLexeme() == "self")
             {
-                if (prevContext == globalTable 
-                    || prevContext->GetParentEntry()->GetKind() 
-                    != SymbolTableEntryKind::Class)
+                if (IsValidSelf(prevContext, var))
                 {
-                    SemanticErrorManager::AddError(new UndeclaredSymbolError(
-                        var->GetVariable()->GetID()));
+                    type = var->GetEvaluatedType();
                 }
                 else
                 {
-                    SemanticErrorManager::AddError(new UnknownMemberError(
-                        prevContext->GetName(), var->GetVariable()->GetID()));
+                    hasError = true;
                 }
             }
-            return nullptr;
+
+            if (hasError)
+            {
+                if (logErrors)
+                {
+                    if (prevContext == globalTable 
+                        || prevContext->GetParentEntry()->GetKind() 
+                        != SymbolTableEntryKind::Class)
+                    {
+                        SemanticErrorManager::AddError(new UndeclaredSymbolError(
+                            var->GetVariable()->GetID()));
+                    }
+                    else
+                    {
+                        SemanticErrorManager::AddError(new UnknownMemberError(
+                            prevContext->GetName(), var->GetVariable()->GetID()));
+                    }
+                }
+                return nullptr;
+            }
+        }
+        else
+        {
+            type = entry->GetEvaluatedType();
         }
 
-        SymbolTableEntry* classEntry = globalTable->FindEntryInTable(
-            entry->GetEvaluatedType());
+        SymbolTableEntry* classEntry = globalTable->FindEntryInTable(type);
         
         if (classEntry == nullptr || classEntry->GetKind() != SymbolTableEntryKind::Class)
         {
@@ -232,6 +253,14 @@ SymbolTable* GetContextTableFromName(SymbolTable* currContext,
     DotNode* dot, const std::string& name)
 {
     return FindNameInDot(GetGlobalTable(currContext), currContext, dot, name);
+}
+
+bool IsValidSelf(SymbolTable* contextTable, VariableNode* var)
+{
+    SymbolTableEntry* parentEntry = contextTable->GetParentEntry();
+    return parentEntry != nullptr && (parentEntry->GetKind() 
+        == SymbolTableEntryKind::ConstructorDecl 
+        || parentEntry->GetKind() == SymbolTableEntryKind::MemFuncDecl);
 }
 
 

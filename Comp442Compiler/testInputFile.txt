@@ -1,5 +1,33 @@
+class A
+{
+    attribute x : integer;
+
+    //constructor:(x : integer);
+
+    //function getX : () => integer;
+    function setX : (x : integer) => void;
+
+};
+
+/*
+function A::constructor(x : integer) { self.x = x; }
+
+function A::getX() => integer
+{
+    freeFunc(self);
+    return (self.x);
+}
+
+function freeFunc(a : A) => void { }
+*/
+
+function A::setX(x : integer) => void 
+{ 
+    self.b = 4;
+    //self.x = x; 
+}
+
+
 function main()=>void
 {
-    localvar x : integer[2];
-    x[2.3] = 3;
 }

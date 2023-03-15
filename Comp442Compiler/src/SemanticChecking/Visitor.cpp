@@ -682,7 +682,17 @@ void SemanticChecker::Visit(IDNode* element)
 
     SymbolTable* currTable = element->GetSymbolTable();
     ASSERT(currTable != nullptr);
-    if (!currTable->ScopeContainsName(element->GetID().GetLexeme()))
+    if (element->GetID().GetLexeme() == "self")
+    {
+        SymbolTableEntry* parentEntry = currTable->GetParentEntry();
+        if (parentEntry == nullptr 
+            || (parentEntry->GetKind() != SymbolTableEntryKind::MemFuncDecl 
+            && parentEntry->GetKind() != SymbolTableEntryKind::ConstructorDecl))
+        {
+            SemanticErrorManager::AddError(new UndeclaredSymbolError(element->GetID()));    
+        }
+    }
+    else if (!currTable->ScopeContainsName(element->GetID().GetLexeme()))
     {
         SemanticErrorManager::AddError(new UndeclaredSymbolError(element->GetID()));
     }
@@ -1104,7 +1114,6 @@ void SemanticChecker::TestDotRemainder(SymbolTable* contextTable,
         right = nullptr;
     }
 
-
     if (dynamic_cast<VariableNode*>(left) != nullptr)
     {
         VariableNode* var = (VariableNode*)left;
@@ -1114,18 +1123,39 @@ void SemanticChecker::TestDotRemainder(SymbolTable* contextTable,
         if (varEntry == nullptr || (varEntry->GetKind() != SymbolTableEntryKind::MemVar 
             && varEntry->GetKind() != SymbolTableEntryKind::LocalVariable))
         {
+            bool hasError = true;
             if (contextTable == m_globalTable 
                 || contextTable->GetParentEntry()->GetKind() != SymbolTableEntryKind::Class)
             {
-                SemanticErrorManager::AddError(new UndeclaredSymbolError
-                    (var->GetVariable()->GetID()));
+                if (var->GetVariable()->GetID().GetLexeme() == "self")
+                {
+                    if (IsValidSelf(contextTable, var))
+                    {
+                        hasError = false;
+                    }
+                    else
+                    {
+                        SemanticErrorManager::AddError(new UndeclaredSymbolError
+                            (var->GetVariable()->GetID()));
+                    }
+                }
+                else
+                {
+                    SemanticErrorManager::AddError(new UndeclaredSymbolError
+                        (var->GetVariable()->GetID()));
+                }
+
             }
             else
             {
                 SemanticErrorManager::AddError(new UnknownMemberError
                     (contextTable->GetName(), var->GetVariable()->GetID()));
             }
-            return;
+
+            if (hasError)
+            {
+                return;
+            }
         }
 
         if (right != nullptr)

@@ -62,7 +62,7 @@ private:
 	static constexpr size_t s_numCharInput = sizeof(s_possibleCharInput) / sizeof(char);
 	static constexpr const char* s_keywords[] = 
 	{
-		"or", "and", "not", "integer", "float", "void", "class", "self", "isa", "while", 
+		"or", "and", "not", "integer", "float", "void", "class", "isa", "while", 
 		"if", "then", "else", "read", "write", "return", "localvar", "constructor", "attribute", 
 		"function", "public", "private"
 	};

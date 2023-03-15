@@ -8,10 +8,7 @@
 #include <sstream>
 #include <filesystem>
 
-/*
-To Do
-- add support for "self"
-*/
+create tests and verify them for different cases
 
 void ExitPrompt()
 {
