@@ -220,11 +220,11 @@ std::string ConstructorDefNotFoundError::GetMessage() const
     return ss.str(); 
 }
 
-// CircularClassDependencyError ////////////////////////////////////////////////
-CircularClassDependencyError::CircularClassDependencyError(const Token& classID) 
-    : TokenBasedError(SemanticErrorCode::CircularClassDependency, classID) { }
+// CircularInheritanceDependencyError ////////////////////////////////////////////////
+CircularInheritanceDependencyError::CircularInheritanceDependencyError(const Token& classID) 
+    : TokenBasedError(SemanticErrorCode::CircularInheritanceDependency, classID) { }
 
-std::string CircularClassDependencyError::GetMessage() const
+std::string CircularInheritanceDependencyError::GetMessage() const
 {
     std::stringstream ss;
     ss << "Circular dependancy in the inheritance tree of class \"" 
@@ -232,6 +232,22 @@ std::string CircularClassDependencyError::GetMessage() const
         << "\" detected. At line " << GetToken().GetLine() 
         << ": " << GetToken().GetStrOfLine();
 
+    return ss.str(); 
+}
+
+// CircularClassMemberDependencyError ////////////////////////////////////////////////////
+CircularClassMemberDependencyError::CircularClassMemberDependencyError(const std::string& classID, 
+    const std::string& classOfMember, const Token& member) 
+    : TokenBasedError(SemanticErrorCode::CircularClassMemberDependency, 
+    member), m_classID(classID), m_classOfMember(classOfMember) { }
+
+std::string CircularClassMemberDependencyError::GetMessage() const
+{
+    std::stringstream ss;
+    ss << "The member \"" << m_classOfMember << "::" << GetToken().GetLexeme() 
+    << "\" creates a circular dependancy in class \"" << m_classID 
+    << "\". At line " << GetToken().GetLine() 
+        << ": " << GetToken().GetStrOfLine();
     return ss.str(); 
 }
 

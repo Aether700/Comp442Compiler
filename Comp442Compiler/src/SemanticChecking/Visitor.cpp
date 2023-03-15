@@ -86,10 +86,12 @@ IDNode* GetIDFromEntry(SymbolTableEntry* entry)
     }
 }
 
-// returns nullptr if there is no such inheritance in the inheritance tree
+// tries to find a class or memvar entry of the provided name given the provided 
+// name and parameters. returns nullptr if there is no such inheritance in the 
+// inheritance tree
 SymbolTableEntry* FindEntryInInheritanceTree(SymbolTable* globalTable, 
-    SymbolTable* firstClassTable, const std::string& name, SymbolTableEntryKind kind, 
-    const std::string& params = "")
+    SymbolTable* firstClassTable, const std::string& name, 
+    SymbolTableEntryKind kind, const std::string& params = "")
 {
     if (kind != SymbolTableEntryKind::MemVar 
         && kind != SymbolTableEntryKind::MemFuncDecl
@@ -901,10 +903,12 @@ void SemanticChecker::Visit(ClassDefNode* element)
 
         if (currClass == element)
         {
-            SemanticErrorManager::AddError(new CircularClassDependencyError(element->
+            SemanticErrorManager::AddError(new CircularInheritanceDependencyError(element->
                 GetID()->GetID()));
             break;
         }
+
+        check for circular member here
 
         // push on stack inherited classes
         InheritanceListNode* inheritanceList = currClass->GetInheritanceList();

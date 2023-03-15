@@ -17,7 +17,8 @@ enum class SemanticErrorCode
     MemberFunctionDeclNotFound,
     MemFuncDefNotFound,
     ConstructorDefNotFound,
-    CircularClassDependency,
+    CircularInheritanceDependency,
+    CircularClassMemberDependency,
     InvalidOperandForOperator,
     InvalidTypeMatchupForAssign,
     IncorrectParametersProvidedToFreeFuncCall,
@@ -177,11 +178,23 @@ private:
     Token m_constructor;
 };
 
-class CircularClassDependencyError : public TokenBasedError
+class CircularInheritanceDependencyError : public TokenBasedError
 {
 public:
-    CircularClassDependencyError(const Token& classID);
+    CircularInheritanceDependencyError(const Token& classID);
     virtual std::string GetMessage() const override;
+};
+
+class CircularClassMemberDependencyError : public TokenBasedError
+{
+public:
+    CircularClassMemberDependencyError(const std::string& classID, const std::string& classOfMember, 
+        const Token& member);
+    virtual std::string GetMessage() const override;
+
+private:
+    std::string m_classOfMember;
+    std::string m_classID;
 };
 
 class InvalidOperandForOperatorError : public SemanticError

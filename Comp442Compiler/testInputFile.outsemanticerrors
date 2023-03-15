@@ -1,0 +1,1 @@
+Error: The member "B::z" creates a circular dependancy in class "B". At line 10: attribute z : integer;
