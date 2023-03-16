@@ -161,9 +161,9 @@ std::string DuplicateSymbolError::GetMessage() const
 {
     std::stringstream ss;
     ss << "Duplicate symbol \"" << m_originalToken.GetLexeme() << "\" found at line " 
-        << m_duplicateToken.GetLine() << ": " << m_duplicateToken.GetStrOfLine() 
-        << ". Symbol has already been defined at line " << m_originalToken.GetLine() 
-        << ": " << m_originalToken.GetStrOfLine(); 
+        << m_duplicateToken.GetLine() << ": \"" << m_duplicateToken.GetStrOfLine() 
+        << "\". Symbol has already been defined at line " << m_originalToken.GetLine() 
+        << ": \"" << m_originalToken.GetStrOfLine() << "\""; 
 
     return ss.str();
 }
@@ -242,7 +242,7 @@ std::string CircularInheritanceDependencyError::GetMessage() const
     ss << "Circular dependancy in the inheritance tree of class \"" 
         << GetToken().GetLexeme() 
         << "\" detected. At line " << GetToken().GetLine() 
-        << ": " << GetToken().GetStrOfLine();
+        << ": \"" << GetToken().GetStrOfLine() << "\"";
 
     return ss.str(); 
 }
@@ -259,7 +259,7 @@ std::string CircularClassMemberDependencyError::GetMessage() const
     ss << "The member \"" << m_classOfMember << "::" << GetToken().GetLexeme() 
     << "\" creates a circular dependancy in class \"" << m_classID 
     << "\". At line " << GetToken().GetLine() 
-        << ": " << GetToken().GetStrOfLine();
+        << ": \"" << GetToken().GetStrOfLine() << "\"";
     return ss.str(); 
 }
 
@@ -446,6 +446,19 @@ std::string ArrayIndexingTypeError::GetMessage() const
     std::stringstream ss;
     ss << "Invalid array index type provided. Arrays must be indexed using " 
         << "an \"integer\" type. At Line " << GetToken().GetLine() 
+        << ": \"" << GetToken().GetStrOfLine() << "\"";
+    return ss.str();
+}
+
+// InvalidDotOperatorUsageError ///////////////////////////////////////////////
+InvalidDotOperatorUsageError::InvalidDotOperatorUsageError(const Token& t) 
+    : TokenBasedError(SemanticErrorCode::InvalidDotOperatorUsage, t) { }
+
+std::string InvalidDotOperatorUsageError::GetMessage() const
+{
+    std::stringstream ss;
+    ss << "Invalid usage of the \".\" operator. The \".\" operator can only "
+        << "be used on object types. At Line " << GetToken().GetLine() 
         << ": \"" << GetToken().GetStrOfLine() << "\"";
     return ss.str();
 }

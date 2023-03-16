@@ -28,6 +28,7 @@ enum class SemanticErrorCode
     IncorrectNumberOfMainFunc,
     OperationOnArray,
     ArrayIndexingType,
+    InvalidDotOperatorUsage,
 };
 
 enum class SemanticWarningCode
@@ -289,6 +290,13 @@ class ArrayIndexingTypeError : public TokenBasedError
 {
 public:
     ArrayIndexingTypeError(const Token& t);
+    virtual std::string GetMessage() const override;
+};
+
+class InvalidDotOperatorUsageError : public TokenBasedError
+{
+public:
+    InvalidDotOperatorUsageError(const Token& t);
     virtual std::string GetMessage() const override;
 };
 

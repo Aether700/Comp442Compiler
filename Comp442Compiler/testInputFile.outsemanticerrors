@@ -1,2 +1,1 @@
-Error: The class "A" does not contain a member "b". At Line 26: "self.b = 4;"
-Error: Cannot assign an expression of type "integer" to a variable of type "Unknown Type". At Line 26: "self.b = 4;"
+Error: Cannot assign an expression of type "Unknown Type" to a variable of type "integer". At Line 30: "y = a.GetX();"

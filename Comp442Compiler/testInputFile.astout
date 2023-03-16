@@ -16,47 +16,62 @@ Program
 |  |  |  |  Visibility
 |  |  |  |  |  default
 |  |  |  |  id
-|  |  |  |  |  setX
+|  |  |  |  |  GetX
 |  |  |  |  FParamList
-|  |  |  |  |  FParam
-|  |  |  |  |  |  id
-|  |  |  |  |  |  |  x
-|  |  |  |  |  |  TypeNode
-|  |  |  |  |  |  |  integer
-|  |  |  |  |  |  Dimensions
 |  |  |  |  TypeNode
-|  |  |  |  |  void
+|  |  |  |  |  integer
+|  |  ClassDef
+|  |  |  id
+|  |  |  |  B
+|  |  |  InheritanceList
+|  |  |  MemVar
+|  |  |  |  Visibility
+|  |  |  |  |  default
+|  |  |  |  id
+|  |  |  |  |  a
+|  |  |  |  TypeNode
+|  |  |  |  |  A
+|  |  |  |  Dimensions
 |  FuncDefList
 |  |  MemFuncDef
 |  |  |  id
 |  |  |  |  A
 |  |  |  id
-|  |  |  |  setX
+|  |  |  |  GetX
 |  |  |  TypeNode
-|  |  |  |  void
+|  |  |  |  integer
 |  |  |  FParamList
-|  |  |  |  FParam
-|  |  |  |  |  id
-|  |  |  |  |  |  x
-|  |  |  |  |  TypeNode
-|  |  |  |  |  |  integer
-|  |  |  |  |  Dimensions
 |  |  |  StatBlock
-|  |  |  |  AssigStat
-|  |  |  |  |  Dot
-|  |  |  |  |  |  Variable
-|  |  |  |  |  |  |  id
-|  |  |  |  |  |  |  |  self
-|  |  |  |  |  |  |  Dimensions
-|  |  |  |  |  |  Variable
-|  |  |  |  |  |  |  id
-|  |  |  |  |  |  |  |  b
-|  |  |  |  |  |  |  Dimensions
+|  |  |  |  ReturnStat
 |  |  |  |  |  Expr
-|  |  |  |  |  |  Literal
-|  |  |  |  |  |  |  4
-|  |  |  |  |  |  |  TypeNode
-|  |  |  |  |  |  |  |  integer
+|  |  |  |  |  |  Dot
+|  |  |  |  |  |  |  Variable
+|  |  |  |  |  |  |  |  id
+|  |  |  |  |  |  |  |  |  self
+|  |  |  |  |  |  |  |  Dimensions
+|  |  |  |  |  |  |  Variable
+|  |  |  |  |  |  |  |  id
+|  |  |  |  |  |  |  |  |  x
+|  |  |  |  |  |  |  |  Dimensions
+|  |  FuncDef
+|  |  |  id
+|  |  |  |  CreateA
+|  |  |  TypeNode
+|  |  |  |  A
+|  |  |  FParamList
+|  |  |  StatBlock
+|  |  |  |  VarDecl
+|  |  |  |  |  id
+|  |  |  |  |  |  a
+|  |  |  |  |  TypeNode
+|  |  |  |  |  |  A
+|  |  |  |  |  Dimensions
+|  |  |  |  ReturnStat
+|  |  |  |  |  Expr
+|  |  |  |  |  |  Variable
+|  |  |  |  |  |  |  id
+|  |  |  |  |  |  |  |  a
+|  |  |  |  |  |  |  Dimensions
 |  |  FuncDef
 |  |  |  id
 |  |  |  |  main
@@ -64,3 +79,36 @@ Program
 |  |  |  |  void
 |  |  |  FParamList
 |  |  |  StatBlock
+|  |  |  |  VarDecl
+|  |  |  |  |  id
+|  |  |  |  |  |  a
+|  |  |  |  |  TypeNode
+|  |  |  |  |  |  A
+|  |  |  |  |  Dimensions
+|  |  |  |  VarDecl
+|  |  |  |  |  id
+|  |  |  |  |  |  b
+|  |  |  |  |  TypeNode
+|  |  |  |  |  |  B
+|  |  |  |  |  Dimensions
+|  |  |  |  VarDecl
+|  |  |  |  |  id
+|  |  |  |  |  |  y
+|  |  |  |  |  TypeNode
+|  |  |  |  |  |  integer
+|  |  |  |  |  Dimensions
+|  |  |  |  AssigStat
+|  |  |  |  |  Variable
+|  |  |  |  |  |  id
+|  |  |  |  |  |  |  y
+|  |  |  |  |  |  Dimensions
+|  |  |  |  |  Expr
+|  |  |  |  |  |  Dot
+|  |  |  |  |  |  |  Variable
+|  |  |  |  |  |  |  |  id
+|  |  |  |  |  |  |  |  |  a
+|  |  |  |  |  |  |  |  Dimensions
+|  |  |  |  |  |  |  FuncCall
+|  |  |  |  |  |  |  |  id
+|  |  |  |  |  |  |  |  |  GetX
+|  |  |  |  |  |  |  |  AParams

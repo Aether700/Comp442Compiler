@@ -586,6 +586,26 @@ std::string VariableNode::GetEvaluatedType()
         {
             return GetSymbolTable()->GetParentTable()->GetName();
         }
+        else if (dynamic_cast<DotNode*>(GetParent()) != nullptr)
+        {
+            DotNode* dotParent = (DotNode*) GetParent();
+            SymbolTable* globalTable = GetGlobalTable(GetSymbolTable());
+            SymbolTableEntry* leftScopeTableEntry 
+                = globalTable->FindEntryInScope(dotParent->GetLeft()->GetEvaluatedType());
+            if (leftScopeTableEntry != nullptr 
+                && leftScopeTableEntry->GetKind() == SymbolTableEntryKind::Class)
+            {
+                SymbolTable* leftVarScopeTable = leftScopeTableEntry->GetSubTable();
+                SymbolTableEntry* currVarEntry = leftVarScopeTable->
+                    FindEntryInScope(GetVariable()->GetID().GetLexeme());
+
+                if (currVarEntry != nullptr)
+                {
+                    return currVarEntry->GetEvaluatedType();
+                }
+            }
+            return InvalidType;
+        }
         else
         {
             return InvalidType;

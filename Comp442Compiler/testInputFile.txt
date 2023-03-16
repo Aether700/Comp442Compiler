@@ -1,33 +1,31 @@
+
 class A
 {
     attribute x : integer;
 
-    //constructor:(x : integer);
-
-    //function getX : () => integer;
-    function setX : (x : integer) => void;
-
+    function GetX : () => integer;
 };
 
-/*
-function A::constructor(x : integer) { self.x = x; }
-
-function A::getX() => integer
+class B
 {
-    freeFunc(self);
+    attribute a : A;
+};
+
+function A::GetX() => integer
+{
     return (self.x);
 }
 
-function freeFunc(a : A) => void { }
-*/
-
-function A::setX(x : integer) => void 
-{ 
-    self.b = 4;
-    //self.x = x; 
+function CreateA() => A
+{
+    localvar a : A;
+    return (a);
 }
 
-
-function main()=>void
+function main() => void
 {
+    localvar a : A;
+    localvar b : B;
+    localvar y : integer;
+    y = a.GetX();
 }

@@ -8,7 +8,8 @@
 #include <sstream>
 #include <filesystem>
 
-create tests and verify them for different cases
+curr type evaluation fails for current input text file
+check that changes don't break things in other semantic test files
 
 void ExitPrompt()
 {

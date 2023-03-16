@@ -183,8 +183,8 @@ SymbolTable* GetContextTable(SymbolTable* globalTable, SymbolTable* prevContext,
         {
             if (logErrors)
             {
-                SemanticErrorManager::AddError(new UnknownMemberError(prevContext->GetName(), 
-                    var->GetVariable()->GetID()));
+                SemanticErrorManager::AddError(
+                    new InvalidDotOperatorUsageError(var->GetVariable()->GetID()));
             }
             return nullptr;
         }

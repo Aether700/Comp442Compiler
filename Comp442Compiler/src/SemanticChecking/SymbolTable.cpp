@@ -589,7 +589,7 @@ SymbolTableEntry* SymbolTable::FindExistingEntry(SymbolTableEntry* entry)
         }
     }
 
-    return nullptr;
+    return originalEntry;
 }
 
 SymbolTableEntry* SymbolTable::FindInInheritanceScope(const std::string& name)
