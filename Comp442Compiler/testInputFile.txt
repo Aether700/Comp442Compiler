@@ -1,31 +1,40 @@
+class Vec2
+{
+    public attribute x : float;
+    public attribute y : float;
+
+    constructor : (x : float, y : float);
+};
+
+function Vec2::constructor(x : float, y : float)
+{
+    self.x = x;
+    self.y = y;
+}
+
+class Vec3 isa Vec2
+{
+    public attribute z : float;
+    constructor : (x : float, y : float, z : float);
+};
+
+function Vec3::constructor(x : float, y : float, z : float)
+{
+    self.x = x;
+    self.y = y;
+    self.z = z;
+}
 
 class A
 {
-    attribute x : integer;
-
-    function GetX : () => integer;
+    function f:(x : integer) => void;
 };
 
-class B
-{
-    attribute a : A;
-};
-
-function A::GetX() => integer
-{
-    return (self.x);
-}
-
-function CreateA() => A
-{
-    localvar a : A;
-    return (a);
-}
+function A::f(x : integer) => void { }
 
 function main() => void
 {
-    localvar a : A;
-    localvar b : B;
-    localvar y : integer;
-    y = a.GetX();
+    localvar v : Vec3(2.5, 2.4);
+    localvar f : float;
+    f = v.x;
 }

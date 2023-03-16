@@ -2,15 +2,21 @@
 #include "AST.h"
 #include "../SemanticChecking/SymbolTable.h"
 
-
+DotNode* FindRootDotNodeParent(ASTNode* node);
 DotNode* FindFirstDotNodeParent(ASTNode* node);
 bool HasDotForParent(ASTNode* node);
 DotNode* GetRootDotNode(ASTNode* node);
 DotNode* GetRootDotNode(DotNode* dot);
 
-// returns nullptr if the node is invalid as a leftside of a dot expression
+/* returns the context SymbolTable from the provided left side of a dot 
+   expression or nullptr if the left side of the dot expression is invalid
+*/
 SymbolTable* GetContextTable(SymbolTable* global, SymbolTable* prevContext, 
     ASTNode* node, bool logErrors = true);
+
+// tries to retrieve the context for the provided node which is 
+// part of a dot expression. Returns nullptr if the dot expression is invalid
+SymbolTable* RetrieveContextTableFromNodeInDotExpr(ASTNode* node, const std::string& name);
 
 SymbolTable* GetGlobalTable(SymbolTable* currTable);
 

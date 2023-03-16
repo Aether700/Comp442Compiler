@@ -7,6 +7,8 @@
 class BaseBinaryOperator;
 class AssignStatNode;
 class FuncCallNode;
+class TypeNode;
+class AParamListNode;
 
 // Codes ////////////////////////////////////////////////////////////////////////
 enum class SemanticErrorCode
@@ -21,7 +23,7 @@ enum class SemanticErrorCode
     CircularClassMemberDependency,
     InvalidOperandForOperator,
     InvalidTypeMatchupForAssign,
-    IncorrectParametersProvidedToFreeFuncCall,
+    IncorrectParametersProvidedToFuncCall,
     UnknownMember,
     IncorrectReturnType,
     MissingReturnStat,
@@ -231,14 +233,17 @@ private:
     AssignStatNode* m_node;
 };
 
-class IncorrectParametersProvidedToFreeFuncCallError : public SemanticError
+class IncorrectParametersProvidedToFuncCallError : public SemanticError
 {
 public:
-    IncorrectParametersProvidedToFreeFuncCallError(FuncCallNode* funcCall);
+    IncorrectParametersProvidedToFuncCallError(FuncCallNode* funcCall);
+    IncorrectParametersProvidedToFuncCallError(TypeNode* classType, AParamListNode* params);
     virtual std::string GetMessage() const override;
 
 private:
     FuncCallNode* m_node;
+    TypeNode* m_type;
+    AParamListNode* m_params;
 };
 
 class UnknownMemberError : public TokenBasedError

@@ -90,6 +90,18 @@ SymbolTable* FindNameInDot(SymbolTable* globalTable, SymbolTable* contextTable,
 }
 
 ////////////////////////////////////////////////////////////////////////
+DotNode* FindRootDotNodeParent(ASTNode* node)
+{
+    ASSERT(HasDotForParent(node));
+    ASTNode* currNode = node;
+    while (HasDotForParent(currNode))
+    {
+        currNode = currNode->GetParent();
+    }
+    ASSERT(dynamic_cast<DotNode*>(currNode) != nullptr);
+    return (DotNode*)currNode;
+}
+
 DotNode* FindFirstDotNodeParent(ASTNode* node)
 {
     ASTNode* parent = node->GetParent();
@@ -234,10 +246,23 @@ SymbolTable* GetContextTable(SymbolTable* globalTable, SymbolTable* prevContext,
     else
     {
         // should never reach here
+        auto s = node->ToString();
         DEBUG_BREAK();
     }
 
     return nullptr;
+}
+
+SymbolTable* RetrieveContextTableFromNodeInDotExpr(ASTNode* node, const std::string& name)
+{
+    if (!HasDotForParent(node))
+    {
+        return nullptr;
+    }
+
+    DotNode* currDot = FindRootDotNodeParent(node);
+    SymbolTable* currContext = currDot->GetSymbolTable();
+    return FindNameInDot(GetGlobalTable(currContext), currContext, currDot, name);
 }
 
 SymbolTable* GetGlobalTable(SymbolTable* currTable)

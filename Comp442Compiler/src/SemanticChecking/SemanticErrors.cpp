@@ -329,17 +329,32 @@ std::string InvalidTypeMatchupForAssignError::GetMessage() const
     return ss.str();
 }
 
-// IncorrectParametersProvidedToFreeFuncCallError /////////////////////////////////
-IncorrectParametersProvidedToFreeFuncCallError
-    ::IncorrectParametersProvidedToFreeFuncCallError(FuncCallNode* funcCall) 
-    : SemanticError(SemanticErrorCode::IncorrectParametersProvidedToFreeFuncCall), 
+// IncorrectParametersProvidedToFuncCallError /////////////////////////////////
+IncorrectParametersProvidedToFuncCallError
+    ::IncorrectParametersProvidedToFuncCallError(FuncCallNode* funcCall) 
+    : SemanticError(SemanticErrorCode::IncorrectParametersProvidedToFuncCall), 
     m_node(funcCall) { }
 
-std::string IncorrectParametersProvidedToFreeFuncCallError::GetMessage() const
-{
-    const Token& t = m_node->GetFirstToken();
+IncorrectParametersProvidedToFuncCallError
+    ::IncorrectParametersProvidedToFuncCallError(TypeNode* classType, AParamListNode* params)
+    : SemanticError(SemanticErrorCode::IncorrectParametersProvidedToFuncCall), 
+    m_node(nullptr), m_type(classType), m_params(params) { }
 
-    std::string paramStr = AParamToTypeList(m_node->GetParameters());
+std::string IncorrectParametersProvidedToFuncCallError::GetMessage() const
+{
+    Token t; 
+    std::string paramStr;
+    if (m_node != nullptr)
+    {
+        t = m_node->GetFirstToken();
+        paramStr = AParamToTypeList(m_node->GetParameters());
+    }
+    else
+    {
+        t = m_type->GetType();
+        paramStr = AParamToTypeList(m_params);
+    }
+
 
     std::stringstream ss;
     ss << "Incorrect parameters provided when calling function \"" 

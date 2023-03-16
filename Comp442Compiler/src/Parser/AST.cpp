@@ -613,7 +613,17 @@ std::string VariableNode::GetEvaluatedType()
     }
 
     VarDeclNode* node = (VarDeclNode*)entry->GetNode();
-    size_t numDim = node->GetDimension()->GetNumChild();
+    DimensionNode* dim = node->GetDimension();
+    size_t numDim;
+    
+    if (dim != nullptr) 
+    {
+        numDim = dim->GetNumChild();
+    }
+    else
+    {
+        numDim = 0;
+    }
 
     if (numDim == 0)
     {
@@ -836,6 +846,26 @@ FuncCallNode::FuncCallNode(IDNode* id, AParamListNode* parameters)
 IDNode* FuncCallNode::GetID() { return (IDNode*)GetChild(0); }
 AParamListNode* FuncCallNode::GetParameters() { return (AParamListNode*)GetChild(1); }
 
+std::string FuncCallNode::GetEvaluatedType() 
+{
+    if (HasDotForParent(this))
+    {
+        const std::string& name = GetID()->GetID().GetLexeme();
+        SymbolTable* global = GetGlobalTable(GetSymbolTable());
+        SymbolTable* context = RetrieveContextTableFromNodeInDotExpr(this, name);
+        
+        if (context == nullptr)
+        {
+            return InvalidType;
+        }
+        return GetEvaluatedType(context);
+    }
+    else
+    {
+        return GetEvaluatedType(GetSymbolTable());
+    }
+}
+
 std::string FuncCallNode::ToString(size_t indent)
 {
     std::stringstream ss;
@@ -851,6 +881,21 @@ void FuncCallNode::AcceptVisit(Visitor* visitor)
 {
     ChildrenAcceptVisit(visitor);
     visitor->Visit(this); 
+}
+
+std::string FuncCallNode::GetEvaluatedType(SymbolTable* context)
+{
+    SymbolTableEntry* entry = context->FindEntryInScope(GetID()->GetID().GetLexeme());
+    if (entry == nullptr)
+    {
+        return InvalidType;
+    }
+
+    ASSERT(entry->GetKind() == SymbolTableEntryKind::FreeFunction 
+        || entry->GetKind() == SymbolTableEntryKind::MemFuncDecl 
+        || entry->GetKind() == SymbolTableEntryKind::ConstructorDecl);
+
+    return entry->GetEvaluatedType();
 }
 
 // StatBlockNode ///////////////////////////////////////////////////

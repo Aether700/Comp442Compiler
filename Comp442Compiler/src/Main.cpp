@@ -8,9 +8,6 @@
 #include <sstream>
 #include <filesystem>
 
-curr type evaluation fails for current input text file
-check that changes don't break things in other semantic test files
-
 void ExitPrompt()
 {
 	std::cout << "\nPress enter to exit\n";

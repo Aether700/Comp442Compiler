@@ -417,9 +417,13 @@ public:
 
     IDNode* GetID();
     AParamListNode* GetParameters();
+    virtual std::string GetEvaluatedType() override;
 
     virtual std::string ToString(size_t indent = 0) override;
     virtual void AcceptVisit(Visitor* visitor) override;
+
+private:
+    std::string GetEvaluatedType(SymbolTable* context);
 };
 
 class StatBlockNode : public ASTNodeBase

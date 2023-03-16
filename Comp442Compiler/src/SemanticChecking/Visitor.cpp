@@ -698,6 +698,41 @@ void SemanticChecker::Visit(IDNode* element)
     }
 }
 
+void SemanticChecker::Visit(VarDeclNode* element)
+{
+    // check for constructor parameters
+    AParamListNode* params = element->GetParamList();
+    if (params != nullptr)
+    {
+        const std::string& classID = element->GetType()->GetType().GetLexeme();
+        SymbolTableEntry* classEntry = m_globalTable->FindEntryInTable(classID);
+        if (classEntry != nullptr && classEntry->GetKind() == SymbolTableEntryKind::Class)
+        {
+            SymbolTable* classTable = classEntry->GetSubTable();
+            bool found = false;
+            for (SymbolTableEntry* entry : *classTable)
+            {
+                if (entry->GetKind() == SymbolTableEntryKind::ConstructorDecl)
+                {
+                    ConstructorTableEntry* constructor = (ConstructorTableEntry*)entry;
+                    FParamListNode* fparam = constructor->GetDeclNode()->GetParameters();
+                    if (HasMatchingParameters(fparam, params))
+                    {
+                        found = true;
+                        break;
+                    }
+                }
+            }
+
+            if (!found)
+            {
+                SemanticErrorManager::AddError(new 
+                    IncorrectParametersProvidedToFuncCallError(element->GetType(), params));
+            }
+        }
+    }
+}
+
 void SemanticChecker::Visit(DimensionNode* element)
 {
     for (ASTNode* node : element->GetChildren())
@@ -804,7 +839,7 @@ void SemanticChecker::Visit(FuncCallNode* element)
     if (!found)
     {
         SemanticErrorManager::AddError(
-            new IncorrectParametersProvidedToFreeFuncCallError(element));
+            new IncorrectParametersProvidedToFuncCallError(element));
     }
 }
 
@@ -1226,7 +1261,7 @@ void SemanticChecker::TestDotRemainder(SymbolTable* contextTable,
             else if (!foundSameArgs)
             {
                 SemanticErrorManager::AddError(
-                    new IncorrectParametersProvidedToFreeFuncCallError(funcCall));
+                    new IncorrectParametersProvidedToFuncCallError(funcCall));
             }
         }
 
