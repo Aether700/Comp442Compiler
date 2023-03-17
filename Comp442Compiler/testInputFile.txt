@@ -1,40 +1,16 @@
-class Vec2
-{
-    public attribute x : float;
-    public attribute y : float;
-
-    constructor : (x : float, y : float);
-};
-
-function Vec2::constructor(x : float, y : float)
-{
-    self.x = x;
-    self.y = y;
-}
-
-class Vec3 isa Vec2
-{
-    public attribute z : float;
-    constructor : (x : float, y : float, z : float);
-};
-
-function Vec3::constructor(x : float, y : float, z : float)
-{
-    self.x = x;
-    self.y = y;
-    self.z = z;
-}
-
 class A
 {
-    function f:(x : integer) => void;
+    attribute x : integer;
+    function f:(x : float)=>void;
 };
 
-function A::f(x : integer) => void { }
+function A::f(x : float)=>void { }
 
-function main() => void
+class B isa A
 {
-    localvar v : Vec3(2.5, 2.4);
-    localvar f : float;
-    f = v.x;
-}
+    function f:(x : float)=>void;
+};
+
+function B::f(x : float)=>void { }
+
+function main()=>void { }

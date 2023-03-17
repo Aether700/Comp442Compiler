@@ -85,16 +85,34 @@ std::string OverloadedConstructorWarn::GetMessage() const
     return ss.str();
 }
 
-// OverShadowedMemWarn ////////////////////////////////////////////////////////
-OverShadowedMemWarn::OverShadowedMemWarn(const Token& classID, const Token& member) 
-    : TokenPairBasedWarning(SemanticWarningCode::OverShadowedMem, classID, member) { }
+// MemOverShadowingMemWarn ////////////////////////////////////////////////////////
+MemOverShadowingMemWarn::MemOverShadowingMemWarn(const Token& classID, const Token& member) 
+    : TokenPairBasedWarning(SemanticWarningCode::MemOverShadowingMem, classID, member) { }
 
-std::string OverShadowedMemWarn::GetMessage() const
+std::string MemOverShadowingMemWarn::GetMessage() const
 {
     std::stringstream ss;
     ss << "The member \"" << GetToken2().GetLexeme() 
         << "\" of the \"" << GetToken1().GetLexeme() 
         << "\" is overshadowing a member from a parent class. At line " 
+        << GetToken2().GetLine() << ": \""  
+        << GetToken2().GetStrOfLine() << "\"";
+
+    return ss.str();
+}
+
+// LocalVarOverShadowingMem ////////////////////////////////////////////////
+LocalVarOverShadowingMem::LocalVarOverShadowingMem(const Token& classID, 
+    const Token& localVar) 
+    : TokenPairBasedWarning(SemanticWarningCode::LocalVarOverShadowingMem, 
+        classID, localVar) { }
+
+std::string LocalVarOverShadowingMem::GetMessage() const
+{
+    std::stringstream ss;
+    ss << "The local variable \"" << GetToken2().GetLexeme() 
+        << "\" is overshadowing a member from a the class \"" 
+        << GetToken1().GetLexeme() << "\". At line " 
         << GetToken2().GetLine() << ": \""  
         << GetToken2().GetStrOfLine() << "\"";
 
@@ -110,6 +128,22 @@ std::string MainHasParametersWarn::GetMessage() const
     std::stringstream ss;
     ss << "The definition of the main function takes parameters as input. ";
     ss << "Note that the main function does not provide support for command line arguments";
+    return ss.str();
+}
+
+// OverridenFuncWarn /////////////////////////////////////////////////////////
+OverridenFuncWarn::OverridenFuncWarn(const std::string& currClassID, 
+    const std::string& parentClassID, const Token& funcName, const std::string& paramStr) 
+    : TokenBasedWarning(SemanticWarningCode::OverridenFunc, funcName), 
+    m_currClassID(currClassID), m_parentClassID(parentClassID), m_params(paramStr) { }
+
+std::string OverridenFuncWarn::GetMessage() const
+{
+    std::stringstream ss;
+    ss << "The function \"" << m_currClassID << "::" << GetToken().GetLexeme() 
+        << "(" << m_params << ")\" overrides the function \"" << m_parentClassID 
+        << "::" << GetToken().GetLexeme() << "(" << m_params << ")\". At line " 
+        << GetToken().GetLine() << ": \"" << GetToken().GetStrOfLine() << "\"";
     return ss.str();
 }
 
@@ -494,7 +528,7 @@ bool SemanticErrorManager::HasError() { return GetInstance().m_errors.size() > 0
 void SemanticErrorManager::LogData() 
 {
     SemanticErrorManager& manager = GetInstance();
-    std::ofstream outFile = std::ofstream(manager.m_filepath);
+    std::ofstream outFile = std::ofstream(manager.m_filepath, std::ios_base::trunc);
     for (SemanticWarning* warning : manager.m_warnings)
     {
         outFile << warning->ToString() << "\n";

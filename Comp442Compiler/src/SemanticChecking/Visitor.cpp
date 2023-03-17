@@ -8,6 +8,32 @@
 
 // Helpers /////////////////////////////////////////////////////
 
+template<typename NodeType>
+void CheckForLocalVarOverShadowing(NodeType* element)
+{
+    const std::string& varName = element->GetID()->GetID().GetLexeme();
+    SymbolTableEntry* elementEntry = element->GetSymbolTable()->FindEntryInTable(varName);
+    ASSERT(elementEntry != nullptr);
+    if (elementEntry->GetKind() == SymbolTableEntryKind::LocalVariable 
+        || elementEntry->GetKind() == SymbolTableEntryKind::Parameter)
+    {
+        SymbolTableEntry* parentEntry = elementEntry->GetParentTable()->GetParentEntry();
+        if (parentEntry->GetKind() == SymbolTableEntryKind::MemFuncDecl
+            || parentEntry->GetKind() == SymbolTableEntryKind::ConstructorDecl)
+        {
+            SymbolTableEntry* overshadowedMem = parentEntry->GetParentTable()
+                ->FindEntryInScope(varName);
+            if (overshadowedMem != nullptr && overshadowedMem->GetKind() 
+                == SymbolTableEntryKind::MemVar)
+            {
+                SemanticErrorManager::AddWarning(new LocalVarOverShadowingMem(
+                    ((ClassDefNode*)overshadowedMem->GetNode()->GetParent())->GetID()->GetID(), 
+                    element->GetID()->GetID()));
+            }
+        }
+    }
+}
+
 std::string VarDeclToTypeStr(VarDeclNode* var)
 {
     ASSERT(var != nullptr);
@@ -700,6 +726,9 @@ void SemanticChecker::Visit(IDNode* element)
 
 void SemanticChecker::Visit(VarDeclNode* element)
 {
+    // check for localvar overshadowing member
+    CheckForLocalVarOverShadowing(element);
+
     // check for constructor parameters
     AParamListNode* params = element->GetParamList();
     if (params != nullptr)
@@ -810,6 +839,11 @@ void SemanticChecker::Visit(AssignStatNode* element)
     }
 }
 
+void SemanticChecker::Visit(FParamNode* element)
+{
+    CheckForLocalVarOverShadowing(element);
+}
+
 void SemanticChecker::Visit(FuncCallNode* element)
 {
     if (HasDotForParent(element))
@@ -904,6 +938,55 @@ void SemanticChecker::Visit(ProgramNode* element)
         if (((FunctionDefNode*)mainEntry->GetNode())->GetParameters()->GetNumChild() > 0)
         {
             SemanticErrorManager::AddWarning(new MainHasParametersWarn());
+        }
+    }
+}
+
+void SemanticChecker::Visit(MemFuncDeclNode* element)
+{
+    // check for overriden functions
+    ClassDefNode* classNode = (ClassDefNode*)element->GetParent();
+    if (classNode->GetInheritanceList()->GetNumChild() > 0)
+    {
+        const std::string& funcName = element->GetID()->GetID().GetLexeme();
+        MemFuncTableEntry* currElementEntry = (MemFuncTableEntry*)element->GetParent()
+            ->GetSymbolTable()->FindEntryInTable(funcName);
+
+        bool found = false;
+        for (ASTNode* baseNode : classNode->GetInheritanceList()->GetChildren())
+        {
+            IDNode* id = (IDNode*)baseNode;
+            SymbolTableEntry* parentClassEntry = m_globalTable->FindEntryInTable(
+                id->GetID().GetLexeme());
+
+            if (parentClassEntry != nullptr)
+            {
+                ASSERT(parentClassEntry->GetKind() == SymbolTableEntryKind::Class);
+                for (SymbolTableEntry* parentEntry : *parentClassEntry->GetSubTable())
+                {
+                    if (parentEntry->GetKind() == SymbolTableEntryKind::MemFuncDecl)
+                    {
+                        MemFuncTableEntry* memFuncEntry = (MemFuncTableEntry*)parentEntry;
+                        MemFuncDeclNode* memFuncNode = memFuncEntry->GetDeclNode();
+                        if (memFuncNode->GetID()->GetID().GetLexeme() 
+                            == funcName && memFuncEntry->GetParamTypes() 
+                            == currElementEntry->GetParamTypes())
+                        {
+                            SemanticErrorManager::AddWarning(
+                                new OverridenFuncWarn(currElementEntry->GetClassID(), 
+                                memFuncEntry->GetClassID(), element->GetID()->GetID(), 
+                                currElementEntry->GetParamTypes()));
+                            found = true;
+                            break;
+                        }
+                    }
+                }
+
+                if (found)
+                {
+                    break;
+                }
+            }
         }
     }
 }
@@ -1007,7 +1090,7 @@ void SemanticChecker::Visit(InheritanceListNode* element)
         
         if (overshadowedEntry != nullptr)
         {
-            SemanticErrorManager::AddWarning(new OverShadowedMemWarn(
+            SemanticErrorManager::AddWarning(new MemOverShadowingMemWarn(
                 ((ClassDefNode*)element->GetParent())->GetID()->GetID(), 
                 GetIDFromEntry(entry)->GetID()));
         }

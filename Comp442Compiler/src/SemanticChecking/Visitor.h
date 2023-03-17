@@ -96,8 +96,10 @@ public:
     virtual void Visit(ReturnStatNode* element) override;
     virtual void Visit(AssignStatNode* element) override;
     virtual void Visit(VarDeclNode* element) override;
+    virtual void Visit(FParamNode* element) override;
     virtual void Visit(FuncCallNode* element) override;
     virtual void Visit(FunctionDefNode* element) override;
+    virtual void Visit(MemFuncDeclNode* element) override;
     virtual void Visit(MemFuncDefNode* element) override;
     virtual void Visit(ConstructorDefNode* element) override;
     virtual void Visit(InheritanceListNode* element) override;

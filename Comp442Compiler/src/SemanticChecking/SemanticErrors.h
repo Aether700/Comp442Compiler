@@ -38,8 +38,10 @@ enum class SemanticWarningCode
     OverloadedFreeFunc,
     OverloadedMemFunc,
     OverloadedConstructor,
-    OverShadowedMem,
+    MemOverShadowingMem,
+    LocalVarOverShadowingMem,
     MainHasParameters,
+    OverridenFunc,
 };
 
 // Warnings ////////////////////////////////////////////////////////////////////////
@@ -98,10 +100,17 @@ public:
     virtual std::string GetMessage() const override;
 };
 
-class OverShadowedMemWarn : public TokenPairBasedWarning
+class MemOverShadowingMemWarn : public TokenPairBasedWarning
 {
 public:
-    OverShadowedMemWarn(const Token& classID, const Token& member);
+    MemOverShadowingMemWarn(const Token& classID, const Token& member);
+    virtual std::string GetMessage() const override;
+};
+
+class LocalVarOverShadowingMem : public TokenPairBasedWarning
+{
+public:
+    LocalVarOverShadowingMem(const Token& classID, const Token& localVar);
     virtual std::string GetMessage() const override;
 };
 
@@ -110,6 +119,19 @@ class MainHasParametersWarn : public SemanticWarning
 public:
     MainHasParametersWarn();
     virtual std::string GetMessage() const override;
+};
+
+class OverridenFuncWarn : public TokenBasedWarning
+{
+public:
+    OverridenFuncWarn(const std::string& currClassID, const std::string& parentClassID, 
+        const Token& funcName, const std::string& paramStr);
+    virtual std::string GetMessage() const override;
+
+private:
+    std::string m_currClassID;
+    std::string m_parentClassID;
+    std::string m_params;
 };
 
 // Errors ////////////////////////////////////////////////////////////////////////
