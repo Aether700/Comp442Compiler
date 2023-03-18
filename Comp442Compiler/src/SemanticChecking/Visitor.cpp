@@ -913,7 +913,7 @@ void SemanticChecker::Visit(ProgramNode* element)
 {
     // check number of main functions
     size_t numMainEncountered = 0;
-    SymbolTableEntry* mainEntry;
+    SymbolTableEntry* mainEntry = nullptr;
     for (SymbolTableEntry* entry : *m_globalTable)
     {
         if (entry->GetKind() == SymbolTableEntryKind::FreeFunction 
