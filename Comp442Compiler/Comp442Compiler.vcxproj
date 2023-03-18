@@ -152,9 +152,6 @@
     <ClInclude Include="src\SemanticChecking\SymbolTable.h" />
     <ClInclude Include="src\SemanticChecking\Visitor.h" />
   </ItemGroup>
-  <ItemGroup>
-    <Text Include="testInputFile.txt" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
