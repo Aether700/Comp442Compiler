@@ -11,7 +11,7 @@
 
 
 /* To Do
- - start working on computing offsets now
+ - store and compute offset for returning address of functions, return value etc
  - still need to add self parameter for memfunc/constructors (do later?)
 */
 
