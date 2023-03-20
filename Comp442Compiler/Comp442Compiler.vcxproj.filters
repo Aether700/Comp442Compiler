@@ -45,6 +45,9 @@
     <ClCompile Include="src\SemanticChecking\Visitor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\CodeGeneration\CodeGeneration.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Lexer\Lexer.h">
@@ -75,6 +78,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\SemanticChecking\Visitor.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\CodeGeneration\CodeGeneration.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

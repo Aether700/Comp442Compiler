@@ -3,15 +3,27 @@
 #include "Parser/Parser.h"
 #include "Core/Util.h"
 #include "SemanticChecking/SemanticErrors.h"
+#include "CodeGeneration/CodeGeneration.h"
 
 #include <iostream>
 #include <sstream>
 #include <filesystem>
 
+
+still need to add self parameter for memfunc/constructors (do later?)
+start working on computing offsets now
+
 void ExitPrompt()
 {
 	std::cout << "\nPress enter to exit\n";
 	std::cin.get();
+}
+
+void DisplaySymbolTable(const std::string& filepath, ProgramNode* prog)
+{
+	std::ofstream symbolTableFile = std::ofstream(SimplifyFilename(filepath)
+		+ ".outsymboltables");
+	symbolTableFile << SymbolTableDisplayManager::TableToStr(prog->GetSymbolTable());
 }
 
 void Compile(const std::string& filepath)
@@ -34,20 +46,25 @@ void Compile(const std::string& filepath)
 	if (SemanticErrorManager::HasError())
 	{
 		SemanticErrorManager::LogData();
+		DisplaySymbolTable(filepath, program);
 		return;
-	}
-
-	{
-		std::ofstream symbolTableFile = std::ofstream(SimplifyFilename(filepath) 
-			+ ".outsymboltables");
-		symbolTableFile << SymbolTableDisplayManager::TableToStr(assembler->
-			GetGlobalSymbolTable());
 	}
 
 	SemanticChecker* checker = new SemanticChecker(assembler->GetGlobalSymbolTable());
 	program->AcceptVisit(checker);
 
+	if (SemanticErrorManager::HasError())
+	{
+		SemanticErrorManager::LogData();
+		DisplaySymbolTable(filepath, program);
+		return;
+	}
+
+	SizeGenerator* sizeGen = new SizeGenerator(program->GetSymbolTable());
+	program->AcceptVisit(sizeGen);
+
 	SemanticErrorManager::LogData();
+	DisplaySymbolTable(filepath, program);
 
 	delete checker;
 	delete assembler;
@@ -61,8 +78,12 @@ int main(int argc, char* argv[])
 	std::string currDir = std::string(argv[0]);
 	std::string path = currDir.substr(0, currDir.find_last_of("/\\"));
 	path = path.substr(0, path.find_last_of("/\\"));
+#ifdef VS_BUILD
+	path = path.substr(0, path.find_last_of("/\\"));
+	path += "/Comp442Compiler/" + file;
+#else
 	path += "/Comp442Compiler/Comp442Compiler/" + file;
-	
+#endif
 	Compile(path);
 #else
 	std::string directoryPath = "TestFiles";

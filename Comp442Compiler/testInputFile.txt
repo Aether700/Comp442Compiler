@@ -1,16 +1,17 @@
 class A
 {
-    attribute x : integer;
-    function f:(x : float)=>void;
+	attribute x : integer;
+	attribute y : integer;
 };
-
-function A::f(x : float)=>void { }
 
 class B isa A
 {
-    function f:(x : float)=>void;
+	attribute z : integer;
 };
 
-function B::f(x : float)=>void { }
-
-function main()=>void { }
+function main() =>void
+{
+	localvar b : B;
+	b.x = 5 + 6 * 2;
+	write(b.x);
+}

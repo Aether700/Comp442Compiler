@@ -102,7 +102,7 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions);DEBUG_MODE;</PreprocessorDefinitions>
+      <PreprocessorDefinitions>VS_BUILD;_DEBUG;_CONSOLE;%(PreprocessorDefinitions);DEBUG_MODE;</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
@@ -117,7 +117,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>VS_BUILD;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
@@ -129,6 +129,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\CodeGeneration\CodeGeneration.cpp" />
     <ClCompile Include="src\Core\Token.cpp" />
     <ClCompile Include="src\Core\Util.cpp" />
     <ClCompile Include="src\Lexer\Lexer.cpp" />
@@ -141,6 +142,7 @@
     <ClCompile Include="src\SemanticChecking\Visitor.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\CodeGeneration\CodeGeneration.h" />
     <ClInclude Include="src\Core\Core.h" />
     <ClInclude Include="src\Core\Token.h" />
     <ClInclude Include="src\Core\Util.h" />

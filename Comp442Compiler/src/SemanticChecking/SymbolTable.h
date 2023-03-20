@@ -18,6 +18,8 @@ class SymbolTable;
 class MemFuncDefEntry;
 class ConstructorDefEntry;
 
+constexpr size_t InvalidSize = SIZE_MAX;
+
 enum class SymbolTableEntryKind
 {
     LocalVariable,
@@ -29,10 +31,22 @@ enum class SymbolTableEntryKind
     ConstructorDef,
     MemFuncDecl,
     MemFuncDef,
-    Parameter
+    Parameter,
+    TempVar,
 };
 
 std::ostream& operator<<(std::ostream& stream, SymbolTableEntryKind kind);
+
+// generates a name for a temporary variable in a scope
+class TempVarNameGenerator
+{
+public:
+    TempVarNameGenerator();
+    std::string GetNextName();
+
+private:
+    size_t m_counter;
+};
 
 class SymbolTableEntry
 {
@@ -47,7 +61,11 @@ public:
     SymbolTable* GetParentTable();
     virtual ASTNode* GetNode() = 0;
     virtual SymbolTable* GetSubTable() = 0;
-    
+    size_t GetSize() const;
+    void SetSize(size_t size);
+    int GetOffset() const;
+    void SetOffset(int offset);
+
     virtual std::string ToString() = 0;
 
 protected:
@@ -58,6 +76,8 @@ private:
     std::string m_name;
     SymbolTableEntryKind m_kind;
     SymbolTable* m_parentTable;
+    size_t m_size;
+    int m_offset;
 };
 
 class VarSymbolTableEntry : public SymbolTableEntry
@@ -249,6 +269,21 @@ private:
     std::string m_parameterTypes;  
 };
 
+class TempVarEntry : public SymbolTableEntry
+{
+public:
+    TempVarEntry(const std::string& typeStr, size_t size);
+    virtual ASTNode* GetNode() override;
+    virtual SymbolTable* GetSubTable() override;
+
+    void SetName(const std::string& name);
+
+    virtual std::string ToString() override;
+
+private:
+    std::string m_type;
+};
+
 class SymbolTable
 {
 public:
@@ -286,9 +321,12 @@ private:
 
     SymbolTableEntry* FindInInheritanceScope(const std::string& name);
 
+    std::string GenerateName();
+
     std::string m_name;
     TableList m_entries;
     SymbolTableEntry* m_parentEntry;
+    TempVarNameGenerator* m_nameGen;
 };
 
 class SymbolTableDisplayManager
