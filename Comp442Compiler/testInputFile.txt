@@ -2,9 +2,32 @@ class A
 {
 	attribute x : integer;
 	attribute y : integer;
+
+	function f:()=>void;
+	constructor:();
 };
 
-class B isa A
+function A::constructor()
+{
+	localvar i : integer;
+	i = 3;
+	self.x = i + 3;
+	self.y = i + 2;
+}
+
+function A::f()=>void
+{
+	localvar y : B;
+	localvar h : integer;
+	h = 3 / 2;
+}
+
+class C
+{
+	attribute g : integer;
+};
+
+class B isa A, C
 {
 	attribute z : integer;
 };

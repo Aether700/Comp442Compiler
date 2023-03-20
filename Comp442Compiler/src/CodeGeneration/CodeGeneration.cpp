@@ -77,6 +77,7 @@ void SizeGenerator::Visit(ClassDefNode* element)
 
 void SizeGenerator::Visit(ProgramNode* element)
 {
+	// revisit nodes that have to be revisited
 	while (m_toRevisit.size() > 0)
 	{
 		std::list<ASTNode*> copy = m_toRevisit;
@@ -87,7 +88,21 @@ void SizeGenerator::Visit(ProgramNode* element)
 		}
 	}
 
-	// generate offsets here
+	// generate offsets
+	for (SymbolTableEntry* entry : *m_globalTable)
+	{
+		switch(entry->GetKind())
+		{
+		case SymbolTableEntryKind::Class:
+			ComputeClassOffsets((ClassTableEntry*)entry);
+			break;
+
+		case SymbolTableEntryKind::FreeFunction:
+			ComputeOffsets(entry->GetSubTable());
+			break;
+		}
+	}
+
 }
 
 size_t SizeGenerator::ComputeSize(TypeNode* type, DimensionNode* dimensions)
@@ -209,4 +224,78 @@ void SizeGenerator::ProcessFunc(ASTNode* func, SymbolTableEntryKind expectedKind
 	{
 		funcEntry->SetSize(funcSize);
 	}
+}
+
+void SizeGenerator::ComputeOffsets(SymbolTable* table, int startOffset)
+{
+	int offset = startOffset;
+	for (SymbolTableEntry* entry : *table)
+	{
+		switch(entry->GetKind())
+		{
+		case SymbolTableEntryKind::MemVar:
+		case SymbolTableEntryKind::LocalVariable:
+		case SymbolTableEntryKind::TempVar:
+		case SymbolTableEntryKind::Parameter:
+			entry->SetOffset(offset);
+			offset -= entry->GetSize();
+			break;
+		}
+	}
+}
+
+void SizeGenerator::ComputeClassOffsets(ClassTableEntry* classEntry)
+{
+	// if the offsets for this class has already been computed return
+	if (ClassHasOffsets(classEntry))
+	{
+		return;
+	}
+
+	ClassDefNode* classNode = (ClassDefNode*)classEntry->GetNode();
+	if (classNode->GetInheritanceList()->GetNumChild() > 0)
+	{
+		// compute offsets for every parent class
+		int offset = 0;
+		for (ASTNode* baseNode : classNode->GetInheritanceList()->GetChildren())
+		{
+			IDNode* id = (IDNode*)baseNode;
+			SymbolTableEntry* parentClassEntry = m_globalTable->FindEntryInTable(id->GetID().GetLexeme());
+			ASSERT(parentClassEntry->GetKind() == SymbolTableEntryKind::Class);
+			ComputeClassOffsets((ClassTableEntry*)parentClassEntry);
+			offset -= parentClassEntry->GetSize();
+		}
+
+		// compute offsets for the current class
+		ComputeOffsets(classEntry->GetSubTable(), offset);
+		m_classesWithOffsets.push_front(classEntry);
+	}
+	else
+	{
+		// if this class has no parent class simply compute it's own offsets
+		ComputeOffsets(classNode->GetSymbolTable());
+		m_classesWithOffsets.push_front(classEntry);
+	}
+
+	// compute offsets for member functions and constructors
+	for (SymbolTableEntry* entry : *classEntry->GetSubTable())
+	{
+		if (entry->GetKind() == SymbolTableEntryKind::ConstructorDecl
+			|| entry->GetKind() == SymbolTableEntryKind::MemFuncDecl)
+		{
+			ComputeOffsets(entry->GetSubTable());
+		}
+	}
+}
+
+bool SizeGenerator::ClassHasOffsets(ClassTableEntry* classEntry)
+{
+	for (ClassTableEntry* entry : m_classesWithOffsets)
+	{
+		if (entry == classEntry)
+		{
+			return true;
+		}
+	}
+	return false;
 }

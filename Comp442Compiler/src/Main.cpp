@@ -10,8 +10,10 @@
 #include <filesystem>
 
 
-still need to add self parameter for memfunc/constructors (do later?)
-start working on computing offsets now
+/* To Do
+ - start working on computing offsets now
+ - still need to add self parameter for memfunc/constructors (do later?)
+*/
 
 void ExitPrompt()
 {

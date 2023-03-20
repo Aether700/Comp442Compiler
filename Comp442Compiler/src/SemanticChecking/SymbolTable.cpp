@@ -318,7 +318,7 @@ std::string MemFuncTableEntry::ToString()
     std::stringstream ss;
     ss << GetKind() << s_seperator << GetName() << s_seperator 
         << "(" << GetParamTypes() << "):" << GetReturnType() 
-        << s_seperator << GetVisibility() << GetSize();
+        << s_seperator << GetVisibility() << s_seperator << GetSize();
 
     return ss.str();
 }

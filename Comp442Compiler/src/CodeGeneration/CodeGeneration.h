@@ -32,6 +32,10 @@ private:
     size_t ComputeSizeOfFunc(SymbolTable* funcTable);
 
     void ProcessFunc(ASTNode* func, SymbolTableEntryKind expectedKind);
+    void ComputeOffsets(SymbolTable* table, int startOffset = 0);
+    void ComputeClassOffsets(ClassTableEntry* classEntry);
+
+    bool ClassHasOffsets(ClassTableEntry* classEntry);
 
     SymbolTable* m_globalTable;
 
@@ -41,6 +45,7 @@ private:
 	size_t m_boolSize;
 
     std::list<ASTNode*> m_toRevisit;
+    std::list<ClassTableEntry*> m_classesWithOffsets;
 };
 
 class CodeGenerator : public Visitor

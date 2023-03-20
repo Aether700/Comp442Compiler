@@ -1,0 +1,1 @@
+Warning: The local variable "y" is overshadowing a member from a the class "A". At line 20: "localvar y : B;"
