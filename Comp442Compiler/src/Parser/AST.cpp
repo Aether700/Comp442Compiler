@@ -249,6 +249,9 @@ ASTNode* BaseBinaryOperator::GetLeft() { return GetChild(0); }
 OperatorNode* BaseBinaryOperator::GetOperator() { return (OperatorNode*)GetChild(1); }
 ASTNode* BaseBinaryOperator::GetRight() { return GetChild(2); }
 
+const std::string& BaseBinaryOperator::GetTempVarName() const { return m_tempVarName; }
+void BaseBinaryOperator::SetTempVarName(const std::string& tempVarName) { m_tempVarName = tempVarName; }
+
 std::string BaseBinaryOperator::GetEvaluatedType()
 {
     std::string leftEvalType = GetLeft()->GetEvaluatedType();
@@ -300,7 +303,7 @@ std::string RelOpNode::GetEvaluatedType()
 {
     if (GetLeft()->GetEvaluatedType() == GetRight()->GetEvaluatedType())
     {
-        return "boolean";
+        return "integer";
     }
     return InvalidType;
 }

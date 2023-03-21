@@ -11,10 +11,8 @@
 
 
 /* To Do
- - generate basic vars
- - generate assign statments
- - generate write statement
- - generate expressions
+ - generate relop (framework already in place)
+ - generate modified expr (not and -)
  - generate if statment
  - generate while statement
  - generate basic objects
@@ -23,11 +21,7 @@
  - still need to add self parameter for memfunc/constructors
 */
 
-no need to compile for now test the write statement test that was written (code is already 
-generated currently in the process of writting a bat file to run the moon VM easily)
-=>
-bat file has been written but nothing is printing, is the code generated wrong or is 
-the bat file incorrect? double check
+curr implementation of or doesn't work check why
 
 void ExitPrompt()
 {

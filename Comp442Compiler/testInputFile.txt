@@ -1,4 +1,8 @@
-function main()=>void
+function main() => void
 {
-	write(3);
+	localvar x : integer;
+	localvar y : integer;
+	y = 0;
+	x = 1;
+	write(y or x);
 }

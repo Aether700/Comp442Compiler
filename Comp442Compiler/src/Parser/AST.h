@@ -174,12 +174,16 @@ public:
     OperatorNode* GetOperator();
     ASTNode* GetRight();
 
+    const std::string& GetTempVarName() const;
+    void SetTempVarName(const std::string& tempVarName);
+
     virtual std::string GetEvaluatedType() override;
 
     virtual std::string ToString(size_t indent = 0) override;
 
 private:
     std::string m_name;
+    std::string m_tempVarName;
 };
 
 class AddOpNode : public BaseBinaryOperator

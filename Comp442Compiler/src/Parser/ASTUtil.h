@@ -26,3 +26,8 @@ SymbolTable* GetContextTableFromName(SymbolTable* currContext,
 bool IsValidSelf(SymbolTable* contextTable, VariableNode* var);
 
 bool IsArrayType(const std::string typeStr);
+
+int GetOffset(SymbolTable* context, const std::string& name);
+int GetOffset(VariableNode* var);
+int GetOffset(AssignStatNode* assign);
+int GetOffset(BaseBinaryOperator* opNode);

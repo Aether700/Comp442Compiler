@@ -1,8 +1,15 @@
 #pragma once
 #include "../SemanticChecking/Visitor.h"
 #include <list>
+#include <unordered_map>
 
 typedef size_t RegisterID;
+constexpr RegisterID NullRegister = SIZE_MAX;
+
+class LiteralNode;
+class ExprNode;
+class ModifiedExpr;
+class VariableNode;
 
 class PlatformSpecifications
 {
@@ -79,6 +86,7 @@ class CodeGenerator : public Visitor
 {
 public:
     CodeGenerator(const std::string& filepath);
+    virtual void Visit(BaseBinaryOperator* element) override;
     virtual void Visit(AssignStatNode* element) override;
     virtual void Visit(WriteStatNode* element) override;
     virtual void Visit(ProgramNode* element) override;
@@ -96,9 +104,44 @@ private:
     std::string IncrementStackFrame(size_t frameSize);
     std::string DecrementStackFrame(size_t frameSize);
 
+    // code generation for different binary operators
+    void GenerateAddOp(BaseBinaryOperator* opNode);
+    void GenerateSubOp(BaseBinaryOperator* opNode);
+    void GenerateMultOp(BaseBinaryOperator* opNode);
+    void GenerateDivOp(BaseBinaryOperator* opNode);
+   
+
+    void GenerateOr(BaseBinaryOperator* opNode);
+    void GenerateAnd(BaseBinaryOperator* opNode);
+    /*
+    void GenerateNot(ModifiedExpr* expr);
+    void GenerateEqual(BaseBinaryOperator* opNode);
+    void GenerateNotEqual(BaseBinaryOperator* opNode);
+    void GenerateLessThan(BaseBinaryOperator* opNode);
+    void GenerateGreaterThan(BaseBinaryOperator* opNode);
+    void GenerateLessOrEqual(BaseBinaryOperator* opNode);
+    void GenerateGreaterOrEqual(BaseBinaryOperator* opNode);
+    */
+    
+    
+
+
+    void GenerateArithmeticOp(BaseBinaryOperator* opNode, const char* commandName);
+    void GenerateAndOr(BaseBinaryOperator* opNode, const char* commandName);
+
+    // returns the string of code to stores the value of the node and stores the register in which 
+    //the data was stored in the provided outRegister field or NullRegister if the operation 
+    //is not supported
+    std::string StoreValInRegister(ASTNode* node, RegisterID& outRegister);
+    std::string StoreValInRegister(LiteralNode* node, RegisterID& outRegister);
+    std::string StoreValInRegister(VariableNode* node, RegisterID& outRegister);
+    std::string StoreValInRegister(BaseBinaryOperator* node, RegisterID& outRegister);
+    std::string StoreValInRegister(ExprNode* node, RegisterID& outRegister);
+
     RegisterID m_topOfStackRegister;
     RegisterID m_zeroRegister; // register with value 0 not necessarily r0
     RegisterID m_jumpReturnRegister;
     RegisterID m_returnValRegister;
     std::list<RegisterID> m_registerStack;
+    std::unordered_map<SymbolTable*, size_t> m_tempVarUsed;
 };

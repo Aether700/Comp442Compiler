@@ -300,3 +300,26 @@ bool IsArrayType(const std::string typeStr)
     }
     return false;
 }
+
+int GetOffset(SymbolTable* context, const std::string& name)
+{
+    SymbolTableEntry* entry = context->FindEntryInTable(name);
+    ASSERT(entry != nullptr);
+    return entry->GetOffset();
+}
+
+int GetOffset(VariableNode* var)
+{
+    return GetOffset(var->GetSymbolTable(), var->GetVariable()->GetID().GetLexeme());
+}
+
+int GetOffset(AssignStatNode* assign)
+{
+    // currently assumes that the assignment is made to a simple variable
+    return GetOffset((VariableNode*)assign->GetLeft());
+}
+
+int GetOffset(BaseBinaryOperator* opNode)
+{
+    return GetOffset(opNode->GetSymbolTable(), opNode->GetTempVarName());
+}
