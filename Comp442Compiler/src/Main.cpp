@@ -11,9 +11,23 @@
 
 
 /* To Do
+ - generate basic vars
+ - generate assign statments
+ - generate write statement
+ - generate expressions
+ - generate if statment
+ - generate while statement
+ - generate basic objects
+ - generate arrays
  - store and compute offset for returning address of functions, return value etc
- - still need to add self parameter for memfunc/constructors (do later?)
+ - still need to add self parameter for memfunc/constructors
 */
+
+no need to compile for now test the write statement test that was written (code is already 
+generated currently in the process of writting a bat file to run the moon VM easily)
+=>
+bat file has been written but nothing is printing, is the code generated wrong or is 
+the bat file incorrect? double check
 
 void ExitPrompt()
 {
@@ -62,8 +76,13 @@ void Compile(const std::string& filepath)
 		return;
 	}
 
+	// code generation
 	SizeGenerator* sizeGen = new SizeGenerator(program->GetSymbolTable());
 	program->AcceptVisit(sizeGen);
+
+	CodeGenerator* generator = new CodeGenerator(filepath);
+	program->AcceptVisit(generator);
+	generator->OutputCode();
 
 	SemanticErrorManager::LogData();
 	DisplaySymbolTable(filepath, program);

@@ -1,12 +1,44 @@
 #pragma once
 #include "../SemanticChecking/Visitor.h"
+#include <list>
+
+typedef size_t RegisterID;
+
+class PlatformSpecifications
+{
+public:
+    static size_t GetIntStrSize();
+    static int GetIntStrArg1Offset();
+    static int GetIntStrArg2Offset();
+
+    static int GetPutStrArg1Offset();
+
+    static size_t GetAddressSize();
+    static size_t GetIntSize();
+    static size_t GetFloatSize();
+    static size_t GetBoolSize();
+    
+
+private:
+    // sizes in bytes
+    static constexpr size_t s_addressSize = 4;
+    static constexpr size_t s_intSize = 4;
+    static constexpr size_t s_floatSize = 8;
+    static constexpr size_t s_boolSize = 1;
+
+    static constexpr size_t s_intstrStackFrameSize = 24;
+    static constexpr int s_intstrFirstArgOffset = -8;
+    static constexpr int s_intstrSecondArgOffset = -12;
+
+    static constexpr int s_putstrFirstArgOffset = -8;
+};
 
 
 // generates the size entry of the SymbolTable
 class SizeGenerator : public Visitor
 {
 public:
-    SizeGenerator(SymbolTable* globalTable, size_t intSize = 4, size_t floatSize = 8, size_t boolSize = 1);
+    SizeGenerator(SymbolTable* globalTable);
 
     virtual void Visit(BaseBinaryOperator* element) override;
     virtual void Visit(VarDeclNode* element) override;
@@ -39,11 +71,6 @@ private:
 
     SymbolTable* m_globalTable;
 
-	// size in bytes
-	size_t m_intSize;
-	size_t m_floatSize;
-	size_t m_boolSize;
-
     std::list<ASTNode*> m_toRevisit;
     std::list<ClassTableEntry*> m_classesWithOffsets;
 };
@@ -51,4 +78,27 @@ private:
 class CodeGenerator : public Visitor
 {
 public:
+    CodeGenerator(const std::string& filepath);
+    virtual void Visit(AssignStatNode* element) override;
+    virtual void Visit(WriteStatNode* element) override;
+    virtual void Visit(ProgramNode* element) override;
+
+
+    void OutputCode() const;
+
+private:
+    static constexpr size_t s_startStackAddr = 100;
+
+    std::string m_filepath;
+    std::string m_dataCode;
+    std::string m_executionCode;
+
+    std::string IncrementStackFrame(size_t frameSize);
+    std::string DecrementStackFrame(size_t frameSize);
+
+    RegisterID m_topOfStackRegister;
+    RegisterID m_zeroRegister; // register with value 0 not necessarily r0
+    RegisterID m_jumpReturnRegister;
+    RegisterID m_returnValRegister;
+    std::list<RegisterID> m_registerStack;
 };

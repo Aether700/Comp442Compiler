@@ -1,10 +1,24 @@
 #include "CodeGeneration.h"
 #include "../Parser/AST.h"
 #include "../Core/Core.h"
+#include "../Core/Util.h"
+
+#include <fstream>
+
+// PlatformSpecifications //////////////////////////////////////////////////////
+size_t PlatformSpecifications::GetIntStrSize() { return s_intstrStackFrameSize; }
+int PlatformSpecifications::GetIntStrArg1Offset() { return s_intstrFirstArgOffset; }
+int PlatformSpecifications::GetIntStrArg2Offset() { return s_intstrSecondArgOffset; }
+
+int PlatformSpecifications::GetPutStrArg1Offset() { return s_putstrFirstArgOffset; }
+
+size_t PlatformSpecifications::GetAddressSize() { return s_addressSize; }
+size_t PlatformSpecifications::GetIntSize() { return s_intSize; }
+size_t PlatformSpecifications::GetFloatSize() { return s_floatSize; }
+size_t PlatformSpecifications::GetBoolSize() { return s_boolSize; }
 
 // SizeGenerator ////////////////////////////////////////////////////////////////////////
-SizeGenerator::SizeGenerator(SymbolTable* globalTable, size_t intSize, size_t floatSize, size_t boolSize)
-	: m_globalTable(globalTable), m_intSize(intSize), m_floatSize(floatSize), m_boolSize(boolSize) { }
+SizeGenerator::SizeGenerator(SymbolTable* globalTable) : m_globalTable(globalTable) { }
 
 void SizeGenerator::Visit(BaseBinaryOperator* element)
 {
@@ -111,15 +125,15 @@ size_t SizeGenerator::ComputeSize(TypeNode* type, DimensionNode* dimensions)
 	size_t baseSize;
 	if (typeStr == "integer")
 	{
-		baseSize = m_intSize;
+		baseSize = PlatformSpecifications::GetIntSize();
 	}
 	else if (typeStr == "float")
 	{
-		baseSize = m_floatSize;
+		baseSize = PlatformSpecifications::GetFloatSize();
 	}
 	else if (typeStr == "bool")
 	{
-		baseSize = m_boolSize;
+		baseSize = PlatformSpecifications::GetFloatSize();
 	}
 	else
 	{
@@ -158,15 +172,15 @@ size_t SizeGenerator::ComputeSize(const std::string& typeStr)
 {
 	if (typeStr == "integer")
 	{
-		return m_intSize;
+		return PlatformSpecifications::GetIntSize();
 	}
 	else if (typeStr == "float")
 	{
-		return m_floatSize;
+		return PlatformSpecifications::GetFloatSize();
 	}
 	else if (typeStr == "bool")
 	{
-		return m_boolSize;
+		return PlatformSpecifications::GetBoolSize();
 	}
 	else
 	{
@@ -238,7 +252,7 @@ void SizeGenerator::ComputeOffsets(SymbolTable* table, int startOffset)
 		case SymbolTableEntryKind::TempVar:
 		case SymbolTableEntryKind::Parameter:
 			entry->SetOffset(offset);
-			offset -= entry->GetSize();
+			offset -= (int)entry->GetSize();
 			break;
 		}
 	}
@@ -263,7 +277,7 @@ void SizeGenerator::ComputeClassOffsets(ClassTableEntry* classEntry)
 			SymbolTableEntry* parentClassEntry = m_globalTable->FindEntryInTable(id->GetID().GetLexeme());
 			ASSERT(parentClassEntry->GetKind() == SymbolTableEntryKind::Class);
 			ComputeClassOffsets((ClassTableEntry*)parentClassEntry);
-			offset -= parentClassEntry->GetSize();
+			offset -= (int)parentClassEntry->GetSize();
 		}
 
 		// compute offsets for the current class
@@ -298,4 +312,99 @@ bool SizeGenerator::ClassHasOffsets(ClassTableEntry* classEntry)
 		}
 	}
 	return false;
+}
+
+// CodeGenerator ////////////////////////////////////////////////////////////////////////////////////////////
+
+CodeGenerator::CodeGenerator(const std::string& filepath) : m_filepath(filepath), 
+	m_topOfStackRegister(14), m_zeroRegister(0), m_jumpReturnRegister(15), m_returnValRegister(13),
+	m_registerStack({1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12}) { }
+
+void CodeGenerator::Visit(AssignStatNode* element)
+{
+	// temp needs to be reworked
+	const std::string& varName = ((VariableNode*)element->GetLeft())->GetVariable()->GetID().GetLexeme();
+	SymbolTableEntry* varEntry = element->GetSymbolTable()->FindEntryInScope(varName);
+	ASSERT(varEntry != nullptr);
+
+	const std::string& rightLiteral = ((LiteralNode*)element->GetRight()->GetRootOfExpr())
+		->GetLexemeNode()->GetID().GetLexeme();
+
+	////////
+
+	std::stringstream ss;
+	RegisterID currRegisterUsed = m_registerStack.front();
+	m_registerStack.pop_front();
+	ss << "\n";
+	ss << "addi r" << currRegisterUsed << ",r" << m_zeroRegister << "," << rightLiteral << "\n";
+	ss << "sw " << varEntry->GetOffset() << "(r" << m_topOfStackRegister << "), r" << currRegisterUsed << "\n";
+	m_executionCode += ss.str();
+
+	m_registerStack.push_front(currRegisterUsed);
+}
+
+void CodeGenerator::Visit(WriteStatNode* element)
+{
+	// temp needs to be reworked
+	const std::string& literal = ((LiteralNode*)element->GetExpr()->GetRootOfExpr())
+		->GetLexemeNode()->GetID().GetLexeme();
+	//
+
+	std::stringstream ss;
+	ss << IncrementStackFrame(PlatformSpecifications::GetIntStrSize());
+	RegisterID currRegister = m_registerStack.front();
+	m_registerStack.pop_front();
+	ss << "addi r" << currRegister << ",r" << m_zeroRegister << "," << literal << "\n"; // temp will need to be reworked
+	ss << "sw " << PlatformSpecifications::GetIntStrArg1Offset() << "(r" << m_topOfStackRegister 
+		<< "),r" << currRegister << "\n";
+
+	ss << "addi r" << currRegister << ",r" << m_zeroRegister << ",buff\n";
+	ss << "sw " << PlatformSpecifications::GetIntStrArg2Offset() << "(r" << m_topOfStackRegister
+		<< "),r" << currRegister << "\n";
+	
+	ss << "jl r" << m_jumpReturnRegister << ", intstr\n";
+
+	ss << "sw " << PlatformSpecifications::GetPutStrArg1Offset() << "(r" << m_topOfStackRegister 
+		<< "),r" << m_returnValRegister << "\n";
+
+	ss << "jl r" << m_jumpReturnRegister << ", putstr\n";
+	ss << DecrementStackFrame(PlatformSpecifications::GetIntStrSize());
+
+	m_executionCode += ss.str();
+}
+
+void CodeGenerator::Visit(ProgramNode* element)
+{
+	std::stringstream ss;
+	ss << "entry\n";
+	ss << "addi r" << m_topOfStackRegister << ",r" << m_zeroRegister << "," << s_startStackAddr << "\n";
+
+	// pre-pend to program code
+	m_executionCode = ss.str() + m_executionCode;
+
+	m_executionCode += "hlt\n";
+	m_dataCode = "buf res 20\n";
+}
+
+void CodeGenerator::OutputCode() const
+{
+	std::string moonFilepath = SimplifyFilename(m_filepath) + ".moon";
+	std::ofstream outFile = std::ofstream(moonFilepath);
+
+	outFile << m_executionCode;
+	outFile << m_dataCode;
+}
+
+std::string CodeGenerator::IncrementStackFrame(size_t frameSize)
+{
+	std::stringstream ss;
+	ss << "addi r" << m_topOfStackRegister << ",r" << m_topOfStackRegister << ",-" << frameSize << "\n";
+	return ss.str();
+}
+
+std::string CodeGenerator::DecrementStackFrame(size_t frameSize)
+{
+	std::stringstream ss;
+	ss << "subi r" << m_topOfStackRegister << ",r" << m_topOfStackRegister << ",-" << frameSize << "\n";
+	return ss.str();
 }

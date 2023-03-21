@@ -1,40 +1,4 @@
-class A
+function main()=>void
 {
-	attribute x : integer;
-	attribute y : integer;
-
-	function f:()=>void;
-	constructor:();
-};
-
-function A::constructor()
-{
-	localvar i : integer;
-	i = 3;
-	self.x = i + 3;
-	self.y = i + 2;
-}
-
-function A::f()=>void
-{
-	localvar y : B;
-	localvar h : integer;
-	h = 3 / 2;
-}
-
-class C
-{
-	attribute g : integer;
-};
-
-class B isa A, C
-{
-	attribute z : integer;
-};
-
-function main() =>void
-{
-	localvar b : B;
-	b.x = 5 + 6 * 2;
-	write(b.x);
+	write(3);
 }

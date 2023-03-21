@@ -456,6 +456,8 @@ void DotNode::AcceptVisit(Visitor* visitor)
 // ExprNode ////////////////////////////////////////
 ExprNode::ExprNode(ASTNode* exprRoot) { AddChild(exprRoot); }
 
+ASTNode* ExprNode::GetRootOfExpr() { return GetChild(0); }
+
 std::string ExprNode::GetEvaluatedType() { return GetChild(0)->GetEvaluatedType(); }
 
 std::string ExprNode::ToString(size_t indent)

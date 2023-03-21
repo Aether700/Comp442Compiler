@@ -10,6 +10,7 @@ class IDNode;
 class DimensionNode;
 class DotNode;
 class BaseBinaryOperator;
+class WriteStatNode;
 class ReturnStatNode;
 class AssignStatNode;
 class FParamNode;
@@ -31,6 +32,7 @@ public:
     virtual void Visit(DimensionNode* element) { }
     virtual void Visit(DotNode* element) { }
     virtual void Visit(BaseBinaryOperator* element) { }
+    virtual void Visit(WriteStatNode* element) { }
     virtual void Visit(ReturnStatNode* element) { }
     virtual void Visit(AssignStatNode* element) { }
     virtual void Visit(VarDeclNode* element) { }
