@@ -16,7 +16,6 @@ int PlatformSpecifications::GetPutStrArg1Offset() { return s_putstrFirstArgOffse
 size_t PlatformSpecifications::GetAddressSize() { return s_addressSize; }
 size_t PlatformSpecifications::GetIntSize() { return s_intSize; }
 size_t PlatformSpecifications::GetFloatSize() { return s_floatSize; }
-size_t PlatformSpecifications::GetBoolSize() { return s_boolSize; }
 
 // SizeGenerator ////////////////////////////////////////////////////////////////////////
 SizeGenerator::SizeGenerator(SymbolTable* globalTable) : m_globalTable(globalTable) { }
@@ -180,10 +179,6 @@ size_t SizeGenerator::ComputeSize(const std::string& typeStr)
 	else if (typeStr == "float")
 	{
 		return PlatformSpecifications::GetFloatSize();
-	}
-	else if (typeStr == "bool")
-	{
-		return PlatformSpecifications::GetBoolSize();
 	}
 	else
 	{

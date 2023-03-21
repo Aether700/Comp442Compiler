@@ -23,7 +23,6 @@ public:
     static size_t GetAddressSize();
     static size_t GetIntSize();
     static size_t GetFloatSize();
-    static size_t GetBoolSize();
     
 
 private:
@@ -31,7 +30,6 @@ private:
     static constexpr size_t s_addressSize = 4;
     static constexpr size_t s_intSize = 4;
     static constexpr size_t s_floatSize = 8;
-    static constexpr size_t s_boolSize = 1;
 
     static constexpr size_t s_intstrStackFrameSize = 24;
     static constexpr int s_intstrFirstArgOffset = -8;
