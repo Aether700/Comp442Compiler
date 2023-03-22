@@ -1,5 +1,7 @@
 #pragma once
 #include "../SemanticChecking/Visitor.h"
+#include "../Core/Util.h"
+
 #include <list>
 #include <unordered_map>
 
@@ -8,8 +10,8 @@ constexpr RegisterID NullRegister = SIZE_MAX;
 
 class LiteralNode;
 class ExprNode;
-class ModifiedExpr;
 class VariableNode;
+class TempVarNodeBase;
 
 class PlatformSpecifications
 {
@@ -45,6 +47,8 @@ class SizeGenerator : public Visitor
 public:
     SizeGenerator(SymbolTable* globalTable);
 
+    virtual void Visit(ExprNode* element) override;
+    virtual void Visit(ModifiedExpr* element) override;
     virtual void Visit(BaseBinaryOperator* element) override;
     virtual void Visit(VarDeclNode* element) override;
     virtual void Visit(FParamNode* element) override;
@@ -74,6 +78,8 @@ private:
 
     bool ClassHasOffsets(ClassTableEntry* classEntry);
 
+    void CreateTempVar(TempVarNodeBase* node);
+
     SymbolTable* m_globalTable;
 
     std::list<ASTNode*> m_toRevisit;
@@ -84,6 +90,7 @@ class CodeGenerator : public Visitor
 {
 public:
     CodeGenerator(const std::string& filepath);
+    virtual void Visit(ModifiedExpr* element) override;
     virtual void Visit(BaseBinaryOperator* element) override;
     virtual void Visit(AssignStatNode* element) override;
     virtual void Visit(WriteStatNode* element) override;
@@ -102,18 +109,21 @@ private:
     std::string IncrementStackFrame(size_t frameSize);
     std::string DecrementStackFrame(size_t frameSize);
 
+    void GenerateMinusExpr(ModifiedExpr* modExpr);
+
     // code generation for different binary operators
     void GenerateAddOp(BaseBinaryOperator* opNode);
     void GenerateSubOp(BaseBinaryOperator* opNode);
     void GenerateMultOp(BaseBinaryOperator* opNode);
     void GenerateDivOp(BaseBinaryOperator* opNode);
-   
 
+   
     void GenerateOr(BaseBinaryOperator* opNode);
     void GenerateAnd(BaseBinaryOperator* opNode);
-    /*
     void GenerateNot(ModifiedExpr* expr);
     void GenerateEqual(BaseBinaryOperator* opNode);
+
+    /*
     void GenerateNotEqual(BaseBinaryOperator* opNode);
     void GenerateLessThan(BaseBinaryOperator* opNode);
     void GenerateGreaterThan(BaseBinaryOperator* opNode);
@@ -135,6 +145,22 @@ private:
     std::string StoreValInRegister(VariableNode* node, RegisterID& outRegister);
     std::string StoreValInRegister(BaseBinaryOperator* node, RegisterID& outRegister);
     std::string StoreValInRegister(ExprNode* node, RegisterID& outRegister);
+    std::string StoreValInRegister(ModifiedExpr* node, RegisterID& outRegister);
+
+    std::string LoadTempVarInRegister(TempVarNodeBase* tempVar, RegisterID& outRegister);
+
+    template<typename NodeType>
+    bool TempVarAlreadyOnStack(NodeType* node)
+    {
+        for (ASTNode* n : m_generatedTempVarNode)
+        {
+            if (n == node)
+            {
+                return true;
+            }
+        }
+        return false;
+    }
 
     RegisterID m_topOfStackRegister;
     RegisterID m_zeroRegister; // register with value 0 not necessarily r0
@@ -142,4 +168,6 @@ private:
     RegisterID m_returnValRegister;
     std::list<RegisterID> m_registerStack;
     std::unordered_map<SymbolTable*, size_t> m_tempVarUsed;
+    std::list<ASTNode*> m_generatedTempVarNode;
+    TagGenerator m_tagGen;
 };

@@ -1,8 +1,4 @@
 function main() => void
 {
-	localvar x : integer;
-	localvar y : integer;
-	y = 0;
-	x = 1;
-	write(y or x);
+	write(5 == 6);
 }

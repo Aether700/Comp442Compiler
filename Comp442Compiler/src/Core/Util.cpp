@@ -1,6 +1,8 @@
 #include "Util.h"
 #include "../Lexer/Lexer.h"
 
+#include <sstream>
+
 std::string SimplifyFilename(const std::string& filepath)
 {
 	size_t lastExtention = filepath.find_last_of(".");
@@ -34,4 +36,15 @@ std::string RightTrimStr(const std::string& str)
 std::string TrimStr(const std::string& str)
 {
 	return RightTrimStr(LeftTrimStr(str));
+}
+
+// TagGenerator //////////////////////////////////////////////////
+TagGenerator::TagGenerator(const std::string& prefix) : m_counter(0), m_prefix(prefix) { }
+
+std::string TagGenerator::GetNextTag()
+{
+	std::stringstream ss;
+	ss << m_prefix << m_counter;
+	m_counter++;
+	return ss.str();
 }

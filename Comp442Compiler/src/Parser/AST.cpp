@@ -81,6 +81,10 @@ void ASTNodeBase::ChildrenAcceptVisit(Visitor* visitor)
     }
 }
 
+// TempVarNodeBase ///////////////////////////////////////////////////////////
+const std::string& TempVarNodeBase::GetTempVarName() const { return m_tempVarName; }
+void TempVarNodeBase::SetTempVarName(const std::string& name) { m_tempVarName = name; }
+
 // IterableNode ///////////////////////////////////////////////////////////
 std::list<ASTNode*>::iterator IterableNode::begin() { return GetChildren().begin(); }
 std::list<ASTNode*>::iterator IterableNode::end() { return GetChildren().end(); }
@@ -248,9 +252,6 @@ BaseBinaryOperator::BaseBinaryOperator(const std::string& name, ASTNode* left,
 ASTNode* BaseBinaryOperator::GetLeft() { return GetChild(0); }
 OperatorNode* BaseBinaryOperator::GetOperator() { return (OperatorNode*)GetChild(1); }
 ASTNode* BaseBinaryOperator::GetRight() { return GetChild(2); }
-
-const std::string& BaseBinaryOperator::GetTempVarName() const { return m_tempVarName; }
-void BaseBinaryOperator::SetTempVarName(const std::string& tempVarName) { m_tempVarName = tempVarName; }
 
 std::string BaseBinaryOperator::GetEvaluatedType()
 {
@@ -522,8 +523,11 @@ ModifiedExpr::ModifiedExpr(ASTNode* modifier, ASTNode* expr)
     AddChild(expr);
 }
 
+ASTNode* ModifiedExpr::GetRootOfExpr() { return GetExpr(); }
 ASTNode* ModifiedExpr::GetModifier() { return GetChild(0); }
 ASTNode* ModifiedExpr::GetExpr() { return GetChild(1); }
+
+std::string ModifiedExpr::GetEvaluatedType() { return GetExpr()->GetEvaluatedType(); }
 
 std::string ModifiedExpr::ToString(size_t indent)
 {

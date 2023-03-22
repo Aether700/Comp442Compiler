@@ -30,4 +30,5 @@ bool IsArrayType(const std::string typeStr);
 int GetOffset(SymbolTable* context, const std::string& name);
 int GetOffset(VariableNode* var);
 int GetOffset(AssignStatNode* assign);
-int GetOffset(BaseBinaryOperator* opNode);
+int GetOffset(SymbolTable* context, ITempVarNode* tempVarNode);
+int GetOffset(TempVarNodeBase* tempVarNode);

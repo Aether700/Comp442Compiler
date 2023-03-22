@@ -319,7 +319,13 @@ int GetOffset(AssignStatNode* assign)
     return GetOffset((VariableNode*)assign->GetLeft());
 }
 
-int GetOffset(BaseBinaryOperator* opNode)
+int GetOffset(SymbolTable* context, ITempVarNode* tempVarNode)
 {
-    return GetOffset(opNode->GetSymbolTable(), opNode->GetTempVarName());
+    return GetOffset(context, tempVarNode->GetTempVarName());
+}
+
+int GetOffset(TempVarNodeBase* tempVar)
+{
+    auto temp = tempVar->ToString();
+    return GetOffset(tempVar->GetSymbolTable(), tempVar->GetTempVarName());
 }

@@ -12,16 +12,15 @@
 
 /* To Do
  - generate relop (framework already in place)
- - generate modified expr (not and -)
  - generate if statment
  - generate while statement
+ - add float support
  - generate basic objects
  - generate arrays
  - store and compute offset for returning address of functions, return value etc
  - still need to add self parameter for memfunc/constructors
 */
 
-curr implementation of or doesn't work check why
 
 void ExitPrompt()
 {

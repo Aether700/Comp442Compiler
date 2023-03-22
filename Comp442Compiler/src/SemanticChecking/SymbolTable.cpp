@@ -51,16 +51,6 @@ std::ostream& operator<<(std::ostream& stream, SymbolTableEntryKind kind)
     return stream;
 }
 
-// TempVarNameGenerator ///////////////////////////////////////////////////////////////////////////////////
-TempVarNameGenerator::TempVarNameGenerator() : m_counter(0) { }
-std::string TempVarNameGenerator::GetNextName()
-{
-    std::stringstream ss;
-    ss << "T" << m_counter;
-    m_counter++;
-    return ss.str();
-}
-
 // SymbolTableEntry //////////////////////////////////////////
 
 SymbolTableEntry::SymbolTableEntry(SymbolTableEntryKind kind) 
@@ -702,9 +692,9 @@ std::string SymbolTable::GenerateName()
 {
     if (m_nameGen == nullptr)
     {
-        m_nameGen = new TempVarNameGenerator();
+        m_nameGen = new TagGenerator("T");
     }
-    return m_nameGen->GetNextName();
+    return m_nameGen->GetNextTag();
 }
 
 // SymbolTableDisplayManager //////////////////////////////////////////////////////////////

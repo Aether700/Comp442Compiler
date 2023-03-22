@@ -8,47 +8,15 @@ Program
 |  |  |  |  void
 |  |  |  FParamList
 |  |  |  StatBlock
-|  |  |  |  VarDecl
-|  |  |  |  |  id
-|  |  |  |  |  |  x
-|  |  |  |  |  TypeNode
-|  |  |  |  |  |  integer
-|  |  |  |  |  Dimensions
-|  |  |  |  VarDecl
-|  |  |  |  |  id
-|  |  |  |  |  |  y
-|  |  |  |  |  TypeNode
-|  |  |  |  |  |  integer
-|  |  |  |  |  Dimensions
-|  |  |  |  AssigStat
-|  |  |  |  |  Variable
-|  |  |  |  |  |  id
-|  |  |  |  |  |  |  y
-|  |  |  |  |  |  Dimensions
-|  |  |  |  |  Expr
-|  |  |  |  |  |  Literal
-|  |  |  |  |  |  |  0
-|  |  |  |  |  |  |  TypeNode
-|  |  |  |  |  |  |  |  integer
-|  |  |  |  AssigStat
-|  |  |  |  |  Variable
-|  |  |  |  |  |  id
-|  |  |  |  |  |  |  x
-|  |  |  |  |  |  Dimensions
-|  |  |  |  |  Expr
-|  |  |  |  |  |  Literal
-|  |  |  |  |  |  |  1
-|  |  |  |  |  |  |  TypeNode
-|  |  |  |  |  |  |  |  integer
 |  |  |  |  WriteStat
 |  |  |  |  |  Expr
-|  |  |  |  |  |  AddOp
-|  |  |  |  |  |  |  Variable
-|  |  |  |  |  |  |  |  id
-|  |  |  |  |  |  |  |  |  y
-|  |  |  |  |  |  |  |  Dimensions
-|  |  |  |  |  |  |  or
-|  |  |  |  |  |  |  Variable
-|  |  |  |  |  |  |  |  id
-|  |  |  |  |  |  |  |  |  x
-|  |  |  |  |  |  |  |  Dimensions
+|  |  |  |  |  |  RelOp
+|  |  |  |  |  |  |  Literal
+|  |  |  |  |  |  |  |  5
+|  |  |  |  |  |  |  |  TypeNode
+|  |  |  |  |  |  |  |  |  integer
+|  |  |  |  |  |  |  ==
+|  |  |  |  |  |  |  Literal
+|  |  |  |  |  |  |  |  6
+|  |  |  |  |  |  |  |  TypeNode
+|  |  |  |  |  |  |  |  |  integer

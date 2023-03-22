@@ -9,6 +9,8 @@ class IVisitableElement;
 class IDNode;
 class DimensionNode;
 class DotNode;
+class ExprNode;
+class ModifiedExpr;
 class BaseBinaryOperator;
 class WriteStatNode;
 class ReturnStatNode;
@@ -31,6 +33,8 @@ public:
     virtual void Visit(IDNode* element) { }
     virtual void Visit(DimensionNode* element) { }
     virtual void Visit(DotNode* element) { }
+    virtual void Visit(ExprNode* element) { }
+    virtual void Visit(ModifiedExpr* element) { }
     virtual void Visit(BaseBinaryOperator* element) { }
     virtual void Visit(WriteStatNode* element) { }
     virtual void Visit(ReturnStatNode* element) { }

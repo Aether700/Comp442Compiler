@@ -1,4 +1,6 @@
 #pragma once
+#include "../Core/Util.h"
+
 #include <string>
 #include <list>
 #include <iostream>
@@ -36,17 +38,6 @@ enum class SymbolTableEntryKind
 };
 
 std::ostream& operator<<(std::ostream& stream, SymbolTableEntryKind kind);
-
-// generates a name for a temporary variable in a scope
-class TempVarNameGenerator
-{
-public:
-    TempVarNameGenerator();
-    std::string GetNextName();
-
-private:
-    size_t m_counter;
-};
 
 class SymbolTableEntry
 {
@@ -326,7 +317,7 @@ private:
     std::string m_name;
     TableList m_entries;
     SymbolTableEntry* m_parentEntry;
-    TempVarNameGenerator* m_nameGen;
+    TagGenerator* m_nameGen;
 };
 
 class SymbolTableDisplayManager
