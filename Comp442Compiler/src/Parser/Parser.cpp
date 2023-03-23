@@ -1416,6 +1416,10 @@ ProgramNode* Parser::Parse(const std::string& filepath)
             {
                 p.m_parsingStack.pop_front();
                 p.m_prevToken = currToken;
+                if (currToken.GetTokenType() == TokenType::Constructor)
+                {
+                    p.m_lastConstructorToken = currToken;
+                }
                 currToken = GetNextToken();
                 p.m_derivationFile << "\n"; // skip line since we read a terminal
             }
@@ -1937,7 +1941,7 @@ void Parser::ProcessSemanticAction(SemanticAction action)
         break;
 
     case SemanticAction::PushNot:
-        Push<NotNode>(); 
+        Push<NotNode>(m_prevToken); 
         break;
 
     case SemanticAction::PushType:
@@ -2338,7 +2342,8 @@ void Parser::ConstructConstructorDeclAction()
 {
     FParamListNode* params = PopTargetNodeFromSemanticStack<FParamListNode>();
     VisibilityNode* visibility = PopTargetNodeFromSemanticStack<VisibilityNode>();
-    m_semanticStack.push_front(new ConstructorDeclNode(visibility, params));
+    m_semanticStack.push_front(new ConstructorDeclNode(visibility, params, 
+        m_lastConstructorToken));
 }
 
 bool Parser::ConstructDotNodeAction()

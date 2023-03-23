@@ -1,17 +1,57 @@
-#include <iostream>
-#include <sstream>
-#include <filesystem>
-
 #include "Lexer/Lexer.h"
 #include "Core/Core.h"
 #include "Parser/Parser.h"
 #include "Core/Util.h"
+#include "SemanticChecking/SemanticErrors.h"
 
+#include <iostream>
+#include <sstream>
+#include <filesystem>
 
 void ExitPrompt()
 {
 	std::cout << "\nPress enter to exit\n";
 	std::cin.get();
+}
+
+void Compile(const std::string& filepath)
+{
+	ProgramNode* program = Parser::Parse(filepath);
+	if (program == nullptr)
+	{
+		std::cout << "Parsing error was found in file \"" << filepath 
+			<< "\", check logs for detail\n";
+		return;
+	}
+
+	SemanticErrorManager::Clear();
+	SemanticErrorManager::SetFilePath(SimplifyFilename(filepath) + ".outsemanticerrors");
+
+	// semantic checking
+	SymbolTableAssembler* assembler = new SymbolTableAssembler();
+	program->AcceptVisit(assembler);
+
+	if (SemanticErrorManager::HasError())
+	{
+		SemanticErrorManager::LogData();
+		return;
+	}
+
+	{
+		std::ofstream symbolTableFile = std::ofstream(SimplifyFilename(filepath) 
+			+ ".outsymboltables");
+		symbolTableFile << SymbolTableDisplayManager::TableToStr(assembler->
+			GetGlobalSymbolTable());
+	}
+
+	SemanticChecker* checker = new SemanticChecker(assembler->GetGlobalSymbolTable());
+	program->AcceptVisit(checker);
+
+	SemanticErrorManager::LogData();
+
+	delete checker;
+	delete assembler;
+	delete program;
 }
 
 int main(int argc, char* argv[])
@@ -23,9 +63,7 @@ int main(int argc, char* argv[])
 	path = path.substr(0, path.find_last_of("/\\"));
 	path += "/Comp442Compiler/Comp442Compiler/" + file;
 	
-	ProgramNode* program = Parser::Parse(path);
-	std::cout << (program != nullptr) << "\n";
-	delete program;
+	Compile(path);
 #else
 	std::string directoryPath = "TestFiles";
 	
@@ -45,7 +83,7 @@ int main(int argc, char* argv[])
 		if (fileExtention == ".src")
 		{
 			std::cout << "Processing file \"" << filename << "\"\n"; 
-			delete Parser::Parse(filename);
+			Compile(filename);
 		}
 	}
 	std::cout << "Directory processing completed\n";

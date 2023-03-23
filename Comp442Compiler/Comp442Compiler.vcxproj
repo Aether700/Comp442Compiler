@@ -102,8 +102,9 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions);DEBUG_MODE;</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -118,6 +119,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -127,14 +129,28 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\Core\Token.cpp" />
+    <ClCompile Include="src\Core\Util.cpp" />
     <ClCompile Include="src\Lexer\Lexer.cpp" />
     <ClCompile Include="src\Main.cpp" />
+    <ClCompile Include="src\Parser\AST.cpp" />
+    <ClCompile Include="src\Parser\ASTUtil.cpp" />
+    <ClCompile Include="src\Parser\Parser.cpp" />
+    <ClCompile Include="src\SemanticChecking\SemanticErrors.cpp" />
+    <ClCompile Include="src\SemanticChecking\SymbolTable.cpp" />
+    <ClCompile Include="src\SemanticChecking\Visitor.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\Core\Core.h" />
+    <ClInclude Include="src\Core\Token.h" />
+    <ClInclude Include="src\Core\Util.h" />
     <ClInclude Include="src\Lexer\Lexer.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <Text Include="testInputFile.txt" />
+    <ClInclude Include="src\Parser\AST.h" />
+    <ClInclude Include="src\Parser\ASTUtil.h" />
+    <ClInclude Include="src\Parser\Parser.h" />
+    <ClInclude Include="src\SemanticChecking\SemanticErrors.h" />
+    <ClInclude Include="src\SemanticChecking\SymbolTable.h" />
+    <ClInclude Include="src\SemanticChecking\Visitor.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

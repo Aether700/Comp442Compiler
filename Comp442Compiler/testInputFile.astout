@@ -1,9 +1,57 @@
 Program
 |  ClassDefList
-|  FuncDefList
-|  |  FuncDef
+|  |  ClassDef
 |  |  |  id
-|  |  |  |  freeFunc
+|  |  |  |  A
+|  |  |  InheritanceList
+|  |  |  MemVar
+|  |  |  |  Visibility
+|  |  |  |  |  default
+|  |  |  |  id
+|  |  |  |  |  x
+|  |  |  |  TypeNode
+|  |  |  |  |  integer
+|  |  |  |  Dimensions
+|  |  |  MemFuncDecl
+|  |  |  |  Visibility
+|  |  |  |  |  default
+|  |  |  |  id
+|  |  |  |  |  f
+|  |  |  |  FParamList
+|  |  |  |  |  FParam
+|  |  |  |  |  |  id
+|  |  |  |  |  |  |  x
+|  |  |  |  |  |  TypeNode
+|  |  |  |  |  |  |  float
+|  |  |  |  |  |  Dimensions
+|  |  |  |  TypeNode
+|  |  |  |  |  void
+|  |  ClassDef
+|  |  |  id
+|  |  |  |  B
+|  |  |  InheritanceList
+|  |  |  |  id
+|  |  |  |  |  A
+|  |  |  MemFuncDecl
+|  |  |  |  Visibility
+|  |  |  |  |  default
+|  |  |  |  id
+|  |  |  |  |  f
+|  |  |  |  FParamList
+|  |  |  |  |  FParam
+|  |  |  |  |  |  id
+|  |  |  |  |  |  |  x
+|  |  |  |  |  |  TypeNode
+|  |  |  |  |  |  |  float
+|  |  |  |  |  |  Dimensions
+|  |  |  |  TypeNode
+|  |  |  |  |  void
+|  FuncDefList
+|  |  MemFuncDef
+|  |  |  id
+|  |  |  |  A
+|  |  |  id
+|  |  |  |  f
 |  |  |  TypeNode
 |  |  |  |  void
 |  |  |  FParamList
@@ -11,98 +59,28 @@ Program
 |  |  |  |  |  id
 |  |  |  |  |  |  x
 |  |  |  |  |  TypeNode
-|  |  |  |  |  |  integer
+|  |  |  |  |  |  float
 |  |  |  |  |  Dimensions
-|  |  |  |  |  |  Literal
-|  |  |  |  |  |  |  3
-|  |  |  |  |  |  |  TypeNode
-|  |  |  |  |  |  |  |  integer
+|  |  |  StatBlock
+|  |  MemFuncDef
+|  |  |  id
+|  |  |  |  B
+|  |  |  id
+|  |  |  |  f
+|  |  |  TypeNode
+|  |  |  |  void
+|  |  |  FParamList
 |  |  |  |  FParam
 |  |  |  |  |  id
-|  |  |  |  |  |  y
+|  |  |  |  |  |  x
 |  |  |  |  |  TypeNode
 |  |  |  |  |  |  float
 |  |  |  |  |  Dimensions
-|  |  |  |  |  |  UnspecifiedArrDimension
 |  |  |  StatBlock
-|  |  |  |  Dot
-|  |  |  |  |  Variable
-|  |  |  |  |  |  id
-|  |  |  |  |  |  |  var
-|  |  |  |  |  |  Dimensions
-|  |  |  |  |  |  |  MultOp
-|  |  |  |  |  |  |  |  Literal
-|  |  |  |  |  |  |  |  |  2
-|  |  |  |  |  |  |  |  |  TypeNode
-|  |  |  |  |  |  |  |  |  |  integer
-|  |  |  |  |  |  |  |  *
-|  |  |  |  |  |  |  |  AddOp
-|  |  |  |  |  |  |  |  |  AddOp
-|  |  |  |  |  |  |  |  |  |  Literal
-|  |  |  |  |  |  |  |  |  |  |  0
-|  |  |  |  |  |  |  |  |  |  |  TypeNode
-|  |  |  |  |  |  |  |  |  |  |  |  integer
-|  |  |  |  |  |  |  |  |  |  +
-|  |  |  |  |  |  |  |  |  |  Literal
-|  |  |  |  |  |  |  |  |  |  |  5
-|  |  |  |  |  |  |  |  |  |  |  TypeNode
-|  |  |  |  |  |  |  |  |  |  |  |  integer
-|  |  |  |  |  |  |  |  |  -
-|  |  |  |  |  |  |  |  |  Literal
-|  |  |  |  |  |  |  |  |  |  6
-|  |  |  |  |  |  |  |  |  |  TypeNode
-|  |  |  |  |  |  |  |  |  |  |  integer
-|  |  |  |  |  |  |  Literal
-|  |  |  |  |  |  |  |  2
-|  |  |  |  |  |  |  |  TypeNode
-|  |  |  |  |  |  |  |  |  integer
-|  |  |  |  |  |  |  Literal
-|  |  |  |  |  |  |  |  5
-|  |  |  |  |  |  |  |  TypeNode
-|  |  |  |  |  |  |  |  |  integer
-|  |  |  |  |  Dot
-|  |  |  |  |  |  FuncCall
-|  |  |  |  |  |  |  id
-|  |  |  |  |  |  |  |  func
-|  |  |  |  |  |  |  AParams
-|  |  |  |  |  |  Dot
-|  |  |  |  |  |  |  Variable
-|  |  |  |  |  |  |  |  id
-|  |  |  |  |  |  |  |  |  arr
-|  |  |  |  |  |  |  |  Dimensions
-|  |  |  |  |  |  |  |  |  Literal
-|  |  |  |  |  |  |  |  |  |  5
-|  |  |  |  |  |  |  |  |  |  TypeNode
-|  |  |  |  |  |  |  |  |  |  |  integer
-|  |  |  |  |  |  |  Dot
-|  |  |  |  |  |  |  |  Variable
-|  |  |  |  |  |  |  |  |  id
-|  |  |  |  |  |  |  |  |  |  value
-|  |  |  |  |  |  |  |  |  Dimensions
-|  |  |  |  |  |  |  |  FuncCall
-|  |  |  |  |  |  |  |  |  id
-|  |  |  |  |  |  |  |  |  |  otherFunc
-|  |  |  |  |  |  |  |  |  AParams
-|  |  |  |  |  |  |  |  |  |  Expr
-|  |  |  |  |  |  |  |  |  |  |  MultOp
-|  |  |  |  |  |  |  |  |  |  |  |  MultOp
-|  |  |  |  |  |  |  |  |  |  |  |  |  Literal
-|  |  |  |  |  |  |  |  |  |  |  |  |  |  5.6
-|  |  |  |  |  |  |  |  |  |  |  |  |  |  TypeNode
-|  |  |  |  |  |  |  |  |  |  |  |  |  |  |  float
-|  |  |  |  |  |  |  |  |  |  |  |  |  *
-|  |  |  |  |  |  |  |  |  |  |  |  |  Literal
-|  |  |  |  |  |  |  |  |  |  |  |  |  |  8.4
-|  |  |  |  |  |  |  |  |  |  |  |  |  |  TypeNode
-|  |  |  |  |  |  |  |  |  |  |  |  |  |  |  float
-|  |  |  |  |  |  |  |  |  |  |  |  /
-|  |  |  |  |  |  |  |  |  |  |  |  AddOp
-|  |  |  |  |  |  |  |  |  |  |  |  |  Literal
-|  |  |  |  |  |  |  |  |  |  |  |  |  |  4.2
-|  |  |  |  |  |  |  |  |  |  |  |  |  |  TypeNode
-|  |  |  |  |  |  |  |  |  |  |  |  |  |  |  float
-|  |  |  |  |  |  |  |  |  |  |  |  |  -
-|  |  |  |  |  |  |  |  |  |  |  |  |  Literal
-|  |  |  |  |  |  |  |  |  |  |  |  |  |  6.3
-|  |  |  |  |  |  |  |  |  |  |  |  |  |  TypeNode
-|  |  |  |  |  |  |  |  |  |  |  |  |  |  |  float
+|  |  FuncDef
+|  |  |  id
+|  |  |  |  main
+|  |  |  TypeNode
+|  |  |  |  void
+|  |  |  FParamList
+|  |  |  StatBlock
