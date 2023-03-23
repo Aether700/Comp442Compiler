@@ -352,7 +352,7 @@ void CodeGenerator::Visit(ModifiedExpr* element)
 			ss << "\n% + expr\n";
 			ss << StoreValInRegister(element->GetExpr(), expr);
 			ss << "sw " << GetOffset(element) << "(r" << m_topOfStackRegister << "), r" << expr << "\n";
-			m_executionCode += ss.str();
+			m_currStatBlockCode += ss.str();
 			m_generatedTempVarNode.push_back(element);
 		}
 	}
@@ -369,6 +369,11 @@ void CodeGenerator::Visit(ModifiedExpr* element)
 
 void CodeGenerator::Visit(BaseBinaryOperator* element)
 {
+	if (TempVarAlreadyOnStack(element))
+	{
+		return;
+	}
+
 	const std::string& op = element->GetOperator()->GetOperator().GetLexeme();
 	if (op == "+")
 	{
@@ -425,6 +430,52 @@ void CodeGenerator::Visit(BaseBinaryOperator* element)
 	}
 }
 
+void CodeGenerator::Visit(StatBlockNode* element)
+{
+	m_statBlocks[element] = m_currStatBlockCode;
+	m_currStatBlockCode = "";
+}
+
+void CodeGenerator::Visit(FunctionDefNode* element)
+{
+	const std::string& funcStatBlock = m_statBlocks[element->GetBody()];
+	if (element->GetID()->GetID().GetLexeme() == "main")
+	{
+		std::stringstream ss;
+		ss << "\nentry\n";
+		ss << "addi r" << m_topOfStackRegister << ",r" << m_zeroRegister << ",topaddr\n";
+
+		m_executableCode += ss.str();
+		m_executableCode += funcStatBlock;
+		m_executableCode += "hlt\n";
+	}
+	else
+	{
+		DEBUG_BREAK(); // not supported yet
+	}
+}
+
+void CodeGenerator::Visit(IfStatNode* element)
+{
+	std::stringstream ss;
+	ss << "\n%if statement\n";
+	RegisterID relExpr;
+	ss << StoreValInRegister(element->GetCondition(), relExpr);
+	const std::string& ifBlock = m_statBlocks[element->GetIfBranch()];
+	const std::string& elseBlock = m_statBlocks[element->GetElseBranch()];
+
+	std::string startElse = m_tagGen.GetNextTag();
+	std::string endElse = m_tagGen.GetNextTag();
+
+	ss << "bz r" << relExpr << ", " << startElse << "\n";
+	ss << ifBlock;
+	ss << "j " << endElse << "\n";
+	ss << startElse << " " << elseBlock;
+	ss << endElse << " ";
+
+	m_currStatBlockCode += ss.str();
+}
+
 void CodeGenerator::Visit(AssignStatNode* element)
 {
 	std::stringstream ss;
@@ -434,7 +485,7 @@ void CodeGenerator::Visit(AssignStatNode* element)
 	ASSERT(right != NullRegister);
 	
 	ss << "sw " << GetOffset(element) << "(r" << m_topOfStackRegister << "), r" << right << "\n";
-	m_executionCode += ss.str();
+	m_currStatBlockCode += ss.str();
 
 	m_registerStack.push_front(right);
 }
@@ -463,20 +514,12 @@ void CodeGenerator::Visit(WriteStatNode* element)
 	ss << "jl r" << m_jumpReturnRegister << ", putstr\n";
 	ss << DecrementStackFrame(PlatformSpecifications::GetIntStrSize());
 
-	m_executionCode += ss.str();
+	m_currStatBlockCode += ss.str();
 	m_registerStack.push_front(exprValRegister);
 }
 
 void CodeGenerator::Visit(ProgramNode* element)
 {
-	std::stringstream ss;
-	ss << "entry\n";
-	ss << "addi r" << m_topOfStackRegister << ",r" << m_zeroRegister << ",topaddr\n";
-
-	// pre-pend to program code
-	m_executionCode = ss.str() + m_executionCode;
-
-	m_executionCode += "hlt\n";
 	m_dataCode = "buff res 20\n";
 }
 
@@ -485,7 +528,7 @@ void CodeGenerator::OutputCode() const
 	std::string moonFilepath = SimplifyFilename(m_filepath) + ".moon";
 	std::ofstream outFile = std::ofstream(moonFilepath);
 
-	outFile << m_executionCode;
+	outFile << m_executableCode;
 	outFile << m_dataCode;
 }
 
@@ -512,7 +555,7 @@ void CodeGenerator::GenerateMinusExpr(ModifiedExpr* modExpr)
 	ss << "muli r" << tempVarReg << ", r" << exprReg << ", -1\n";
 	ss << "sw " << GetOffset(modExpr) << "(r" << m_topOfStackRegister << "), r" << tempVarReg << "\n";
 
-	m_executionCode += ss.str();
+	m_currStatBlockCode += ss.str();
 	m_generatedTempVarNode.push_back(modExpr);
 }
 
@@ -539,13 +582,13 @@ void CodeGenerator::GenerateDivOp(BaseBinaryOperator* opNode)
 
 void CodeGenerator::GenerateOr(BaseBinaryOperator* opNode)
 {
-	m_executionCode += "\n%or operator\n";
+	m_currStatBlockCode += "\n%or operator\n";
 	GenerateAndOr(opNode, "add");
 }
 
 void CodeGenerator::GenerateAnd(BaseBinaryOperator* opNode)
 {
-	m_executionCode += "\n%and operator\n";
+	m_currStatBlockCode += "\n%and operator\n";
 	GenerateAndOr(opNode, "mul");
 }
 
@@ -567,47 +610,46 @@ void CodeGenerator::GenerateNot(ModifiedExpr* expr)
 	ss << isFalse << " addi r" << output << ", r" << m_zeroRegister << ", 1\n";
 	ss << endIsFalse << " sw " << GetOffset(expr) << "(r" << m_topOfStackRegister << "), r" << output << "\n";
 
-	m_executionCode += ss.str();
+	m_currStatBlockCode += ss.str();
 	m_registerStack.push_front(exprRegister);
 	m_generatedTempVarNode.push_back(expr);
 }
 
 void CodeGenerator::GenerateEqual(BaseBinaryOperator* opNode)
 {
-	m_executionCode += "\n%equals\n";
+	m_currStatBlockCode += "\n%equals\n";
 	GenerateRelOp(opNode, "ceq");
 }
 
 void CodeGenerator::GenerateNotEqual(BaseBinaryOperator* opNode)
 {
-	m_executionCode += "\n%not equals\n";
+	m_currStatBlockCode += "\n%not equals\n";
 	GenerateRelOp(opNode, "cne");
 }
 
 void CodeGenerator::GenerateLessThan(BaseBinaryOperator* opNode)
 {
-	m_executionCode += "\n%less than\n";
+	m_currStatBlockCode += "\n%less than\n";
 	GenerateRelOp(opNode, "clt");
 }
 
 void CodeGenerator::GenerateGreaterThan(BaseBinaryOperator* opNode) 
 {
-	m_executionCode += "\n%greater than\n";
+	m_currStatBlockCode += "\n%greater than\n";
 	GenerateRelOp(opNode, "cgt");
 }
 
 void CodeGenerator::GenerateLessOrEqual(BaseBinaryOperator* opNode)
 {
-	m_executionCode += "\n%less or equal\n";
+	m_currStatBlockCode += "\n%less or equal\n";
 	GenerateRelOp(opNode, "cle");
 }
 
 void CodeGenerator::GenerateGreaterOrEqual(BaseBinaryOperator* opNode) 
 {
-	m_executionCode += "\n%greater or equal\n";
+	m_currStatBlockCode += "\n%greater or equal\n";
 	GenerateRelOp(opNode, "cge");
 }
-
 
 
 void CodeGenerator::GenerateArithmeticOp(BaseBinaryOperator* opNode, const char* commandName)
@@ -630,7 +672,7 @@ void CodeGenerator::GenerateArithmeticOp(BaseBinaryOperator* opNode, const char*
 	m_registerStack.push_front(right);
 	m_registerStack.push_front(left);
 
-	m_executionCode += ss.str();
+	m_currStatBlockCode += ss.str();
 }
 
 void CodeGenerator::GenerateAndOr(BaseBinaryOperator* opNode, const char* commandName)
@@ -665,7 +707,7 @@ void CodeGenerator::GenerateAndOr(BaseBinaryOperator* opNode, const char* comman
 	m_registerStack.push_front(right);
 	m_registerStack.push_front(left);
 
-	m_executionCode += ss.str();
+	m_currStatBlockCode += ss.str();
 }
 
 void CodeGenerator::GenerateRelOp(BaseBinaryOperator* opNode, const char* commandName)
@@ -680,7 +722,7 @@ void CodeGenerator::GenerateRelOp(BaseBinaryOperator* opNode, const char* comman
 	ss << commandName <<" r" << result << ", r" << left << ", r" << right << "\n";
 	ss << "sw " << GetOffset(opNode) << "(r" << m_topOfStackRegister << "), r" << result << "\n";
 
-	m_executionCode += ss.str();
+	m_currStatBlockCode += ss.str();
 
 	m_registerStack.push_front(right);
 	m_registerStack.push_front(left);
@@ -746,15 +788,8 @@ std::string CodeGenerator::StoreValInRegister(BaseBinaryOperator* node, Register
 	{
 		return LoadTempVarInRegister(node, outRegister);
 	}
-	m_generatedTempVarNode.push_back(node);
-
-	std::stringstream ss;
-	outRegister = m_registerStack.front();
-	m_registerStack.pop_front();
-	ss << "lw r" << outRegister << ", " << GetOffset(node) 
-		<< "(r" << m_topOfStackRegister << ")\n";
-
-	return ss.str();
+	Visit(node);
+	return LoadTempVarInRegister(node, outRegister);
 }
 
 std::string CodeGenerator::StoreValInRegister(ExprNode* node, RegisterID& outRegister)

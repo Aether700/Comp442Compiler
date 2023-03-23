@@ -8,15 +8,35 @@ Program
 |  |  |  |  void
 |  |  |  FParamList
 |  |  |  StatBlock
-|  |  |  |  WriteStat
+|  |  |  |  IfStat
 |  |  |  |  |  Expr
 |  |  |  |  |  |  RelOp
 |  |  |  |  |  |  |  Literal
-|  |  |  |  |  |  |  |  7
+|  |  |  |  |  |  |  |  1
 |  |  |  |  |  |  |  |  TypeNode
 |  |  |  |  |  |  |  |  |  integer
-|  |  |  |  |  |  |  >=
+|  |  |  |  |  |  |  ==
 |  |  |  |  |  |  |  Literal
-|  |  |  |  |  |  |  |  8
+|  |  |  |  |  |  |  |  1
 |  |  |  |  |  |  |  |  TypeNode
 |  |  |  |  |  |  |  |  |  integer
+|  |  |  |  |  StatBlock
+|  |  |  |  |  |  WriteStat
+|  |  |  |  |  |  |  Expr
+|  |  |  |  |  |  |  |  Literal
+|  |  |  |  |  |  |  |  |  1
+|  |  |  |  |  |  |  |  |  TypeNode
+|  |  |  |  |  |  |  |  |  |  integer
+|  |  |  |  |  StatBlock
+|  |  |  |  |  |  WriteStat
+|  |  |  |  |  |  |  Expr
+|  |  |  |  |  |  |  |  Literal
+|  |  |  |  |  |  |  |  |  0
+|  |  |  |  |  |  |  |  |  TypeNode
+|  |  |  |  |  |  |  |  |  |  integer
+|  |  |  |  WriteStat
+|  |  |  |  |  Expr
+|  |  |  |  |  |  Literal
+|  |  |  |  |  |  |  2
+|  |  |  |  |  |  |  TypeNode
+|  |  |  |  |  |  |  |  integer

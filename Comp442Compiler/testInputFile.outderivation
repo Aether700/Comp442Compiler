@@ -17,28 +17,80 @@
 
 -> 'function' 'id'  '('   ')' '=>' 'void'   '{'  <LocalVarDeclOrStmt> <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
 -> 'function' 'id'  '('   ')' '=>' 'void'   '{'  <Statement> <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
--> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'write' '(' <Expr> ')'  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'if' '(' <RelExpr> ')' 'then' <StatBlock> 'else' <StatBlock>  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
 
 
--> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'write' '(' <ArithExpr> <Expr2> ')'  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
--> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'write' '(' <Term> <ArithExpr2> <Expr2> ')'  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
--> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'write' '(' <Factor> <Term2> <ArithExpr2> <Expr2> ')'  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
--> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'write' '(' 'integer literal'  <Term2> <ArithExpr2> <Expr2> ')'  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'if' '(' <ArithExpr> <RelOp> <ArithExpr>   ')' 'then' <StatBlock> 'else' <StatBlock>  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'if' '(' <Term> <ArithExpr2> <RelOp> <ArithExpr>   ')' 'then' <StatBlock> 'else' <StatBlock>  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'if' '(' <Factor> <Term2> <ArithExpr2> <RelOp> <ArithExpr>   ')' 'then' <StatBlock> 'else' <StatBlock>  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'if' '(' 'integer literal'  <Term2> <ArithExpr2> <RelOp> <ArithExpr>   ')' 'then' <StatBlock> 'else' <StatBlock>  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
 
--> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'write' '(' 'integer literal'  <ArithExpr2> <Expr2> ')'  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
--> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'write' '(' 'integer literal'  <Expr2> ')'  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
--> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'write' '(' 'integer literal'  <RelOp> <ArithExpr>   ')'  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
--> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'write' '(' 'integer literal'  '>='  <ArithExpr>   ')'  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'if' '(' 'integer literal'  <ArithExpr2> <RelOp> <ArithExpr>   ')' 'then' <StatBlock> 'else' <StatBlock>  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'if' '(' 'integer literal'  <RelOp> <ArithExpr>   ')' 'then' <StatBlock> 'else' <StatBlock>  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'if' '(' 'integer literal'  '=='  <ArithExpr>   ')' 'then' <StatBlock> 'else' <StatBlock>  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
 
--> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'write' '(' 'integer literal'  '>='  <Term> <ArithExpr2>   ')'  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
--> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'write' '(' 'integer literal'  '>='  <Factor> <Term2> <ArithExpr2>   ')'  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
--> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'write' '(' 'integer literal'  '>='  'integer literal'  <Term2> <ArithExpr2>   ')'  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'if' '(' 'integer literal'  '=='  <Term> <ArithExpr2>   ')' 'then' <StatBlock> 'else' <StatBlock>  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'if' '(' 'integer literal'  '=='  <Factor> <Term2> <ArithExpr2>   ')' 'then' <StatBlock> 'else' <StatBlock>  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'if' '(' 'integer literal'  '=='  'integer literal'  <Term2> <ArithExpr2>   ')' 'then' <StatBlock> 'else' <StatBlock>  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
 
--> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'write' '(' 'integer literal'  '>='  'integer literal'  <ArithExpr2>   ')'  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
--> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'write' '(' 'integer literal'  '>='  'integer literal'    ')'  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'if' '(' 'integer literal'  '=='  'integer literal'  <ArithExpr2>   ')' 'then' <StatBlock> 'else' <StatBlock>  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'if' '(' 'integer literal'  '=='  'integer literal'    ')' 'then' <StatBlock> 'else' <StatBlock>  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
 
 
--> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'write' '(' 'integer literal'  '>='  'integer literal'    ')'  ';'  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'if' '(' 'integer literal'  '=='  'integer literal'    ')' 'then'  '{' <StatementRepetition>  '}' 'else' <StatBlock>  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
 
--> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'write' '(' 'integer literal'  '>='  'integer literal'    ')'  ';'  '}'  'EOF' 
--> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'write' '(' 'integer literal'  '>='  'integer literal'    ')'  ';'  '}'  'EOF' 
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'if' '(' 'integer literal'  '=='  'integer literal'    ')' 'then'  '{' <Statement> <StatementRepetition>  '}' 'else' <StatBlock>  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'if' '(' 'integer literal'  '=='  'integer literal'    ')' 'then'  '{' 'write' '(' <Expr> ')'  ';' <StatementRepetition>  '}' 'else' <StatBlock>  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+
+
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'if' '(' 'integer literal'  '=='  'integer literal'    ')' 'then'  '{' 'write' '(' <ArithExpr> <Expr2> ')'  ';' <StatementRepetition>  '}' 'else' <StatBlock>  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'if' '(' 'integer literal'  '=='  'integer literal'    ')' 'then'  '{' 'write' '(' <Term> <ArithExpr2> <Expr2> ')'  ';' <StatementRepetition>  '}' 'else' <StatBlock>  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'if' '(' 'integer literal'  '=='  'integer literal'    ')' 'then'  '{' 'write' '(' <Factor> <Term2> <ArithExpr2> <Expr2> ')'  ';' <StatementRepetition>  '}' 'else' <StatBlock>  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'if' '(' 'integer literal'  '=='  'integer literal'    ')' 'then'  '{' 'write' '(' 'integer literal'  <Term2> <ArithExpr2> <Expr2> ')'  ';' <StatementRepetition>  '}' 'else' <StatBlock>  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'if' '(' 'integer literal'  '=='  'integer literal'    ')' 'then'  '{' 'write' '(' 'integer literal'  <ArithExpr2> <Expr2> ')'  ';' <StatementRepetition>  '}' 'else' <StatBlock>  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'if' '(' 'integer literal'  '=='  'integer literal'    ')' 'then'  '{' 'write' '(' 'integer literal'  <Expr2> ')'  ';' <StatementRepetition>  '}' 'else' <StatBlock>  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'if' '(' 'integer literal'  '=='  'integer literal'    ')' 'then'  '{' 'write' '(' 'integer literal'   ')'  ';' <StatementRepetition>  '}' 'else' <StatBlock>  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+
+
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'if' '(' 'integer literal'  '=='  'integer literal'    ')' 'then'  '{' 'write' '(' 'integer literal'   ')'  ';'  '}' 'else' <StatBlock>  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+
+
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'if' '(' 'integer literal'  '=='  'integer literal'    ')' 'then'  '{' 'write' '(' 'integer literal'   ')'  ';'  '}' 'else'  '{' <StatementRepetition>  '}'  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'if' '(' 'integer literal'  '=='  'integer literal'    ')' 'then'  '{' 'write' '(' 'integer literal'   ')'  ';'  '}' 'else'  '{' <Statement> <StatementRepetition>  '}'  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'if' '(' 'integer literal'  '=='  'integer literal'    ')' 'then'  '{' 'write' '(' 'integer literal'   ')'  ';'  '}' 'else'  '{' 'write' '(' <Expr> ')'  ';' <StatementRepetition>  '}'  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+
+
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'if' '(' 'integer literal'  '=='  'integer literal'    ')' 'then'  '{' 'write' '(' 'integer literal'   ')'  ';'  '}' 'else'  '{' 'write' '(' <ArithExpr> <Expr2> ')'  ';' <StatementRepetition>  '}'  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'if' '(' 'integer literal'  '=='  'integer literal'    ')' 'then'  '{' 'write' '(' 'integer literal'   ')'  ';'  '}' 'else'  '{' 'write' '(' <Term> <ArithExpr2> <Expr2> ')'  ';' <StatementRepetition>  '}'  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'if' '(' 'integer literal'  '=='  'integer literal'    ')' 'then'  '{' 'write' '(' 'integer literal'   ')'  ';'  '}' 'else'  '{' 'write' '(' <Factor> <Term2> <ArithExpr2> <Expr2> ')'  ';' <StatementRepetition>  '}'  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'if' '(' 'integer literal'  '=='  'integer literal'    ')' 'then'  '{' 'write' '(' 'integer literal'   ')'  ';'  '}' 'else'  '{' 'write' '(' 'integer literal'  <Term2> <ArithExpr2> <Expr2> ')'  ';' <StatementRepetition>  '}'  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'if' '(' 'integer literal'  '=='  'integer literal'    ')' 'then'  '{' 'write' '(' 'integer literal'   ')'  ';'  '}' 'else'  '{' 'write' '(' 'integer literal'  <ArithExpr2> <Expr2> ')'  ';' <StatementRepetition>  '}'  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'if' '(' 'integer literal'  '=='  'integer literal'    ')' 'then'  '{' 'write' '(' 'integer literal'   ')'  ';'  '}' 'else'  '{' 'write' '(' 'integer literal'  <Expr2> ')'  ';' <StatementRepetition>  '}'  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'if' '(' 'integer literal'  '=='  'integer literal'    ')' 'then'  '{' 'write' '(' 'integer literal'   ')'  ';'  '}' 'else'  '{' 'write' '(' 'integer literal'   ')'  ';' <StatementRepetition>  '}'  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+
+
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'if' '(' 'integer literal'  '=='  'integer literal'    ')' 'then'  '{' 'write' '(' 'integer literal'   ')'  ';'  '}' 'else'  '{' 'write' '(' 'integer literal'   ')'  ';'  '}'  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+
+
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'if' '(' 'integer literal'  '=='  'integer literal'    ')' 'then'  '{' 'write' '(' 'integer literal'   ')'  ';'  '}' 'else'  '{' 'write' '(' 'integer literal'   ')'  ';'  '}'  ';' <LocalVarDeclOrStmt> <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'if' '(' 'integer literal'  '=='  'integer literal'    ')' 'then'  '{' 'write' '(' 'integer literal'   ')'  ';'  '}' 'else'  '{' 'write' '(' 'integer literal'   ')'  ';'  '}'  ';' <Statement> <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'if' '(' 'integer literal'  '=='  'integer literal'    ')' 'then'  '{' 'write' '(' 'integer literal'   ')'  ';'  '}' 'else'  '{' 'write' '(' 'integer literal'   ')'  ';'  '}'  ';' 'write' '(' <Expr> ')'  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+
+
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'if' '(' 'integer literal'  '=='  'integer literal'    ')' 'then'  '{' 'write' '(' 'integer literal'   ')'  ';'  '}' 'else'  '{' 'write' '(' 'integer literal'   ')'  ';'  '}'  ';' 'write' '(' <ArithExpr> <Expr2> ')'  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'if' '(' 'integer literal'  '=='  'integer literal'    ')' 'then'  '{' 'write' '(' 'integer literal'   ')'  ';'  '}' 'else'  '{' 'write' '(' 'integer literal'   ')'  ';'  '}'  ';' 'write' '(' <Term> <ArithExpr2> <Expr2> ')'  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'if' '(' 'integer literal'  '=='  'integer literal'    ')' 'then'  '{' 'write' '(' 'integer literal'   ')'  ';'  '}' 'else'  '{' 'write' '(' 'integer literal'   ')'  ';'  '}'  ';' 'write' '(' <Factor> <Term2> <ArithExpr2> <Expr2> ')'  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'if' '(' 'integer literal'  '=='  'integer literal'    ')' 'then'  '{' 'write' '(' 'integer literal'   ')'  ';'  '}' 'else'  '{' 'write' '(' 'integer literal'   ')'  ';'  '}'  ';' 'write' '(' 'integer literal'  <Term2> <ArithExpr2> <Expr2> ')'  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'if' '(' 'integer literal'  '=='  'integer literal'    ')' 'then'  '{' 'write' '(' 'integer literal'   ')'  ';'  '}' 'else'  '{' 'write' '(' 'integer literal'   ')'  ';'  '}'  ';' 'write' '(' 'integer literal'  <ArithExpr2> <Expr2> ')'  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'if' '(' 'integer literal'  '=='  'integer literal'    ')' 'then'  '{' 'write' '(' 'integer literal'   ')'  ';'  '}' 'else'  '{' 'write' '(' 'integer literal'   ')'  ';'  '}'  ';' 'write' '(' 'integer literal'  <Expr2> ')'  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'if' '(' 'integer literal'  '=='  'integer literal'    ')' 'then'  '{' 'write' '(' 'integer literal'   ')'  ';'  '}' 'else'  '{' 'write' '(' 'integer literal'   ')'  ';'  '}'  ';' 'write' '(' 'integer literal'   ')'  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+
+
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'if' '(' 'integer literal'  '=='  'integer literal'    ')' 'then'  '{' 'write' '(' 'integer literal'   ')'  ';'  '}' 'else'  '{' 'write' '(' 'integer literal'   ')'  ';'  '}'  ';' 'write' '(' 'integer literal'   ')'  ';'  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'if' '(' 'integer literal'  '=='  'integer literal'    ')' 'then'  '{' 'write' '(' 'integer literal'   ')'  ';'  '}' 'else'  '{' 'write' '(' 'integer literal'   ')'  ';'  '}'  ';' 'write' '(' 'integer literal'   ')'  ';'  '}'  'EOF' 
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'if' '(' 'integer literal'  '=='  'integer literal'    ')' 'then'  '{' 'write' '(' 'integer literal'   ')'  ';'  '}' 'else'  '{' 'write' '(' 'integer literal'   ')'  ';'  '}'  ';' 'write' '(' 'integer literal'   ')'  ';'  '}'  'EOF' 

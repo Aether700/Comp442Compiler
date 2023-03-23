@@ -12,9 +12,11 @@ class DotNode;
 class ExprNode;
 class ModifiedExpr;
 class BaseBinaryOperator;
+class IfStatNode;
 class WriteStatNode;
 class ReturnStatNode;
 class AssignStatNode;
+class StatBlockNode;
 class FParamNode;
 class FParamListNode;
 class AParamListNode;
@@ -36,12 +38,14 @@ public:
     virtual void Visit(ExprNode* element) { }
     virtual void Visit(ModifiedExpr* element) { }
     virtual void Visit(BaseBinaryOperator* element) { }
+    virtual void Visit(IfStatNode* element) { }
     virtual void Visit(WriteStatNode* element) { }
     virtual void Visit(ReturnStatNode* element) { }
     virtual void Visit(AssignStatNode* element) { }
     virtual void Visit(VarDeclNode* element) { }
     virtual void Visit(FParamNode* element) { }
     virtual void Visit(FuncCallNode* element) { }
+    virtual void Visit(StatBlockNode* element) { }
     virtual void Visit(FunctionDefNode* element) { }
     virtual void Visit(MemVarNode* element) { }
     virtual void Visit(MemFuncDeclNode* element) { }

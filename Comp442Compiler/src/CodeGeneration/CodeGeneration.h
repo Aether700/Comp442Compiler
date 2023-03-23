@@ -92,6 +92,9 @@ public:
     CodeGenerator(const std::string& filepath);
     virtual void Visit(ModifiedExpr* element) override;
     virtual void Visit(BaseBinaryOperator* element) override;
+    virtual void Visit(StatBlockNode* element) override;
+    virtual void Visit(FunctionDefNode* element) override;
+    virtual void Visit(IfStatNode* element) override;
     virtual void Visit(AssignStatNode* element) override;
     virtual void Visit(WriteStatNode* element) override;
     virtual void Visit(ProgramNode* element) override;
@@ -101,10 +104,6 @@ public:
 
 private:
     static constexpr size_t s_startStackAddr = 100;
-
-    std::string m_filepath;
-    std::string m_dataCode;
-    std::string m_executionCode;
 
     std::string IncrementStackFrame(size_t frameSize);
     std::string DecrementStackFrame(size_t frameSize);
@@ -156,6 +155,11 @@ private:
         }
         return false;
     }
+
+    std::string m_filepath;
+    std::string m_dataCode;
+    std::string m_executableCode;
+    std::string m_currStatBlockCode;
 
     RegisterID m_topOfStackRegister;
     RegisterID m_zeroRegister; // register with value 0 not necessarily r0
