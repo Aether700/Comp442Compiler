@@ -11,8 +11,9 @@
 
 
 /* To Do
- - generate if statment
- - generate while statement
+ 
+ - check guidelines and re-organize list below
+ 
  - add float support
  - generate basic objects
  - generate arrays

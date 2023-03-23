@@ -1,6 +1,14 @@
 function main() => void
 {
-	if (1 == 1) then
+	write(1+2-3*2+8/2);
+	write(1 == 1);
+	write(1 <> 0);
+	write(1 > 0);
+	localvar b : integer;
+	b = 1 < 0;
+	write(not b);
+
+	if (1 < 2) then
 	{
 		write(1);
 	}
@@ -8,5 +16,32 @@ function main() => void
 	{
 		write(0);
 	};
-	write(2);
+
+	if (2 > 3) then
+	{
+		write(0);
+	}
+	else
+	{
+		write(1);
+	};
+	
+	write(3);
+	localvar i : integer;
+	i = 0;
+	while (i < 3)
+	{
+		write(1);
+		i = i + 1;
+	};
+	write(3);
+
+	write(3);
+	i = 0;
+	while (i > 3)
+	{
+		write(1);
+		i = i + 1;
+	};
+	write(3);
 }

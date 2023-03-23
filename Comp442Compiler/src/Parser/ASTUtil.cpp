@@ -280,6 +280,20 @@ SymbolTable* GetContextTableFromName(SymbolTable* currContext,
     return FindNameInDot(GetGlobalTable(currContext), currContext, dot, name);
 }
 
+StatBlockNode* GetParentStatBlock(ASTNode* node)
+{
+    ASTNode* curr = node->GetParent();
+    while (dynamic_cast<StatBlockNode*>(curr) == nullptr)
+    {
+        if (curr == nullptr || curr->GetParent() == nullptr)
+        {
+            return nullptr;
+        }
+        curr = curr->GetParent();
+    }
+    return dynamic_cast<StatBlockNode*>(curr);
+}
+
 bool IsValidSelf(SymbolTable* contextTable, VariableNode* var)
 {
     SymbolTableEntry* parentEntry = contextTable->GetParentEntry();

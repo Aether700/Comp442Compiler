@@ -8,7 +8,43 @@ Program
 |  |  |  |  void
 |  |  |  FParamList
 |  |  |  StatBlock
-|  |  |  |  IfStat
+|  |  |  |  WriteStat
+|  |  |  |  |  Expr
+|  |  |  |  |  |  AddOp
+|  |  |  |  |  |  |  AddOp
+|  |  |  |  |  |  |  |  AddOp
+|  |  |  |  |  |  |  |  |  Literal
+|  |  |  |  |  |  |  |  |  |  1
+|  |  |  |  |  |  |  |  |  |  TypeNode
+|  |  |  |  |  |  |  |  |  |  |  integer
+|  |  |  |  |  |  |  |  |  +
+|  |  |  |  |  |  |  |  |  Literal
+|  |  |  |  |  |  |  |  |  |  2
+|  |  |  |  |  |  |  |  |  |  TypeNode
+|  |  |  |  |  |  |  |  |  |  |  integer
+|  |  |  |  |  |  |  |  -
+|  |  |  |  |  |  |  |  MultOp
+|  |  |  |  |  |  |  |  |  Literal
+|  |  |  |  |  |  |  |  |  |  3
+|  |  |  |  |  |  |  |  |  |  TypeNode
+|  |  |  |  |  |  |  |  |  |  |  integer
+|  |  |  |  |  |  |  |  |  *
+|  |  |  |  |  |  |  |  |  Literal
+|  |  |  |  |  |  |  |  |  |  2
+|  |  |  |  |  |  |  |  |  |  TypeNode
+|  |  |  |  |  |  |  |  |  |  |  integer
+|  |  |  |  |  |  |  +
+|  |  |  |  |  |  |  MultOp
+|  |  |  |  |  |  |  |  Literal
+|  |  |  |  |  |  |  |  |  8
+|  |  |  |  |  |  |  |  |  TypeNode
+|  |  |  |  |  |  |  |  |  |  integer
+|  |  |  |  |  |  |  |  /
+|  |  |  |  |  |  |  |  Literal
+|  |  |  |  |  |  |  |  |  2
+|  |  |  |  |  |  |  |  |  TypeNode
+|  |  |  |  |  |  |  |  |  |  integer
+|  |  |  |  WriteStat
 |  |  |  |  |  Expr
 |  |  |  |  |  |  RelOp
 |  |  |  |  |  |  |  Literal
@@ -18,6 +54,72 @@ Program
 |  |  |  |  |  |  |  ==
 |  |  |  |  |  |  |  Literal
 |  |  |  |  |  |  |  |  1
+|  |  |  |  |  |  |  |  TypeNode
+|  |  |  |  |  |  |  |  |  integer
+|  |  |  |  WriteStat
+|  |  |  |  |  Expr
+|  |  |  |  |  |  RelOp
+|  |  |  |  |  |  |  Literal
+|  |  |  |  |  |  |  |  1
+|  |  |  |  |  |  |  |  TypeNode
+|  |  |  |  |  |  |  |  |  integer
+|  |  |  |  |  |  |  <>
+|  |  |  |  |  |  |  Literal
+|  |  |  |  |  |  |  |  0
+|  |  |  |  |  |  |  |  TypeNode
+|  |  |  |  |  |  |  |  |  integer
+|  |  |  |  WriteStat
+|  |  |  |  |  Expr
+|  |  |  |  |  |  RelOp
+|  |  |  |  |  |  |  Literal
+|  |  |  |  |  |  |  |  1
+|  |  |  |  |  |  |  |  TypeNode
+|  |  |  |  |  |  |  |  |  integer
+|  |  |  |  |  |  |  >
+|  |  |  |  |  |  |  Literal
+|  |  |  |  |  |  |  |  0
+|  |  |  |  |  |  |  |  TypeNode
+|  |  |  |  |  |  |  |  |  integer
+|  |  |  |  VarDecl
+|  |  |  |  |  id
+|  |  |  |  |  |  b
+|  |  |  |  |  TypeNode
+|  |  |  |  |  |  integer
+|  |  |  |  |  Dimensions
+|  |  |  |  AssigStat
+|  |  |  |  |  Variable
+|  |  |  |  |  |  id
+|  |  |  |  |  |  |  b
+|  |  |  |  |  |  Dimensions
+|  |  |  |  |  Expr
+|  |  |  |  |  |  RelOp
+|  |  |  |  |  |  |  Literal
+|  |  |  |  |  |  |  |  1
+|  |  |  |  |  |  |  |  TypeNode
+|  |  |  |  |  |  |  |  |  integer
+|  |  |  |  |  |  |  <
+|  |  |  |  |  |  |  Literal
+|  |  |  |  |  |  |  |  0
+|  |  |  |  |  |  |  |  TypeNode
+|  |  |  |  |  |  |  |  |  integer
+|  |  |  |  WriteStat
+|  |  |  |  |  Expr
+|  |  |  |  |  |  ModifiedExpr
+|  |  |  |  |  |  |  not
+|  |  |  |  |  |  |  Variable
+|  |  |  |  |  |  |  |  id
+|  |  |  |  |  |  |  |  |  b
+|  |  |  |  |  |  |  |  Dimensions
+|  |  |  |  IfStat
+|  |  |  |  |  Expr
+|  |  |  |  |  |  RelOp
+|  |  |  |  |  |  |  Literal
+|  |  |  |  |  |  |  |  1
+|  |  |  |  |  |  |  |  TypeNode
+|  |  |  |  |  |  |  |  |  integer
+|  |  |  |  |  |  |  <
+|  |  |  |  |  |  |  Literal
+|  |  |  |  |  |  |  |  2
 |  |  |  |  |  |  |  |  TypeNode
 |  |  |  |  |  |  |  |  |  integer
 |  |  |  |  |  StatBlock
@@ -34,9 +136,149 @@ Program
 |  |  |  |  |  |  |  |  |  0
 |  |  |  |  |  |  |  |  |  TypeNode
 |  |  |  |  |  |  |  |  |  |  integer
+|  |  |  |  IfStat
+|  |  |  |  |  Expr
+|  |  |  |  |  |  RelOp
+|  |  |  |  |  |  |  Literal
+|  |  |  |  |  |  |  |  2
+|  |  |  |  |  |  |  |  TypeNode
+|  |  |  |  |  |  |  |  |  integer
+|  |  |  |  |  |  |  >
+|  |  |  |  |  |  |  Literal
+|  |  |  |  |  |  |  |  3
+|  |  |  |  |  |  |  |  TypeNode
+|  |  |  |  |  |  |  |  |  integer
+|  |  |  |  |  StatBlock
+|  |  |  |  |  |  WriteStat
+|  |  |  |  |  |  |  Expr
+|  |  |  |  |  |  |  |  Literal
+|  |  |  |  |  |  |  |  |  0
+|  |  |  |  |  |  |  |  |  TypeNode
+|  |  |  |  |  |  |  |  |  |  integer
+|  |  |  |  |  StatBlock
+|  |  |  |  |  |  WriteStat
+|  |  |  |  |  |  |  Expr
+|  |  |  |  |  |  |  |  Literal
+|  |  |  |  |  |  |  |  |  1
+|  |  |  |  |  |  |  |  |  TypeNode
+|  |  |  |  |  |  |  |  |  |  integer
 |  |  |  |  WriteStat
 |  |  |  |  |  Expr
 |  |  |  |  |  |  Literal
-|  |  |  |  |  |  |  2
+|  |  |  |  |  |  |  3
+|  |  |  |  |  |  |  TypeNode
+|  |  |  |  |  |  |  |  integer
+|  |  |  |  VarDecl
+|  |  |  |  |  id
+|  |  |  |  |  |  i
+|  |  |  |  |  TypeNode
+|  |  |  |  |  |  integer
+|  |  |  |  |  Dimensions
+|  |  |  |  AssigStat
+|  |  |  |  |  Variable
+|  |  |  |  |  |  id
+|  |  |  |  |  |  |  i
+|  |  |  |  |  |  Dimensions
+|  |  |  |  |  Expr
+|  |  |  |  |  |  Literal
+|  |  |  |  |  |  |  0
+|  |  |  |  |  |  |  TypeNode
+|  |  |  |  |  |  |  |  integer
+|  |  |  |  WhileStat
+|  |  |  |  |  Expr
+|  |  |  |  |  |  RelOp
+|  |  |  |  |  |  |  Variable
+|  |  |  |  |  |  |  |  id
+|  |  |  |  |  |  |  |  |  i
+|  |  |  |  |  |  |  |  Dimensions
+|  |  |  |  |  |  |  <
+|  |  |  |  |  |  |  Literal
+|  |  |  |  |  |  |  |  3
+|  |  |  |  |  |  |  |  TypeNode
+|  |  |  |  |  |  |  |  |  integer
+|  |  |  |  |  StatBlock
+|  |  |  |  |  |  WriteStat
+|  |  |  |  |  |  |  Expr
+|  |  |  |  |  |  |  |  Literal
+|  |  |  |  |  |  |  |  |  1
+|  |  |  |  |  |  |  |  |  TypeNode
+|  |  |  |  |  |  |  |  |  |  integer
+|  |  |  |  |  |  AssigStat
+|  |  |  |  |  |  |  Variable
+|  |  |  |  |  |  |  |  id
+|  |  |  |  |  |  |  |  |  i
+|  |  |  |  |  |  |  |  Dimensions
+|  |  |  |  |  |  |  Expr
+|  |  |  |  |  |  |  |  AddOp
+|  |  |  |  |  |  |  |  |  Variable
+|  |  |  |  |  |  |  |  |  |  id
+|  |  |  |  |  |  |  |  |  |  |  i
+|  |  |  |  |  |  |  |  |  |  Dimensions
+|  |  |  |  |  |  |  |  |  +
+|  |  |  |  |  |  |  |  |  Literal
+|  |  |  |  |  |  |  |  |  |  1
+|  |  |  |  |  |  |  |  |  |  TypeNode
+|  |  |  |  |  |  |  |  |  |  |  integer
+|  |  |  |  WriteStat
+|  |  |  |  |  Expr
+|  |  |  |  |  |  Literal
+|  |  |  |  |  |  |  3
+|  |  |  |  |  |  |  TypeNode
+|  |  |  |  |  |  |  |  integer
+|  |  |  |  WriteStat
+|  |  |  |  |  Expr
+|  |  |  |  |  |  Literal
+|  |  |  |  |  |  |  3
+|  |  |  |  |  |  |  TypeNode
+|  |  |  |  |  |  |  |  integer
+|  |  |  |  AssigStat
+|  |  |  |  |  Variable
+|  |  |  |  |  |  id
+|  |  |  |  |  |  |  i
+|  |  |  |  |  |  Dimensions
+|  |  |  |  |  Expr
+|  |  |  |  |  |  Literal
+|  |  |  |  |  |  |  0
+|  |  |  |  |  |  |  TypeNode
+|  |  |  |  |  |  |  |  integer
+|  |  |  |  WhileStat
+|  |  |  |  |  Expr
+|  |  |  |  |  |  RelOp
+|  |  |  |  |  |  |  Variable
+|  |  |  |  |  |  |  |  id
+|  |  |  |  |  |  |  |  |  i
+|  |  |  |  |  |  |  |  Dimensions
+|  |  |  |  |  |  |  >
+|  |  |  |  |  |  |  Literal
+|  |  |  |  |  |  |  |  3
+|  |  |  |  |  |  |  |  TypeNode
+|  |  |  |  |  |  |  |  |  integer
+|  |  |  |  |  StatBlock
+|  |  |  |  |  |  WriteStat
+|  |  |  |  |  |  |  Expr
+|  |  |  |  |  |  |  |  Literal
+|  |  |  |  |  |  |  |  |  1
+|  |  |  |  |  |  |  |  |  TypeNode
+|  |  |  |  |  |  |  |  |  |  integer
+|  |  |  |  |  |  AssigStat
+|  |  |  |  |  |  |  Variable
+|  |  |  |  |  |  |  |  id
+|  |  |  |  |  |  |  |  |  i
+|  |  |  |  |  |  |  |  Dimensions
+|  |  |  |  |  |  |  Expr
+|  |  |  |  |  |  |  |  AddOp
+|  |  |  |  |  |  |  |  |  Variable
+|  |  |  |  |  |  |  |  |  |  id
+|  |  |  |  |  |  |  |  |  |  |  i
+|  |  |  |  |  |  |  |  |  |  Dimensions
+|  |  |  |  |  |  |  |  |  +
+|  |  |  |  |  |  |  |  |  Literal
+|  |  |  |  |  |  |  |  |  |  1
+|  |  |  |  |  |  |  |  |  |  TypeNode
+|  |  |  |  |  |  |  |  |  |  |  integer
+|  |  |  |  WriteStat
+|  |  |  |  |  Expr
+|  |  |  |  |  |  Literal
+|  |  |  |  |  |  |  3
 |  |  |  |  |  |  |  TypeNode
 |  |  |  |  |  |  |  |  integer

@@ -13,6 +13,7 @@ class ExprNode;
 class ModifiedExpr;
 class BaseBinaryOperator;
 class IfStatNode;
+class WhileStatNode;
 class WriteStatNode;
 class ReturnStatNode;
 class AssignStatNode;
@@ -39,6 +40,7 @@ public:
     virtual void Visit(ModifiedExpr* element) { }
     virtual void Visit(BaseBinaryOperator* element) { }
     virtual void Visit(IfStatNode* element) { }
+    virtual void Visit(WhileStatNode* element) { }
     virtual void Visit(WriteStatNode* element) { }
     virtual void Visit(ReturnStatNode* element) { }
     virtual void Visit(AssignStatNode* element) { }

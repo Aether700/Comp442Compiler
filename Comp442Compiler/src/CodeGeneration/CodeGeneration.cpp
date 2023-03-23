@@ -335,105 +335,25 @@ CodeGenerator::CodeGenerator(const std::string& filepath) : m_filepath(filepath)
 	m_topOfStackRegister(14), m_zeroRegister(0), m_jumpReturnRegister(15), m_returnValRegister(13),
 	m_registerStack({1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12}), m_tagGen("memAddress") { }
 
+void CodeGenerator::Visit(ExprNode* element)
+{
+	std::stringstream ss;
+	RegisterID exprRoot;
+	ss << "\n" << LoadVarInRegister(element->GetRootOfExpr(), exprRoot);
+	ss << "sw " << GetOffset(element) << "(r" << m_topOfStackRegister << "), r" << exprRoot << "\n";
+
+	GetCurrStatBlock(element) += ss.str();
+	m_registerStack.push_front(exprRoot);
+}
+
 void CodeGenerator::Visit(ModifiedExpr* element)
 {
-	ASTNode* modifier = element->GetModifier();
-	if (dynamic_cast<SignNode*>(modifier) != nullptr)
-	{
-		SignNode* sign = (SignNode*)modifier;
-		if (sign->GetSign().GetLexeme() == "-")
-		{
-			GenerateMinusExpr(element);
-		}
-		else
-		{
-			RegisterID expr;
-			std::stringstream ss;
-			ss << "\n% + expr\n";
-			ss << StoreValInRegister(element->GetExpr(), expr);
-			ss << "sw " << GetOffset(element) << "(r" << m_topOfStackRegister << "), r" << expr << "\n";
-			m_currStatBlockCode += ss.str();
-			m_generatedTempVarNode.push_back(element);
-		}
-	}
-	else if (dynamic_cast<NotNode*>(modifier) != nullptr)
-	{
-		GenerateNot(element);
-	}
-	else
-	{
-		// unknown modifier
-		DEBUG_BREAK();
-	}
+	GetCurrStatBlock(element) += GenerateModifiedExpr(element);
 }
 
 void CodeGenerator::Visit(BaseBinaryOperator* element)
 {
-	if (TempVarAlreadyOnStack(element))
-	{
-		return;
-	}
-
-	const std::string& op = element->GetOperator()->GetOperator().GetLexeme();
-	if (op == "+")
-	{
-		GenerateAddOp(element);
-	}
-	else if (op == "-")
-	{
-		GenerateSubOp(element);
-	}
-	else if (op == "*")
-	{
-		GenerateMultOp(element);
-	}
-	else if (op == "/")
-	{
-		GenerateDivOp(element);
-	}
-	else if (op == "or")
-	{
-		GenerateOr(element);
-	}
-	else if (op == "and")
-	{
-		GenerateAnd(element);
-	}
-	else if (op == "==")
-	{
-		GenerateEqual(element);
-	}
-	else if (op == "<>")
-	{
-		GenerateNotEqual(element);
-	}
-	else if (op == "<")
-	{
-		GenerateLessThan(element);
-	}
-	else if (op == ">")
-	{
-		GenerateGreaterThan(element);
-	}
-	else if (op == "<=")
-	{
-		GenerateLessOrEqual(element);
-	}
-	else if (op == ">=")
-	{
-		GenerateGreaterOrEqual(element);
-	}
-	else
-	{
-		// unknown operator
-		DEBUG_BREAK();
-	}
-}
-
-void CodeGenerator::Visit(StatBlockNode* element)
-{
-	m_statBlocks[element] = m_currStatBlockCode;
-	m_currStatBlockCode = "";
+	GetCurrStatBlock(element) += GenerateBinaryOp(element);
 }
 
 void CodeGenerator::Visit(FunctionDefNode* element)
@@ -460,7 +380,7 @@ void CodeGenerator::Visit(IfStatNode* element)
 	std::stringstream ss;
 	ss << "\n%if statement\n";
 	RegisterID relExpr;
-	ss << StoreValInRegister(element->GetCondition(), relExpr);
+	ss << ComputeVal(element->GetCondition(), relExpr);
 	const std::string& ifBlock = m_statBlocks[element->GetIfBranch()];
 	const std::string& elseBlock = m_statBlocks[element->GetElseBranch()];
 
@@ -468,12 +388,35 @@ void CodeGenerator::Visit(IfStatNode* element)
 	std::string endElse = m_tagGen.GetNextTag();
 
 	ss << "bz r" << relExpr << ", " << startElse << "\n";
-	ss << ifBlock;
-	ss << "j " << endElse << "\n";
-	ss << startElse << " " << elseBlock;
+	ss <<  "%if block\n" << ifBlock << "%end if block\n";
+	ss << "j " << endElse << "\n%else block\n";
+	ss << startElse << " " << elseBlock << "%end else block\n";
 	ss << endElse << " ";
 
-	m_currStatBlockCode += ss.str();
+	GetCurrStatBlock(element) += ss.str();
+
+	m_registerStack.push_back(relExpr);
+}
+
+void CodeGenerator::Visit(WhileStatNode* element)
+{
+	std::stringstream ss;
+	ss << "\n%while statement\n";
+	RegisterID relExpr;
+	const std::string& loopBody = m_statBlocks[element->GetStatBlock()];
+
+	std::string topLoop = m_tagGen.GetNextTag();
+	std::string endLoop = m_tagGen.GetNextTag();
+
+	ss << topLoop << " " << ComputeVal(element->GetCondition(), relExpr);
+	ss << "bz r" << relExpr << ", " << endLoop << "\n";
+	ss << loopBody;
+	ss << "j " << topLoop << "\n";
+	ss << endLoop << " ";
+
+	GetCurrStatBlock(element) += ss.str();
+
+	m_registerStack.push_back(relExpr);
 }
 
 void CodeGenerator::Visit(AssignStatNode* element)
@@ -481,11 +424,11 @@ void CodeGenerator::Visit(AssignStatNode* element)
 	std::stringstream ss;
 	RegisterID right;
 	ss << "\n%assignment\n";
-	ss << StoreValInRegister(element->GetRight(), right);
+	ss << ComputeVal(element->GetRight(), right);
 	ASSERT(right != NullRegister);
 	
 	ss << "sw " << GetOffset(element) << "(r" << m_topOfStackRegister << "), r" << right << "\n";
-	m_currStatBlockCode += ss.str();
+	GetCurrStatBlock(element) += ss.str();
 
 	m_registerStack.push_front(right);
 }
@@ -495,9 +438,9 @@ void CodeGenerator::Visit(WriteStatNode* element)
 	std::stringstream ss;
 	
 	RegisterID exprValRegister;
-	std::string codeToAdd = StoreValInRegister((ASTNode*)element->GetExpr(), exprValRegister);
+	std::string codeToAdd = LoadTempVarInRegister(element->GetExpr(), exprValRegister);
 	ASSERT(exprValRegister != NullRegister);
-	ss << "\n" << codeToAdd;
+	ss << "\n%write stat\n" << codeToAdd;
 	ss << IncrementStackFrame(PlatformSpecifications::GetIntStrSize());
 	ss << "sw " << PlatformSpecifications::GetIntStrArg1Offset() << "(r" << m_topOfStackRegister 
 		<< "), r" << exprValRegister << "\n";
@@ -514,7 +457,7 @@ void CodeGenerator::Visit(WriteStatNode* element)
 	ss << "jl r" << m_jumpReturnRegister << ", putstr\n";
 	ss << DecrementStackFrame(PlatformSpecifications::GetIntStrSize());
 
-	m_currStatBlockCode += ss.str();
+	GetCurrStatBlock(element) += ss.str();
 	m_registerStack.push_front(exprValRegister);
 }
 
@@ -546,58 +489,146 @@ std::string CodeGenerator::DecrementStackFrame(size_t frameSize)
 	return ss.str();
 }
 
-void CodeGenerator::GenerateMinusExpr(ModifiedExpr* modExpr)
+std::string CodeGenerator::GenerateModifiedExpr(ModifiedExpr* modExpr)
+{
+	ASTNode* modifier = modExpr->GetModifier();
+	if (dynamic_cast<SignNode*>(modifier) != nullptr)
+	{
+		SignNode* sign = (SignNode*)modifier;
+		if (sign->GetSign().GetLexeme() == "-")
+		{
+			return GenerateMinusExpr(modExpr);
+		}
+		else
+		{
+			RegisterID expr;
+			std::stringstream ss;
+			ss << "\n% + expr\n";
+			ss << ComputeVal(modExpr->GetExpr(), expr);
+			ss << "sw " << GetOffset(modExpr) << "(r" << m_topOfStackRegister << "), r" << expr << "\n";
+			return ss.str();
+		}
+	}
+	else if (dynamic_cast<NotNode*>(modifier) != nullptr)
+	{
+		return GenerateNot(modExpr);
+	}
+	else
+	{
+		// unknown modifier
+		DEBUG_BREAK();
+	}
+	return "";
+}
+
+std::string CodeGenerator::GenerateMinusExpr(ModifiedExpr* modExpr)
 {
 	std::stringstream ss;
 	RegisterID exprReg;
-	ss << "\n% minus expr\n" << StoreValInRegister(modExpr->GetExpr(), exprReg);
+	ss << "\n% minus expr\n" << ComputeVal(modExpr->GetExpr(), exprReg);
 	RegisterID tempVarReg = m_registerStack.front();
 	ss << "muli r" << tempVarReg << ", r" << exprReg << ", -1\n";
 	ss << "sw " << GetOffset(modExpr) << "(r" << m_topOfStackRegister << "), r" << tempVarReg << "\n";
 
-	m_currStatBlockCode += ss.str();
-	m_generatedTempVarNode.push_back(modExpr);
+	return ss.str();
 }
 
-void CodeGenerator::GenerateAddOp(BaseBinaryOperator* opNode)
+std::string CodeGenerator::GenerateBinaryOp(BaseBinaryOperator* opNode)
 {
-	GenerateArithmeticOp(opNode, "add");
+	const std::string& op = opNode->GetOperator()->GetOperator().GetLexeme();
+	if (op == "+")
+	{
+		return GenerateAddOp(opNode);
+	}
+	else if (op == "-")
+	{
+		return GenerateSubOp(opNode);
+	}
+	else if (op == "*")
+	{
+		return GenerateMultOp(opNode);
+	}
+	else if (op == "/")
+	{
+		return GenerateDivOp(opNode);
+	}
+	else if (op == "or")
+	{
+		return GenerateOr(opNode);
+	}
+	else if (op == "and")
+	{
+		return GenerateAnd(opNode);
+	}
+	else if (op == "==")
+	{
+		return GenerateEqual(opNode);
+	}
+	else if (op == "<>")
+	{
+		return GenerateNotEqual(opNode);
+	}
+	else if (op == "<")
+	{
+		return GenerateLessThan(opNode);
+	}
+	else if (op == ">")
+	{
+		return GenerateGreaterThan(opNode);
+	}
+	else if (op == "<=")
+	{
+		return GenerateLessOrEqual(opNode);
+	}
+	else if (op == ">=")
+	{
+		return GenerateGreaterOrEqual(opNode);
+	}
+	else
+	{
+		// unknown operator
+		DEBUG_BREAK();
+	}
+	return "";
 }
 
-void CodeGenerator::GenerateSubOp(BaseBinaryOperator* opNode)
+std::string CodeGenerator::GenerateAddOp(BaseBinaryOperator* opNode)
 {
-	GenerateArithmeticOp(opNode, "sub");
+	return GenerateArithmeticOp(opNode, "add");
 }
 
-void CodeGenerator::GenerateMultOp(BaseBinaryOperator* opNode)
+std::string CodeGenerator::GenerateSubOp(BaseBinaryOperator* opNode)
 {
-	GenerateArithmeticOp(opNode, "mul");
+	return GenerateArithmeticOp(opNode, "sub");
 }
 
-void CodeGenerator::GenerateDivOp(BaseBinaryOperator* opNode)
+std::string CodeGenerator::GenerateMultOp(BaseBinaryOperator* opNode)
 {
-	GenerateArithmeticOp(opNode, "div");
+	return GenerateArithmeticOp(opNode, "mul");
 }
 
-
-void CodeGenerator::GenerateOr(BaseBinaryOperator* opNode)
+std::string CodeGenerator::GenerateDivOp(BaseBinaryOperator* opNode)
 {
-	m_currStatBlockCode += "\n%or operator\n";
-	GenerateAndOr(opNode, "add");
+	return GenerateArithmeticOp(opNode, "div");
 }
 
-void CodeGenerator::GenerateAnd(BaseBinaryOperator* opNode)
+
+std::string CodeGenerator::GenerateOr(BaseBinaryOperator* opNode)
 {
-	m_currStatBlockCode += "\n%and operator\n";
-	GenerateAndOr(opNode, "mul");
+	return "\n%or operator\n" + GenerateAndOr(opNode, "add");
 }
 
-void CodeGenerator::GenerateNot(ModifiedExpr* expr)
+std::string CodeGenerator::GenerateAnd(BaseBinaryOperator* opNode)
+{
+	return "\n%and operator\n" + GenerateAndOr(opNode, "mul");
+}
+
+std::string CodeGenerator::GenerateNot(ModifiedExpr* expr)
 {
 	std::stringstream ss;
 	ss << "\n% not\n";
 	RegisterID exprRegister;
-	ss << StoreValInRegister(expr->GetExpr(), exprRegister);
+	ss << LoadTempVarInRegister(expr, exprRegister);
 
 	std::string isFalse = m_tagGen.GetNextTag();
 	std::string endIsFalse = m_tagGen.GetNextTag();
@@ -610,57 +641,50 @@ void CodeGenerator::GenerateNot(ModifiedExpr* expr)
 	ss << isFalse << " addi r" << output << ", r" << m_zeroRegister << ", 1\n";
 	ss << endIsFalse << " sw " << GetOffset(expr) << "(r" << m_topOfStackRegister << "), r" << output << "\n";
 
-	m_currStatBlockCode += ss.str();
 	m_registerStack.push_front(exprRegister);
-	m_generatedTempVarNode.push_back(expr);
+	return ss.str();
 }
 
-void CodeGenerator::GenerateEqual(BaseBinaryOperator* opNode)
+std::string CodeGenerator::GenerateEqual(BaseBinaryOperator* opNode)
 {
-	m_currStatBlockCode += "\n%equals\n";
-	GenerateRelOp(opNode, "ceq");
+	return "\n%equals\n" + GenerateRelOp(opNode, "ceq");
 }
 
-void CodeGenerator::GenerateNotEqual(BaseBinaryOperator* opNode)
+std::string CodeGenerator::GenerateNotEqual(BaseBinaryOperator* opNode)
 {
-	m_currStatBlockCode += "\n%not equals\n";
-	GenerateRelOp(opNode, "cne");
+	return "\n%not equals\n" + GenerateRelOp(opNode, "cne");
 }
 
-void CodeGenerator::GenerateLessThan(BaseBinaryOperator* opNode)
+std::string CodeGenerator::GenerateLessThan(BaseBinaryOperator* opNode)
 {
-	m_currStatBlockCode += "\n%less than\n";
-	GenerateRelOp(opNode, "clt");
+	return "\n%less than\n" + GenerateRelOp(opNode, "clt");
 }
 
-void CodeGenerator::GenerateGreaterThan(BaseBinaryOperator* opNode) 
+std::string CodeGenerator::GenerateGreaterThan(BaseBinaryOperator* opNode)
 {
-	m_currStatBlockCode += "\n%greater than\n";
-	GenerateRelOp(opNode, "cgt");
+	return "\n%greater than\n" + GenerateRelOp(opNode, "cgt");
 }
 
-void CodeGenerator::GenerateLessOrEqual(BaseBinaryOperator* opNode)
+std::string CodeGenerator::GenerateLessOrEqual(BaseBinaryOperator* opNode)
 {
-	m_currStatBlockCode += "\n%less or equal\n";
-	GenerateRelOp(opNode, "cle");
+	return "\n%less or equal\n" + GenerateRelOp(opNode, "cle");
 }
 
-void CodeGenerator::GenerateGreaterOrEqual(BaseBinaryOperator* opNode) 
+std::string CodeGenerator::GenerateGreaterOrEqual(BaseBinaryOperator* opNode)
 {
-	m_currStatBlockCode += "\n%greater or equal\n";
-	GenerateRelOp(opNode, "cge");
+	return "\n%greater or equal\n" + GenerateRelOp(opNode, "cge");
 }
 
 
-void CodeGenerator::GenerateArithmeticOp(BaseBinaryOperator* opNode, const char* commandName)
+std::string CodeGenerator::GenerateArithmeticOp(BaseBinaryOperator* opNode, const char* commandName)
 {
 	std::stringstream ss;
 	RegisterID left;
 	RegisterID right;
-	ss << "\n" << StoreValInRegister(opNode->GetLeft(), left);
+	ss << "\n" << LoadVarInRegister(opNode->GetLeft(), left);
 	ASSERT(left != NullRegister);
 
-	ss << StoreValInRegister(opNode->GetRight(), right);
+	ss << LoadVarInRegister(opNode->GetRight(), right);
 	ASSERT(right != NullRegister);
 
 	RegisterID resultRegister = m_registerStack.front();
@@ -672,18 +696,18 @@ void CodeGenerator::GenerateArithmeticOp(BaseBinaryOperator* opNode, const char*
 	m_registerStack.push_front(right);
 	m_registerStack.push_front(left);
 
-	m_currStatBlockCode += ss.str();
+	return ss.str();
 }
 
-void CodeGenerator::GenerateAndOr(BaseBinaryOperator* opNode, const char* commandName)
+std::string CodeGenerator::GenerateAndOr(BaseBinaryOperator* opNode, const char* commandName)
 {
 	std::stringstream ss;
 	RegisterID left;
 	RegisterID right;
-	ss << StoreValInRegister(opNode->GetLeft(), left);
+	ss << ComputeVal(opNode->GetLeft(), left);
 	ASSERT(left != NullRegister);
 
-	ss << StoreValInRegister(opNode->GetRight(), right);
+	ss << ComputeVal(opNode->GetRight(), right);
 	ASSERT(right != NullRegister);
 
 	RegisterID tempResult = m_registerStack.front();
@@ -707,62 +731,105 @@ void CodeGenerator::GenerateAndOr(BaseBinaryOperator* opNode, const char* comman
 	m_registerStack.push_front(right);
 	m_registerStack.push_front(left);
 
-	m_currStatBlockCode += ss.str();
+	return ss.str();
 }
 
-void CodeGenerator::GenerateRelOp(BaseBinaryOperator* opNode, const char* commandName)
+std::string CodeGenerator::GenerateRelOp(BaseBinaryOperator* opNode, const char* commandName)
 {
 	std::stringstream ss;
 	RegisterID left;
-	ss << StoreValInRegister(opNode->GetLeft(), left);
+	ss << ComputeVal(opNode->GetLeft(), left);
 	RegisterID right;
-	ss << StoreValInRegister(opNode->GetRight(), right);
+	ss << ComputeVal(opNode->GetRight(), right);
 	RegisterID result = m_registerStack.front();
 
 	ss << commandName <<" r" << result << ", r" << left << ", r" << right << "\n";
 	ss << "sw " << GetOffset(opNode) << "(r" << m_topOfStackRegister << "), r" << result << "\n";
 
-	m_currStatBlockCode += ss.str();
-
 	m_registerStack.push_front(right);
 	m_registerStack.push_front(left);
+
+	return ss.str();
 }
 
-std::string CodeGenerator::StoreValInRegister(ASTNode* node, RegisterID& outRegister)
+std::string CodeGenerator::ComputeVal(ASTNode* node, RegisterID& outRegister)
 {
 	if (dynamic_cast<LiteralNode*>(node) != nullptr)
 	{
-		return StoreValInRegister((LiteralNode*)node, outRegister);
+		return LoadVarInRegister((LiteralNode*)node, outRegister);
 	}
 	else if (dynamic_cast<BaseBinaryOperator*>(node) != nullptr)
 	{
-		return StoreValInRegister((BaseBinaryOperator*)node, outRegister);
+		return ComputeVal((BaseBinaryOperator*)node, outRegister);
 	}
 	else if (dynamic_cast<ModifiedExpr*>(node) != nullptr)
 	{
-		return StoreValInRegister((ModifiedExpr*)node, outRegister);
+		return ComputeVal((ModifiedExpr*)node, outRegister);
 	}
 	else if (dynamic_cast<ExprNode*>(node) != nullptr)
 	{
-		return StoreValInRegister((ExprNode*)node, outRegister);
+		return ComputeVal((ExprNode*)node, outRegister);
 	}
 	else if (dynamic_cast<VariableNode*>(node) != nullptr)
 	{
-		return StoreValInRegister((VariableNode*)node, outRegister);
+		return LoadVarInRegister((VariableNode*)node, outRegister);
 	}
 
 	outRegister = NullRegister;
 	return "";
 }
 
-std::string CodeGenerator::StoreValInRegister(LiteralNode* node, RegisterID& outRegister)
+std::string CodeGenerator::ComputeVal(BaseBinaryOperator* node, RegisterID& outRegister)
+{
+	std::stringstream ss;
+	ss << GenerateBinaryOp(node);
+	ss << LoadVarInRegister(node, outRegister);
+	return ss.str();
+}
+
+std::string CodeGenerator::ComputeVal(ExprNode* node, RegisterID& outRegister)
+{
+	return ComputeVal(node->GetRootOfExpr(), outRegister);
+}
+
+std::string CodeGenerator::ComputeVal(ModifiedExpr* node, RegisterID& outRegister)
+{
+	Visit(node);
+	return LoadTempVarInRegister(node, outRegister);
+}
+
+std::string CodeGenerator::LoadVarInRegister(ASTNode* n, RegisterID& outRegister)
+{
+	if (dynamic_cast<LiteralNode*>(n) != nullptr)
+	{
+		LiteralNode* literal = (LiteralNode*)n;
+		return LoadVarInRegister(literal, outRegister);
+	}
+	else if (dynamic_cast<TempVarNodeBase*>(n) != nullptr)
+	{
+		return LoadTempVarInRegister((TempVarNodeBase*)n, outRegister);
+	}
+	else if (dynamic_cast<VariableNode*>(n) != nullptr)
+	{
+		VariableNode* var = (VariableNode*)n;
+		return LoadVarInRegister(var, outRegister);
+	}
+	else
+	{
+		// unexpected node type
+		DEBUG_BREAK();
+	}
+	return "";
+}
+
+std::string CodeGenerator::LoadVarInRegister(LiteralNode* node, RegisterID& outRegister)
 {
 	std::stringstream ss;
 	if (node->GetEvaluatedType() == "integer")
 	{
 		outRegister = m_registerStack.front();
 		m_registerStack.pop_front();
-		ss << "addi r" << outRegister << ", r" << m_zeroRegister << ", " 
+		ss << "addi r" << outRegister << ", r" << m_zeroRegister << ", "
 			<< node->GetLexemeNode()->GetID().GetLexeme() << "\n";
 	}
 	else // float
@@ -772,7 +839,7 @@ std::string CodeGenerator::StoreValInRegister(LiteralNode* node, RegisterID& out
 	return ss.str();
 }
 
-std::string CodeGenerator::StoreValInRegister(VariableNode* node, RegisterID& outRegister)
+std::string CodeGenerator::LoadVarInRegister(VariableNode* node, RegisterID& outRegister)
 {
 	std::stringstream ss;
 	outRegister = m_registerStack.front();
@@ -782,32 +849,6 @@ std::string CodeGenerator::StoreValInRegister(VariableNode* node, RegisterID& ou
 	return ss.str();
 }
 
-std::string CodeGenerator::StoreValInRegister(BaseBinaryOperator* node, RegisterID& outRegister)
-{
-	if (TempVarAlreadyOnStack(node))
-	{
-		return LoadTempVarInRegister(node, outRegister);
-	}
-	Visit(node);
-	return LoadTempVarInRegister(node, outRegister);
-}
-
-std::string CodeGenerator::StoreValInRegister(ExprNode* node, RegisterID& outRegister)
-{
-	if (TempVarAlreadyOnStack(node))
-	{
-		return LoadTempVarInRegister(node, outRegister);
-	}
-	m_generatedTempVarNode.push_back(node);
-	return StoreValInRegister(node->GetRootOfExpr(), outRegister);
-}
-
-std::string CodeGenerator::StoreValInRegister(ModifiedExpr* node, RegisterID& outRegister)
-{
-	ASSERT(TempVarAlreadyOnStack(node));
-	return LoadTempVarInRegister(node, outRegister);
-}
-
 std::string CodeGenerator::LoadTempVarInRegister(TempVarNodeBase* tempVar, RegisterID& outRegister)
 {
 	std::stringstream ss;
@@ -815,4 +856,17 @@ std::string CodeGenerator::LoadTempVarInRegister(TempVarNodeBase* tempVar, Regis
 	m_registerStack.pop_front();
 	ss << "lw r" << outRegister << ", " << GetOffset(tempVar) << "(r" << m_topOfStackRegister << ")\n";
 	return ss.str();
+}
+
+std::string& CodeGenerator::GetCurrStatBlock(ASTNode* node)
+{
+	StatBlockNode* statBlock = GetParentStatBlock(node);
+	ASSERT(statBlock != nullptr);
+	
+	if (m_statBlocks.find(statBlock) == m_statBlocks.end())
+	{
+		m_statBlocks[statBlock] = "";
+	}
+
+	return m_statBlocks[statBlock];
 }

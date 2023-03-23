@@ -90,11 +90,12 @@ class CodeGenerator : public Visitor
 {
 public:
     CodeGenerator(const std::string& filepath);
+    virtual void Visit(ExprNode* element) override;
     virtual void Visit(ModifiedExpr* element) override;
     virtual void Visit(BaseBinaryOperator* element) override;
-    virtual void Visit(StatBlockNode* element) override;
     virtual void Visit(FunctionDefNode* element) override;
     virtual void Visit(IfStatNode* element) override;
+    virtual void Visit(WhileStatNode* element) override;
     virtual void Visit(AssignStatNode* element) override;
     virtual void Visit(WriteStatNode* element) override;
     virtual void Visit(ProgramNode* element) override;
@@ -108,58 +109,51 @@ private:
     std::string IncrementStackFrame(size_t frameSize);
     std::string DecrementStackFrame(size_t frameSize);
 
-    void GenerateMinusExpr(ModifiedExpr* modExpr);
+    std::string GenerateModifiedExpr(ModifiedExpr* modExpr);
+    std::string GenerateMinusExpr(ModifiedExpr* modExpr);
+
+    std::string GenerateBinaryOp(BaseBinaryOperator* opNode);    
 
     // code generation for different binary operators
-    void GenerateAddOp(BaseBinaryOperator* opNode);
-    void GenerateSubOp(BaseBinaryOperator* opNode);
-    void GenerateMultOp(BaseBinaryOperator* opNode);
-    void GenerateDivOp(BaseBinaryOperator* opNode);
+    std::string GenerateAddOp(BaseBinaryOperator* opNode);
+    std::string GenerateSubOp(BaseBinaryOperator* opNode);
+    std::string GenerateMultOp(BaseBinaryOperator* opNode);
+    std::string GenerateDivOp(BaseBinaryOperator* opNode);
 
-   
-    void GenerateOr(BaseBinaryOperator* opNode);
-    void GenerateAnd(BaseBinaryOperator* opNode);
-    void GenerateNot(ModifiedExpr* expr);
-    void GenerateEqual(BaseBinaryOperator* opNode);
-    void GenerateNotEqual(BaseBinaryOperator* opNode);
-    void GenerateLessThan(BaseBinaryOperator* opNode);
-    void GenerateGreaterThan(BaseBinaryOperator* opNode);
-    void GenerateLessOrEqual(BaseBinaryOperator* opNode);
-    void GenerateGreaterOrEqual(BaseBinaryOperator* opNode);
+    std::string GenerateOr(BaseBinaryOperator* opNode);
+    std::string GenerateAnd(BaseBinaryOperator* opNode);
+    std::string GenerateNot(ModifiedExpr* expr);
+    std::string GenerateEqual(BaseBinaryOperator* opNode);
+    std::string GenerateNotEqual(BaseBinaryOperator* opNode);
+    std::string GenerateLessThan(BaseBinaryOperator* opNode);
+    std::string GenerateGreaterThan(BaseBinaryOperator* opNode);
+    std::string GenerateLessOrEqual(BaseBinaryOperator* opNode);
+    std::string GenerateGreaterOrEqual(BaseBinaryOperator* opNode);
 
-    void GenerateArithmeticOp(BaseBinaryOperator* opNode, const char* commandName);
-    void GenerateAndOr(BaseBinaryOperator* opNode, const char* commandName);
-    void GenerateRelOp(BaseBinaryOperator* opNode, const char* commandName);
+    std::string GenerateArithmeticOp(BaseBinaryOperator* opNode, const char* commandName);
+    std::string GenerateAndOr(BaseBinaryOperator* opNode, const char* commandName);
+    std::string GenerateRelOp(BaseBinaryOperator* opNode, const char* commandName);
 
     // returns the string of code to stores the value of the node and stores the register in which 
     //the data was stored in the provided outRegister field or NullRegister if the operation 
     //is not supported
-    std::string StoreValInRegister(ASTNode* node, RegisterID& outRegister);
-    std::string StoreValInRegister(LiteralNode* node, RegisterID& outRegister);
-    std::string StoreValInRegister(VariableNode* node, RegisterID& outRegister);
-    std::string StoreValInRegister(BaseBinaryOperator* node, RegisterID& outRegister);
-    std::string StoreValInRegister(ExprNode* node, RegisterID& outRegister);
-    std::string StoreValInRegister(ModifiedExpr* node, RegisterID& outRegister);
+    
+    std::string ComputeVal(ASTNode* node, RegisterID& outRegister);
+    std::string ComputeVal(BaseBinaryOperator* node, RegisterID& outRegister);
+    std::string ComputeVal(ExprNode* node, RegisterID& outRegister);
+    std::string ComputeVal(ModifiedExpr* node, RegisterID& outRegister);
 
+    std::string LoadVarInRegister(ASTNode* n, RegisterID& outRegister);
+    std::string LoadVarInRegister(LiteralNode* node, RegisterID& outRegister);
+    std::string LoadVarInRegister(VariableNode* node, RegisterID& outRegister);
     std::string LoadTempVarInRegister(TempVarNodeBase* tempVar, RegisterID& outRegister);
 
-    template<typename NodeType>
-    bool TempVarAlreadyOnStack(NodeType* node)
-    {
-        for (ASTNode* n : m_generatedTempVarNode)
-        {
-            if (n == node)
-            {
-                return true;
-            }
-        }
-        return false;
-    }
+    std::string& GetCurrStatBlock(ASTNode* node);
 
     std::string m_filepath;
     std::string m_dataCode;
     std::string m_executableCode;
-    std::string m_currStatBlockCode;
+    //std::string m_currStatBlockCode;
 
     RegisterID m_topOfStackRegister;
     RegisterID m_zeroRegister; // register with value 0 not necessarily r0
@@ -168,6 +162,5 @@ private:
     std::list<RegisterID> m_registerStack;
     std::unordered_map<ASTNode*, std::string> m_statBlocks;
 
-    std::list<ASTNode*> m_generatedTempVarNode;
     TagGenerator m_tagGen;
 };

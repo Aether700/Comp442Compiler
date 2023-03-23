@@ -23,6 +23,22 @@ SymbolTable* GetGlobalTable(SymbolTable* currTable);
 SymbolTable* GetContextTableFromName(SymbolTable* currContext, 
     DotNode* dot, const std::string& name);
 
+template<typename ParentNode>
+bool HasNodeInParentTree(ASTNode* n)
+{
+    while (n->GetParent() != nullptr)
+    {
+        n = n->GetParent();
+        if (dynamic_cast<ParentNode*>(n) != nullptr)
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+StatBlockNode* GetParentStatBlock(ASTNode* node);
+
 bool IsValidSelf(SymbolTable* contextTable, VariableNode* var);
 
 bool IsArrayType(const std::string typeStr);
