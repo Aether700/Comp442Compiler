@@ -11,7 +11,6 @@
 
 
 /* To Do
- - generate relop (framework already in place)
  - generate if statment
  - generate while statement
  - add float support

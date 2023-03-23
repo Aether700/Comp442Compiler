@@ -1,4 +1,4 @@
 function main() => void
 {
-	write(5 == 6);
+	write(7 >= 8);
 }

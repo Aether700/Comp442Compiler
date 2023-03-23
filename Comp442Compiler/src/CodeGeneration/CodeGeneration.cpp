@@ -398,6 +398,26 @@ void CodeGenerator::Visit(BaseBinaryOperator* element)
 	{
 		GenerateEqual(element);
 	}
+	else if (op == "<>")
+	{
+		GenerateNotEqual(element);
+	}
+	else if (op == "<")
+	{
+		GenerateLessThan(element);
+	}
+	else if (op == ">")
+	{
+		GenerateGreaterThan(element);
+	}
+	else if (op == "<=")
+	{
+		GenerateLessOrEqual(element);
+	}
+	else if (op == ">=")
+	{
+		GenerateGreaterOrEqual(element);
+	}
 	else
 	{
 		// unknown operator
@@ -554,22 +574,41 @@ void CodeGenerator::GenerateNot(ModifiedExpr* expr)
 
 void CodeGenerator::GenerateEqual(BaseBinaryOperator* opNode)
 {
-	std::stringstream ss;
-	ss << "\n%equals\n";
-	RegisterID left;
-	ss << StoreValInRegister(opNode->GetLeft(), left);
-	RegisterID right;
-	ss << StoreValInRegister(opNode->GetRight(), right);
-	RegisterID result = m_registerStack.front();
-
-	ss << "ceq r" << result << ", r" << left << ", r" << right << "\n";
-	ss << "sw " << GetOffset(opNode) << "(r" << m_topOfStackRegister << "), r" << result << "\n";
-
-	m_executionCode += ss.str();
-
-	m_registerStack.push_front(right);
-	m_registerStack.push_front(left);
+	m_executionCode += "\n%equals\n";
+	GenerateRelOp(opNode, "ceq");
 }
+
+void CodeGenerator::GenerateNotEqual(BaseBinaryOperator* opNode)
+{
+	m_executionCode += "\n%not equals\n";
+	GenerateRelOp(opNode, "cne");
+}
+
+void CodeGenerator::GenerateLessThan(BaseBinaryOperator* opNode)
+{
+	m_executionCode += "\n%less than\n";
+	GenerateRelOp(opNode, "clt");
+}
+
+void CodeGenerator::GenerateGreaterThan(BaseBinaryOperator* opNode) 
+{
+	m_executionCode += "\n%greater than\n";
+	GenerateRelOp(opNode, "cgt");
+}
+
+void CodeGenerator::GenerateLessOrEqual(BaseBinaryOperator* opNode)
+{
+	m_executionCode += "\n%less or equal\n";
+	GenerateRelOp(opNode, "cle");
+}
+
+void CodeGenerator::GenerateGreaterOrEqual(BaseBinaryOperator* opNode) 
+{
+	m_executionCode += "\n%greater or equal\n";
+	GenerateRelOp(opNode, "cge");
+}
+
+
 
 void CodeGenerator::GenerateArithmeticOp(BaseBinaryOperator* opNode, const char* commandName)
 {
@@ -627,6 +666,24 @@ void CodeGenerator::GenerateAndOr(BaseBinaryOperator* opNode, const char* comman
 	m_registerStack.push_front(left);
 
 	m_executionCode += ss.str();
+}
+
+void CodeGenerator::GenerateRelOp(BaseBinaryOperator* opNode, const char* commandName)
+{
+	std::stringstream ss;
+	RegisterID left;
+	ss << StoreValInRegister(opNode->GetLeft(), left);
+	RegisterID right;
+	ss << StoreValInRegister(opNode->GetRight(), right);
+	RegisterID result = m_registerStack.front();
+
+	ss << commandName <<" r" << result << ", r" << left << ", r" << right << "\n";
+	ss << "sw " << GetOffset(opNode) << "(r" << m_topOfStackRegister << "), r" << result << "\n";
+
+	m_executionCode += ss.str();
+
+	m_registerStack.push_front(right);
+	m_registerStack.push_front(left);
 }
 
 std::string CodeGenerator::StoreValInRegister(ASTNode* node, RegisterID& outRegister)

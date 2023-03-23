@@ -12,11 +12,11 @@ Program
 |  |  |  |  |  Expr
 |  |  |  |  |  |  RelOp
 |  |  |  |  |  |  |  Literal
-|  |  |  |  |  |  |  |  5
+|  |  |  |  |  |  |  |  7
 |  |  |  |  |  |  |  |  TypeNode
 |  |  |  |  |  |  |  |  |  integer
-|  |  |  |  |  |  |  ==
+|  |  |  |  |  |  |  >=
 |  |  |  |  |  |  |  Literal
-|  |  |  |  |  |  |  |  6
+|  |  |  |  |  |  |  |  8
 |  |  |  |  |  |  |  |  TypeNode
 |  |  |  |  |  |  |  |  |  integer

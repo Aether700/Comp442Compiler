@@ -122,20 +122,15 @@ private:
     void GenerateAnd(BaseBinaryOperator* opNode);
     void GenerateNot(ModifiedExpr* expr);
     void GenerateEqual(BaseBinaryOperator* opNode);
-
-    /*
     void GenerateNotEqual(BaseBinaryOperator* opNode);
     void GenerateLessThan(BaseBinaryOperator* opNode);
     void GenerateGreaterThan(BaseBinaryOperator* opNode);
     void GenerateLessOrEqual(BaseBinaryOperator* opNode);
     void GenerateGreaterOrEqual(BaseBinaryOperator* opNode);
-    */
-    
-    
-
 
     void GenerateArithmeticOp(BaseBinaryOperator* opNode, const char* commandName);
     void GenerateAndOr(BaseBinaryOperator* opNode, const char* commandName);
+    void GenerateRelOp(BaseBinaryOperator* opNode, const char* commandName);
 
     // returns the string of code to stores the value of the node and stores the register in which 
     //the data was stored in the provided outRegister field or NullRegister if the operation 
@@ -167,7 +162,8 @@ private:
     RegisterID m_jumpReturnRegister;
     RegisterID m_returnValRegister;
     std::list<RegisterID> m_registerStack;
-    std::unordered_map<SymbolTable*, size_t> m_tempVarUsed;
+    std::unordered_map<ASTNode*, std::string> m_statBlocks;
+
     std::list<ASTNode*> m_generatedTempVarNode;
     TagGenerator m_tagGen;
 };

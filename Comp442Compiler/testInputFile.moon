@@ -1,10 +1,10 @@
 entry
 addi r14,r0,topaddr
 
-%equals
-addi r1, r0, 5
-addi r2, r0, 6
-ceq r3, r1, r2
+%greater or equal
+addi r1, r0, 7
+addi r2, r0, 8
+cge r3, r1, r2
 sw 0(r14), r3
 
 lw r1, 0(r14)
