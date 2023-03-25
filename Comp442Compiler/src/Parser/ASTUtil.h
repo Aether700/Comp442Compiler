@@ -48,3 +48,10 @@ int GetOffset(VariableNode* var);
 int GetOffset(AssignStatNode* assign);
 int GetOffset(SymbolTable* context, ITempVarNode* tempVarNode);
 int GetOffset(TempVarNodeBase* tempVarNode);
+
+// returns InvalidSize if the type provided is could not be computed 
+size_t ComputeSize(TypeNode* type, DimensionNode* dimensions);
+size_t ComputeSize(const std::string& typeStr);
+
+// returns the size of a class object
+size_t FindSize(SymbolTable* globalTable, const std::string& typeStr);

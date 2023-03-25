@@ -256,6 +256,7 @@ public:
     DimensionNode* GetDimension();
     AParamListNode* GetParamList();
 
+    virtual std::string GetEvaluatedType() override;
     virtual std::string ToString(size_t indent = 0) override;
     virtual void AcceptVisit(Visitor* visitor) override;
 };

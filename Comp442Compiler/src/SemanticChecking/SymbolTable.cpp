@@ -103,10 +103,14 @@ std::string VarSymbolTableEntry::ToString()
     return ss.str();
 }
 
+// ScopeTableEntry ///////////////////////////////////////////////////////////////
+ScopeTableEntry::ScopeTableEntry(SymbolTableEntryKind kind) : SymbolTableEntry(kind) { }
+ScopeTableEntry::~ScopeTableEntry() { }
+
 // FreeFuncTableEntry /////////////////////////////////////////////////////////////
 FreeFuncTableEntry::FreeFuncTableEntry(FunctionDefNode* node, 
     const std::string& parametersType, SymbolTable* subTable) 
-    : SymbolTableEntry(SymbolTableEntryKind::FreeFunction), m_subTable(subTable), 
+    : ScopeTableEntry(SymbolTableEntryKind::FreeFunction), m_subTable(subTable),
     m_paramTypes(parametersType), m_funcNode(node)
 {
     SetName(node->GetID()->GetID().GetLexeme());
@@ -252,7 +256,7 @@ MemVarNode* MemVarTableEntry::GetMemVarNode() const
 // MemFuncTableEntry /////////////////////////////////////////////////////////
 
 MemFuncTableEntry::MemFuncTableEntry(MemFuncDeclNode* node, 
-    const std::string& parameterTypes) : SymbolTableEntry(SymbolTableEntryKind::MemFuncDecl), 
+    const std::string& parameterTypes) : ScopeTableEntry(SymbolTableEntryKind::MemFuncDecl),
     m_declaration(node), m_definition(nullptr), 
     m_definitionSubTable(nullptr), m_parameterTypes(parameterTypes)
 {
@@ -351,7 +355,7 @@ std::string MemFuncDefEntry::ToString()
 // ConstructorTableEntry ///////////////////////////////////////////////////////////////
 ConstructorTableEntry::ConstructorTableEntry(ConstructorDeclNode* node, 
     const std::string& parameterTypes) 
-    : SymbolTableEntry(SymbolTableEntryKind::ConstructorDecl), m_declaration(node), 
+    : ScopeTableEntry(SymbolTableEntryKind::ConstructorDecl), m_declaration(node),
     m_definition(nullptr), m_definitionSubTable(nullptr), 
     m_parameterTypes(parameterTypes) 
 {

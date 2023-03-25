@@ -89,7 +89,14 @@ private:
     std::string m_typeStr;
 };
 
-class FreeFuncTableEntry : public SymbolTableEntry
+class ScopeTableEntry : public SymbolTableEntry
+{
+public:
+    ScopeTableEntry(SymbolTableEntryKind kind);
+    virtual ~ScopeTableEntry();
+};
+
+class FreeFuncTableEntry : public ScopeTableEntry
 {
 public:
     FreeFuncTableEntry(FunctionDefNode* node, const std::string& parametersType, 
@@ -158,7 +165,7 @@ private:
     MemVarNode* GetMemVarNode() const;
 };
 
-class MemFuncTableEntry : public SymbolTableEntry
+class MemFuncTableEntry : public ScopeTableEntry
 {
 public:
     MemFuncTableEntry(MemFuncDeclNode* node, const std::string& parameterTypes);
@@ -209,7 +216,7 @@ private:
     std::string m_parameterTypes;
 };
 
-class ConstructorTableEntry : public SymbolTableEntry
+class ConstructorTableEntry : public ScopeTableEntry
 {
 public:
     ConstructorTableEntry(ConstructorDeclNode* node, const std::string& parameterTypes);

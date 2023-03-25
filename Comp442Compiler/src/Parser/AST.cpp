@@ -406,6 +406,15 @@ AParamListNode* VarDeclNode::GetParamList()
     return dynamic_cast<AParamListNode*>(GetChild(2));
 }
 
+std::string VarDeclNode::GetEvaluatedType()
+{
+    SymbolTableEntry* entry = GetSymbolTable()
+        ->FindEntryInScope(GetID()->GetID().GetLexeme());
+    ASSERT(entry != nullptr);
+
+    return entry->GetEvaluatedType();
+}
+
 std::string VarDeclNode::ToString(size_t indent)
 {
     std::stringstream ss;

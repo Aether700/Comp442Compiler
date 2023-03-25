@@ -12,13 +12,36 @@
 
 /* To Do
  
- - check guidelines and re-organize list below
- 
  - add float support
  - generate basic objects
- - generate arrays
- - store and compute offset for returning address of functions, return value etc
- - still need to add self parameter for memfunc/constructors
+ - generate objects with inheritance
+ - call free functions
+	 - store and compute offset for returning address of functions, return value etc
+	 - store return value in given register for calling scope
+ - call member functions/constructors
+	 - add ref to self as parameter
+ - generate read statment
+*/
+
+/*
+float representation idea:
+1 byte mantissa, 1 byte exponent
+literal = mantissa * 2^exponent
+
+to write
+mantissa shift exponent times (might overflow double check to be sure, maybe add additional bytes 
+	of storage to be sure)
+
+to add/substract
+bring larger exponent to smaller exponent (use more space temporarily) then do computation before 
+bringing it back to 2 bytes
+
+to mult/div
+mult/div mantissa
+add/sub exponent
+
+to compare (rel op)
+compare exponent first then depending on operator check mantissa
 */
 
 
@@ -56,6 +79,8 @@ void Compile(const std::string& filepath)
 	{
 		SemanticErrorManager::LogData();
 		DisplaySymbolTable(filepath, program);
+		std::cout << "Semantic error was found in file \"" << filepath
+			<< "\", check logs for detail\n";
 		return;
 	}
 
@@ -66,6 +91,8 @@ void Compile(const std::string& filepath)
 	{
 		SemanticErrorManager::LogData();
 		DisplaySymbolTable(filepath, program);
+		std::cout << "Semantic error was found in file \"" << filepath
+			<< "\", check logs for detail\n";
 		return;
 	}
 
@@ -73,7 +100,7 @@ void Compile(const std::string& filepath)
 	SizeGenerator* sizeGen = new SizeGenerator(program->GetSymbolTable());
 	program->AcceptVisit(sizeGen);
 
-	CodeGenerator* generator = new CodeGenerator(filepath);
+	CodeGenerator* generator = new CodeGenerator(program->GetSymbolTable(), filepath);
 	program->AcceptVisit(generator);
 	generator->OutputCode();
 

@@ -60,13 +60,6 @@ public:
     virtual void Visit(ProgramNode* element) override;
 
 private:
-    // returns InvalidSize if the type provided is could not be computed 
-    size_t ComputeSize(TypeNode* type, DimensionNode* dimensions);
-    size_t ComputeSize(const std::string& typeStr);
-
-    // returns the size of a class object
-    size_t FindSize(const std::string& typeStr);
-
     void TryAddTempVar(VarDeclNode* element);
     
     // returns InvalidType if could not compute
@@ -89,7 +82,7 @@ private:
 class CodeGenerator : public Visitor
 {
 public:
-    CodeGenerator(const std::string& filepath);
+    CodeGenerator(SymbolTable* globalTable, const std::string& filepath);
     virtual void Visit(ExprNode* element) override;
     virtual void Visit(ModifiedExpr* element) override;
     virtual void Visit(BaseBinaryOperator* element) override;
@@ -104,10 +97,9 @@ public:
     void OutputCode() const;
 
 private:
-    static constexpr size_t s_startStackAddr = 100;
-
+    // adds the provided framesize to the scope size stack and moves the stack pointer by the previous top of the stack 
     std::string IncrementStackFrame(size_t frameSize);
-    std::string DecrementStackFrame(size_t frameSize);
+    std::string DecrementStackFrame();
 
     std::string GenerateModifiedExpr(ModifiedExpr* modExpr);
     std::string GenerateMinusExpr(ModifiedExpr* modExpr);
@@ -160,6 +152,7 @@ private:
     RegisterID m_jumpReturnRegister;
     RegisterID m_returnValRegister;
     std::list<RegisterID> m_registerStack;
+    std::list<size_t> m_scopeSizeStack;
     std::unordered_map<ASTNode*, std::string> m_statBlocks;
 
     TagGenerator m_tagGen;

@@ -72,7 +72,7 @@ void SizeGenerator::Visit(ClassDefNode* element)
 	for (ASTNode* baseNode : element->GetInheritanceList()->GetChildren())
 	{
 		IDNode* id = (IDNode*)baseNode;
-		size_t currClassSize = FindSize(id->GetID().GetLexeme());
+		size_t currClassSize = FindSize(GetGlobalTable(element->GetSymbolTable()), id->GetID().GetLexeme());
 		if (currClassSize == InvalidSize)
 		{
 			m_toRevisit.push_back(element);
@@ -125,78 +125,6 @@ void SizeGenerator::Visit(ProgramNode* element)
 		}
 	}
 
-}
-
-size_t SizeGenerator::ComputeSize(TypeNode* type, DimensionNode* dimensions)
-{
-	const std::string& typeStr = type->GetType().GetLexeme();
-	size_t baseSize;
-	if (typeStr == "integer")
-	{
-		baseSize = PlatformSpecifications::GetIntSize();
-	}
-	else if (typeStr == "float")
-	{
-		baseSize = PlatformSpecifications::GetFloatSize();
-	}
-	else if (typeStr == "bool")
-	{
-		baseSize = PlatformSpecifications::GetFloatSize();
-	}
-	else
-	{
-		baseSize = FindSize(typeStr);
-	}
-
-	if (baseSize == InvalidSize)
-	{
-		return InvalidSize;
-	}
-
-	size_t totalSize = baseSize;
-	if (dimensions != nullptr)
-	{
-		for (ASTNode* baseNode : dimensions->GetChildren())
-		{
-			if (dynamic_cast<UnspecificedDimensionNode*>(baseNode) != nullptr)
-			{
-				// check what to do with unspecified nodes for now debug break
-				DEBUG_BREAK();
-			}
-			else
-			{
-				LiteralNode* literal = (LiteralNode*)baseNode;
-				ASSERT(literal->GetEvaluatedType() == "integer");
-				int lexemInt = std::stoi(literal->GetLexemeNode()->GetID().GetLexeme());
-				ASSERT(lexemInt > 0);
-				totalSize *= ((size_t)lexemInt);
-			}
-		}
-	}
-	return totalSize;
-}
-
-size_t SizeGenerator::ComputeSize(const std::string& typeStr)
-{
-	if (typeStr == "integer")
-	{
-		return PlatformSpecifications::GetIntSize();
-	}
-	else if (typeStr == "float")
-	{
-		return PlatformSpecifications::GetFloatSize();
-	}
-	else
-	{
-		return InvalidSize;
-	}
-}
-
-size_t SizeGenerator::FindSize(const std::string& typeStr)
-{
-	SymbolTableEntry* classEntry = m_globalTable->FindEntryInTable(typeStr);
-	ASSERT(classEntry != nullptr);
-	return classEntry->GetSize();
 }
 
 void SizeGenerator::TryAddTempVar(VarDeclNode* element)
@@ -331,9 +259,12 @@ void SizeGenerator::CreateTempVar(TempVarNodeBase* node)
 
 // CodeGenerator ////////////////////////////////////////////////////////////////////////////////////////////
 
-CodeGenerator::CodeGenerator(const std::string& filepath) : m_filepath(filepath), 
+CodeGenerator::CodeGenerator(SymbolTable* globalTable, const std::string& filepath) : m_filepath(filepath), 
 	m_topOfStackRegister(14), m_zeroRegister(0), m_jumpReturnRegister(15), m_returnValRegister(13),
-	m_registerStack({1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12}), m_tagGen("memAddress") { }
+	m_registerStack({1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12}), m_tagGen("memAddress") 
+{
+	m_scopeSizeStack.push_front(globalTable->FindEntryInTable("main")->GetSize());
+}
 
 void CodeGenerator::Visit(ExprNode* element)
 {
@@ -455,7 +386,7 @@ void CodeGenerator::Visit(WriteStatNode* element)
 		<< "), r" << m_returnValRegister << "\n";
 
 	ss << "jl r" << m_jumpReturnRegister << ", putstr\n";
-	ss << DecrementStackFrame(PlatformSpecifications::GetIntStrSize());
+	ss << DecrementStackFrame();
 
 	GetCurrStatBlock(element) += ss.str();
 	m_registerStack.push_front(exprValRegister);
@@ -477,15 +408,19 @@ void CodeGenerator::OutputCode() const
 
 std::string CodeGenerator::IncrementStackFrame(size_t frameSize)
 {
+	size_t change = m_scopeSizeStack.front();
+	m_scopeSizeStack.push_front(frameSize);
 	std::stringstream ss;
-	ss << "\naddi r" << m_topOfStackRegister << ", r" << m_topOfStackRegister << ", -" << frameSize << "\n";
+	ss << "\naddi r" << m_topOfStackRegister << ", r" << m_topOfStackRegister << ", -" << change << "\n";
 	return ss.str();
 }
 
-std::string CodeGenerator::DecrementStackFrame(size_t frameSize)
+std::string CodeGenerator::DecrementStackFrame()
 {
+	m_scopeSizeStack.pop_front();
+	size_t change = m_scopeSizeStack.front();
 	std::stringstream ss;
-	ss << "\nsubi r" << m_topOfStackRegister << ", r" << m_topOfStackRegister << ", -" << frameSize << "\n";
+	ss << "\nsubi r" << m_topOfStackRegister << ", r" << m_topOfStackRegister << ", -" << change << "\n";
 	return ss.str();
 }
 

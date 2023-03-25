@@ -1,5 +1,6 @@
 function main() => void
 {
+	/*
 	write(1+2-3*2+8/2);
 	write(1 == 1);
 	write(1 <> 0);
@@ -36,12 +37,28 @@ function main() => void
 	};
 	write(3);
 
-	write(3);
+	write(2);
 	i = 0;
 	while (i > 3)
 	{
 		write(1);
 		i = i + 1;
 	};
-	write(3);
+	write(2);
+
+	localvar arr : integer[3];
+	arr[0] = 2;
+	arr[1] = 3;
+	arr[2] = 1;
+	write(arr[2]);
+	write(arr[1] - arr[0]);
+
+	localvar matrix : integer[5][3];
+	matrix[2][1] = 0; // offset -> - (2 * (sizeof(int) * 3) + 1 * sizeof(int)) = -28
+	matrix[1][2] = 4; // offset -> - (1 * (sizeof(int) * 3) + 2 * sizeof(int)) = -20
+	matrix[3][0] = -3; // offset -> - (3 * (sizeof(int) * 3) + 0 * sizeof(int)) = -36
+	write (matrix[2][1] + matrix[1][2] + matrix[3][0]);
+	*/
+	localvar f : float;
+	f = 2.5;
 }

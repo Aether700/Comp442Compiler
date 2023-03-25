@@ -1,6 +1,9 @@
 #include "ASTUtil.h"
 #include "../Core/Core.h"
 #include "../SemanticChecking/SemanticErrors.h"
+#include "../CodeGeneration/CodeGeneration.h"
+
+#include <vector>
 
 // helpers //////////////////////////////////////////////////////////////
 
@@ -324,7 +327,64 @@ int GetOffset(SymbolTable* context, const std::string& name)
 
 int GetOffset(VariableNode* var)
 {
-    return GetOffset(var->GetSymbolTable(), var->GetVariable()->GetID().GetLexeme());
+    VarDeclNode* declNode = (VarDeclNode*)var->GetSymbolTable()->FindEntryInScope(var->
+        GetVariable()->GetID().GetLexeme())->GetNode();
+    if (!IsArrayType(declNode->GetEvaluatedType()))
+    {
+        return GetOffset(var->GetSymbolTable(), var->GetVariable()->GetID().GetLexeme());
+    }
+    int varOffset = GetOffset(var->GetSymbolTable(), var->GetVariable()->GetID().GetLexeme());
+    size_t baseTypeSize = ComputeSize(declNode->GetType(), nullptr);
+    size_t numDimensions = declNode->GetDimension()->GetNumChild();
+
+    std::vector<size_t> dimensions;
+    dimensions.reserve(numDimensions);
+
+    for (ASTNode* baseNode : declNode->GetDimension()->GetChildren())
+    {
+        if (dynamic_cast<LiteralNode*>(baseNode) != nullptr)
+        {
+            LiteralNode* lit = (LiteralNode*)baseNode;
+            int dimension = std::stoi(lit->GetLexemeNode()->GetID().GetLexeme());
+            dimensions.push_back((size_t)dimension);
+        }
+    }
+
+    /*
+    in[2][3][6]
+    in[3][0][1] -> 3 * (in * 3 * 6) + 0 * (in * 6) + 1 * in
+    */
+
+    int internalOffset = 0;
+    size_t dimensionIndex = 1; // skip the first dimension 
+    for (ASTNode* baseNode : var->GetDimension()->GetChildren())
+    {
+        if (dynamic_cast<LiteralNode*>(baseNode) != nullptr)
+        {
+            LiteralNode* lit = (LiteralNode*)baseNode;
+            int index = std::stoi(lit->GetLexemeNode()->GetID().GetLexeme());
+            int currOffset = (int)baseTypeSize * -1;
+            for (size_t i = dimensionIndex; i < dimensions.size(); i++)
+            {
+                currOffset *= (int)dimensions[i];
+            }
+            dimensionIndex++;
+            internalOffset += index * currOffset;
+        }
+    }
+
+    return varOffset + internalOffset;
+
+    /*
+    // temp
+    //for now assume one dimension arrays only and only literal nodes
+    ASSERT(numDimensions == 1);
+
+    LiteralNode* l = (LiteralNode*)var->GetDimension()->GetChildren().front();
+    int index = std::stoi(l->GetLexemeNode()->GetID().GetLexeme());
+    return varOffset - (index * ComputeSize(declNode->GetType(), nullptr));
+    //////////////////////////////////////////
+    */
 }
 
 int GetOffset(AssignStatNode* assign)
@@ -342,4 +402,76 @@ int GetOffset(TempVarNodeBase* tempVar)
 {
     auto temp = tempVar->ToString();
     return GetOffset(tempVar->GetSymbolTable(), tempVar->GetTempVarName());
+}
+
+size_t ComputeSize(TypeNode* type, DimensionNode* dimensions)
+{
+    const std::string& typeStr = type->GetType().GetLexeme();
+    size_t baseSize;
+    if (typeStr == "integer")
+    {
+        baseSize = PlatformSpecifications::GetIntSize();
+    }
+    else if (typeStr == "float")
+    {
+        baseSize = PlatformSpecifications::GetFloatSize();
+    }
+    else if (typeStr == "bool")
+    {
+        baseSize = PlatformSpecifications::GetFloatSize();
+    }
+    else
+    {
+        baseSize = FindSize(GetGlobalTable(type->GetSymbolTable()), typeStr);
+    }
+
+    if (baseSize == InvalidSize)
+    {
+        return InvalidSize;
+    }
+
+    size_t totalSize = baseSize;
+    if (dimensions != nullptr)
+    {
+        for (ASTNode* baseNode : dimensions->GetChildren())
+        {
+            if (dynamic_cast<UnspecificedDimensionNode*>(baseNode) != nullptr)
+            {
+                // check what to do with unspecified nodes for now debug break
+                DEBUG_BREAK();
+            }
+            else
+            {
+                LiteralNode* literal = (LiteralNode*)baseNode;
+                ASSERT(literal->GetEvaluatedType() == "integer");
+                int lexemInt = std::stoi(literal->GetLexemeNode()->GetID().GetLexeme());
+                ASSERT(lexemInt > 0);
+                totalSize *= ((size_t)lexemInt);
+            }
+        }
+    }
+    return totalSize;
+}
+
+size_t ComputeSize(const std::string& typeStr)
+{
+    if (typeStr == "integer")
+    {
+        return PlatformSpecifications::GetIntSize();
+    }
+    else if (typeStr == "float")
+    {
+        return PlatformSpecifications::GetFloatSize();
+    }
+    else
+    {
+        return InvalidSize;
+    }
+}
+
+size_t FindSize(SymbolTable* globalTable, const std::string& typeStr)
+{
+    SymbolTableEntry* classEntry = globalTable->FindEntryInTable(typeStr);
+    ASSERT(classEntry != nullptr);
+    return classEntry->GetSize();
 }
