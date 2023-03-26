@@ -6,17 +6,6 @@
 
 #include <fstream>
 
-// PlatformSpecifications //////////////////////////////////////////////////////
-size_t PlatformSpecifications::GetIntStrSize() { return s_intstrStackFrameSize; }
-int PlatformSpecifications::GetIntStrArg1Offset() { return s_intstrFirstArgOffset; }
-int PlatformSpecifications::GetIntStrArg2Offset() { return s_intstrSecondArgOffset; }
-
-int PlatformSpecifications::GetPutStrArg1Offset() { return s_putstrFirstArgOffset; }
-
-size_t PlatformSpecifications::GetAddressSize() { return s_addressSize; }
-size_t PlatformSpecifications::GetIntSize() { return s_intSize; }
-size_t PlatformSpecifications::GetFloatSize() { return s_floatSize; }
-
 // SizeGenerator ////////////////////////////////////////////////////////////////////////
 SizeGenerator::SizeGenerator(SymbolTable* globalTable) : m_globalTable(globalTable) { }
 
@@ -269,12 +258,27 @@ CodeGenerator::CodeGenerator(SymbolTable* globalTable, const std::string& filepa
 void CodeGenerator::Visit(ExprNode* element)
 {
 	std::stringstream ss;
-	RegisterID exprRoot;
-	ss << "\n" << LoadVarInRegister(element->GetRootOfExpr(), exprRoot);
-	ss << "sw " << GetOffset(element) << "(r" << m_topOfStackRegister << "), r" << exprRoot << "\n";
-
+	if (ComputeSize(element->GetEvaluatedType()) <= PlatformSpecifications::GetAddressSize())
+	{
+		RegisterID exprRoot;
+		ss << "\n" << LoadVarInRegister(element->GetRootOfExpr(), exprRoot);
+		ss << "sw " << GetOffset(element) << "(r" << m_topOfStackRegister << "), r" << exprRoot << "\n";
+		m_registerStack.push_front(exprRoot);
+	}
+	else if (dynamic_cast<ITempVarNode*>(element->GetRootOfExpr()) != nullptr)
+	{
+		SymbolTable* table = element->GetSymbolTable();
+		SymbolTableEntry* dest = table->FindEntryInTable(element->GetTempVarName());
+		SymbolTableEntry* data = table->FindEntryInTable(((ITempVarNode*)element->GetRootOfExpr())
+			->GetTempVarName());
+		ss << CopyData(data, dest);
+	}
+	else if (dynamic_cast<LiteralNode*>(element->GetRootOfExpr()))
+	{
+		LiteralNode* floatLiteral = (LiteralNode*)element->GetRootOfExpr();
+		ss << LoadFloatToAddr(GetOffset(element), floatLiteral);
+	}
 	GetCurrStatBlock(element) += ss.str();
-	m_registerStack.push_front(exprRoot);
 }
 
 void CodeGenerator::Visit(ModifiedExpr* element)
@@ -353,15 +357,35 @@ void CodeGenerator::Visit(WhileStatNode* element)
 void CodeGenerator::Visit(AssignStatNode* element)
 {
 	std::stringstream ss;
-	RegisterID right;
-	ss << "\n%assignment\n";
-	ss << ComputeVal(element->GetRight(), right);
-	ASSERT(right != NullRegister);
-	
-	ss << "sw " << GetOffset(element) << "(r" << m_topOfStackRegister << "), r" << right << "\n";
-	GetCurrStatBlock(element) += ss.str();
+	size_t exprSize = ComputeSize(element->GetRight()->GetEvaluatedType());
 
-	m_registerStack.push_front(right);
+	ss << "\n%assignment\n";
+	if (exprSize <= PlatformSpecifications::GetAddressSize())
+	{
+		RegisterID right;
+		ss << ComputeVal(element->GetRight(), right);
+		ASSERT(right != NullRegister);
+
+		ss << "sw " << GetOffset(element) << "(r" << m_topOfStackRegister << "), r" << right << "\n";
+
+		m_registerStack.push_front(right);
+	}
+	else if (dynamic_cast<ITempVarNode*>(element->GetRight()) != nullptr)
+	{
+		SymbolTable* table = element->GetSymbolTable();
+		SymbolTableEntry* dest = table->FindEntryInScope(((VariableNode*)element->GetLeft())
+			->GetVariable()->GetID().GetLexeme());
+
+		SymbolTableEntry* data = table->FindEntryInTable(((ITempVarNode*)element->GetRight())->GetTempVarName());
+		ss << CopyData(dest, data);
+	}
+	else if (dynamic_cast<LiteralNode*>(element->GetRight()) != nullptr)
+	{
+		LiteralNode* floatLiteral = (LiteralNode*)element->GetRight();
+		int offset = GetOffset(element->GetRight());
+		ss << LoadFloatToAddr(offset, floatLiteral);
+	}
+	GetCurrStatBlock(element) += ss.str();
 }
 
 void CodeGenerator::Visit(WriteStatNode* element)
@@ -390,6 +414,8 @@ void CodeGenerator::Visit(WriteStatNode* element)
 
 	GetCurrStatBlock(element) += ss.str();
 	m_registerStack.push_front(exprValRegister);
+
+	seperate for float/int, '.' == 46 in ascii
 }
 
 void CodeGenerator::Visit(ProgramNode* element)
@@ -547,7 +573,6 @@ std::string CodeGenerator::GenerateDivOp(BaseBinaryOperator* opNode)
 	return GenerateArithmeticOp(opNode, "div");
 }
 
-
 std::string CodeGenerator::GenerateOr(BaseBinaryOperator* opNode)
 {
 	return "\n%or operator\n" + GenerateAndOr(opNode, "add");
@@ -609,7 +634,6 @@ std::string CodeGenerator::GenerateGreaterOrEqual(BaseBinaryOperator* opNode)
 {
 	return "\n%greater or equal\n" + GenerateRelOp(opNode, "cge");
 }
-
 
 std::string CodeGenerator::GenerateArithmeticOp(BaseBinaryOperator* opNode, const char* commandName)
 {
@@ -790,6 +814,40 @@ std::string CodeGenerator::LoadTempVarInRegister(TempVarNodeBase* tempVar, Regis
 	outRegister = m_registerStack.front();
 	m_registerStack.pop_front();
 	ss << "lw r" << outRegister << ", " << GetOffset(tempVar) << "(r" << m_topOfStackRegister << ")\n";
+	return ss.str();
+}
+
+std::string CodeGenerator::LoadFloatToAddr(int offset, LiteralNode* floatLiteral)
+{
+	ASSERT(floatLiteral->GetEvaluatedType() == "float");
+	std::stringstream ss;
+	RegisterID reg = m_registerStack.front();
+	std::string mantissa;
+	std::string exponent;
+	
+	FloatToRepresentationStr(floatLiteral->GetLexemeNode()->GetID().GetLexeme(), mantissa, exponent);
+	
+	ss << "addi r" << reg << ", r" << m_zeroRegister << ", " << mantissa << "\n";
+	ss << "sw " << offset << "(r" << m_topOfStackRegister << "), r" << reg << "\n";
+	offset -= (int)PlatformSpecifications::GetAddressSize();
+	ss << "addi r" << reg << ", r" << m_zeroRegister << ", " << exponent << "\n";
+	ss << "sw " << offset << "(r" << m_topOfStackRegister << "), r" << reg << "\n";
+
+	return ss.str();
+}
+
+std::string CodeGenerator::CopyData(SymbolTableEntry* data, SymbolTableEntry* dest)
+{
+	std::stringstream ss;
+	int dataOffset = data->GetOffset();
+	int destOffset = dest->GetOffset();
+	RegisterID reg = m_registerStack.front();
+
+	for (size_t i = 0; i < data->GetSize(); i += PlatformSpecifications::GetAddressSize())
+	{
+		ss << "lw r" << reg << ", " << (dataOffset - (int)i) << "(r" << m_topOfStackRegister << ")\n";
+		ss << "sw " << (destOffset - (int)i) << "(r" << m_topOfStackRegister << "), r" << reg << "\n";
+	}
 	return ss.str();
 }
 

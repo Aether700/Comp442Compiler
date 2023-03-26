@@ -16,15 +16,15 @@ class TempVarNodeBase;
 class PlatformSpecifications
 {
 public:
-    static size_t GetIntStrSize();
-    static int GetIntStrArg1Offset();
-    static int GetIntStrArg2Offset();
+    static constexpr size_t GetIntStrSize() { return s_intstrStackFrameSize; }
+    static constexpr int GetIntStrArg1Offset() { return s_intstrFirstArgOffset; }
+    static constexpr int GetIntStrArg2Offset() { return s_intstrSecondArgOffset; }
 
-    static int GetPutStrArg1Offset();
+    static constexpr int GetPutStrArg1Offset() { return s_putstrFirstArgOffset; }
 
-    static size_t GetAddressSize();
-    static size_t GetIntSize();
-    static size_t GetFloatSize();
+    static constexpr size_t GetAddressSize() { return s_addressSize; }
+    static constexpr size_t GetIntSize() { return s_intSize; }
+    static constexpr size_t GetFloatSize() { return s_floatSize; }
     
 
 private:
@@ -140,6 +140,9 @@ private:
     std::string LoadVarInRegister(VariableNode* node, RegisterID& outRegister);
     std::string LoadTempVarInRegister(TempVarNodeBase* tempVar, RegisterID& outRegister);
 
+    std::string LoadFloatToAddr(int offset, LiteralNode* floatLiteral);
+
+    std::string CopyData(SymbolTableEntry* data, SymbolTableEntry* dest);
     std::string& GetCurrStatBlock(ASTNode* node);
 
     std::string m_filepath;

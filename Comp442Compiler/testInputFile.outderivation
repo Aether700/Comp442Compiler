@@ -40,4 +40,26 @@
 -> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'float'     ';' 'id'     '='  <Factor> <Term2> <ArithExpr2> <Expr2>  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
 -> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'float'     ';' 'id'     '='  'float literal'  <Term2> <ArithExpr2> <Expr2>  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
 
--> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'float'     ';' 'id'     '='  'float literal'  <ArithExpr2> <Expr2>  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF'
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'float'     ';' 'id'     '='  'float literal'  <ArithExpr2> <Expr2>  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'float'     ';' 'id'     '='  'float literal'  <Expr2>  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'float'     ';' 'id'     '='  'float literal'    ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'float'     ';' 'id'     '='  'float literal'    ';' <LocalVarDeclOrStmt> <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'float'     ';' 'id'     '='  'float literal'    ';' <Statement> <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'float'     ';' 'id'     '='  'float literal'    ';' 'write' '(' <Expr> ')'  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+
+
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'float'     ';' 'id'     '='  'float literal'    ';' 'write' '(' <ArithExpr> <Expr2> ')'  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'float'     ';' 'id'     '='  'float literal'    ';' 'write' '(' <Term> <ArithExpr2> <Expr2> ')'  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'float'     ';' 'id'     '='  'float literal'    ';' 'write' '(' <Factor> <Term2> <ArithExpr2> <Expr2> ')'  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'float'     ';' 'id'     '='  'float literal'    ';' 'write' '(' 'integer literal'  <Term2> <ArithExpr2> <Expr2> ')'  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'float'     ';' 'id'     '='  'float literal'    ';' 'write' '(' 'integer literal'  <ArithExpr2> <Expr2> ')'  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'float'     ';' 'id'     '='  'float literal'    ';' 'write' '(' 'integer literal'  <Expr2> ')'  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'float'     ';' 'id'     '='  'float literal'    ';' 'write' '(' 'integer literal'   ')'  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+
+
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'float'     ';' 'id'     '='  'float literal'    ';' 'write' '(' 'integer literal'   ')'  ';'  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'float'     ';' 'id'     '='  'float literal'    ';' 'write' '(' 'integer literal'   ')'  ';'  '}'  'EOF' 
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'float'     ';' 'id'     '='  'float literal'    ';' 'write' '(' 'integer literal'   ')'  ';'  '}'  'EOF' 

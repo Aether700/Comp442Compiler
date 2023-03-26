@@ -1,0 +1,32 @@
+Program
+|  ClassDefList
+|  FuncDefList
+|  |  FuncDef
+|  |  |  id
+|  |  |  |  main
+|  |  |  TypeNode
+|  |  |  |  void
+|  |  |  FParamList
+|  |  |  StatBlock
+|  |  |  |  VarDecl
+|  |  |  |  |  id
+|  |  |  |  |  |  f
+|  |  |  |  |  TypeNode
+|  |  |  |  |  |  float
+|  |  |  |  |  Dimensions
+|  |  |  |  AssigStat
+|  |  |  |  |  Variable
+|  |  |  |  |  |  id
+|  |  |  |  |  |  |  f
+|  |  |  |  |  |  Dimensions
+|  |  |  |  |  Expr
+|  |  |  |  |  |  Literal
+|  |  |  |  |  |  |  122.53
+|  |  |  |  |  |  |  TypeNode
+|  |  |  |  |  |  |  |  float
+|  |  |  |  WriteStat
+|  |  |  |  |  Expr
+|  |  |  |  |  |  Literal
+|  |  |  |  |  |  |  1
+|  |  |  |  |  |  |  TypeNode
+|  |  |  |  |  |  |  |  integer

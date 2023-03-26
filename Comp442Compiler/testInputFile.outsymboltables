@@ -1,66 +1,12 @@
 ========================================================================================================================
 | table: Global                                                                                                        |
 ========================================================================================================================
-| free function    | main    | ():void    | 292    | 0                                                                 |
+| free function    | main    | ():void    | 20    | 0                                                                  |
 |    ==============================================================================================================    |
 |    | table: main                                                                                                |    |
 |    ==============================================================================================================    |
-|    | local variable    | b    | integer    | 4    | 0                                                           |    |
-|    | local variable    | i    | integer    | 4    | -4                                                          |    |
-|    | local variable    | arr    | integer[3]    | 12    | -8                                                    |    |
-|    | local variable    | matrix    | integer[5][3]    | 60    | -20                                             |    |
-|    | temp var    | T0    | integer    | 4    | -80                                                              |    |
-|    | temp var    | T1    | integer    | 4    | -84                                                              |    |
-|    | temp var    | T2    | integer    | 4    | -88                                                              |    |
-|    | temp var    | T3    | integer    | 4    | -92                                                              |    |
-|    | temp var    | T4    | integer    | 4    | -96                                                              |    |
-|    | temp var    | T5    | integer    | 4    | -100                                                             |    |
-|    | temp var    | T6    | integer    | 4    | -104                                                             |    |
-|    | temp var    | T7    | integer    | 4    | -108                                                             |    |
-|    | temp var    | T8    | integer    | 4    | -112                                                             |    |
-|    | temp var    | T9    | integer    | 4    | -116                                                             |    |
-|    | temp var    | T10    | integer    | 4    | -120                                                            |    |
-|    | temp var    | T11    | integer    | 4    | -124                                                            |    |
-|    | temp var    | T12    | integer    | 4    | -128                                                            |    |
-|    | temp var    | T13    | integer    | 4    | -132                                                            |    |
-|    | temp var    | T14    | integer    | 4    | -136                                                            |    |
-|    | temp var    | T15    | integer    | 4    | -140                                                            |    |
-|    | temp var    | T16    | integer    | 4    | -144                                                            |    |
-|    | temp var    | T17    | integer    | 4    | -148                                                            |    |
-|    | temp var    | T18    | integer    | 4    | -152                                                            |    |
-|    | temp var    | T19    | integer    | 4    | -156                                                            |    |
-|    | temp var    | T20    | integer    | 4    | -160                                                            |    |
-|    | temp var    | T21    | integer    | 4    | -164                                                            |    |
-|    | temp var    | T22    | integer    | 4    | -168                                                            |    |
-|    | temp var    | T23    | integer    | 4    | -172                                                            |    |
-|    | temp var    | T24    | integer    | 4    | -176                                                            |    |
-|    | temp var    | T25    | integer    | 4    | -180                                                            |    |
-|    | temp var    | T26    | integer    | 4    | -184                                                            |    |
-|    | temp var    | T27    | integer    | 4    | -188                                                            |    |
-|    | temp var    | T28    | integer    | 4    | -192                                                            |    |
-|    | temp var    | T29    | integer    | 4    | -196                                                            |    |
-|    | temp var    | T30    | integer    | 4    | -200                                                            |    |
-|    | temp var    | T31    | integer    | 4    | -204                                                            |    |
-|    | temp var    | T32    | integer    | 4    | -208                                                            |    |
-|    | temp var    | T33    | integer    | 4    | -212                                                            |    |
-|    | temp var    | T34    | integer    | 4    | -216                                                            |    |
-|    | temp var    | T35    | integer    | 4    | -220                                                            |    |
-|    | temp var    | T36    | integer    | 4    | -224                                                            |    |
-|    | temp var    | T37    | integer    | 4    | -228                                                            |    |
-|    | temp var    | T38    | integer    | 4    | -232                                                            |    |
-|    | temp var    | T39    | integer    | 4    | -236                                                            |    |
-|    | temp var    | T40    | integer    | 4    | -240                                                            |    |
-|    | temp var    | T41    | integer    | 4    | -244                                                            |    |
-|    | temp var    | T42    | integer    | 4    | -248                                                            |    |
-|    | temp var    | T43    | integer    | 4    | -252                                                            |    |
-|    | temp var    | T44    | integer    | 4    | -256                                                            |    |
-|    | temp var    | T45    | integer    | 4    | -260                                                            |    |
-|    | temp var    | T46    | integer    | 4    | -264                                                            |    |
-|    | temp var    | T47    | integer    | 4    | -268                                                            |    |
-|    | temp var    | T48    | integer    | 4    | -272                                                            |    |
-|    | temp var    | T49    | integer    | 4    | -276                                                            |    |
-|    | temp var    | T50    | integer    | 4    | -280                                                            |    |
-|    | temp var    | T51    | integer    | 4    | -284                                                            |    |
-|    | temp var    | T52    | integer    | 4    | -288                                                            |    |
+|    | local variable    | f    | float    | 8    | 0                                                             |    |
+|    | temp var    | T0    | float    | 8    | -8                                                                 |    |
+|    | temp var    | T1    | integer    | 4    | -16                                                              |    |
 |    ==============================================================================================================    |
 ========================================================================================================================

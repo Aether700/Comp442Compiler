@@ -59,6 +59,8 @@ function main() => void
 	matrix[3][0] = -3; // offset -> - (3 * (sizeof(int) * 3) + 0 * sizeof(int)) = -36
 	write (matrix[2][1] + matrix[1][2] + matrix[3][0]);
 	*/
+	
 	localvar f : float;
-	f = 2.5;
+	f = 122.53;
+	write(1);
 }
