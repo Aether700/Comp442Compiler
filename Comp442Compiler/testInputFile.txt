@@ -8,7 +8,7 @@ function main() => void
 
 	localvar a : float;
 	localvar b : float;
-	a = 0.51;
-	b = 0.5;
+	a = 0.51; // 51 0
+	b = 0.5; // 5 0
 	write(a + b);
 }

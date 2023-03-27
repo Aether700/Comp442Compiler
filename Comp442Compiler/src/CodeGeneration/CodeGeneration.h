@@ -157,6 +157,9 @@ private:
 
     std::string CopyData(int dataOffset, size_t dataSize, int destOffset);
     std::string CopyData(SymbolTableEntry* data, SymbolTableEntry* dest);
+
+    std::string GetNumDigitsInNum(RegisterID num, RegisterID& outNumDigits);
+
     std::string& GetCurrStatBlock(ASTNode* node);
 
 
