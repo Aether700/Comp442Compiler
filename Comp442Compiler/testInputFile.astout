@@ -27,7 +27,7 @@ Program
 |  |  |  |  |  |  Dimensions
 |  |  |  |  |  Expr
 |  |  |  |  |  |  Literal
-|  |  |  |  |  |  |  0.51
+|  |  |  |  |  |  |  0.5
 |  |  |  |  |  |  |  TypeNode
 |  |  |  |  |  |  |  |  float
 |  |  |  |  AssigStat
@@ -36,10 +36,13 @@ Program
 |  |  |  |  |  |  |  b
 |  |  |  |  |  |  Dimensions
 |  |  |  |  |  Expr
-|  |  |  |  |  |  Literal
-|  |  |  |  |  |  |  0.5
-|  |  |  |  |  |  |  TypeNode
-|  |  |  |  |  |  |  |  float
+|  |  |  |  |  |  ModifiedExpr
+|  |  |  |  |  |  |  Sign
+|  |  |  |  |  |  |  |  -
+|  |  |  |  |  |  |  Literal
+|  |  |  |  |  |  |  |  0.5
+|  |  |  |  |  |  |  |  TypeNode
+|  |  |  |  |  |  |  |  |  float
 |  |  |  |  WriteStat
 |  |  |  |  |  Expr
 |  |  |  |  |  |  AddOp
@@ -47,7 +50,7 @@ Program
 |  |  |  |  |  |  |  |  id
 |  |  |  |  |  |  |  |  |  a
 |  |  |  |  |  |  |  |  Dimensions
-|  |  |  |  |  |  |  +
+|  |  |  |  |  |  |  -
 |  |  |  |  |  |  |  Variable
 |  |  |  |  |  |  |  |  id
 |  |  |  |  |  |  |  |  |  b

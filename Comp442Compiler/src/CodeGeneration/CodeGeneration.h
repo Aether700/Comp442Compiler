@@ -47,6 +47,7 @@ class SizeGenerator : public Visitor
 public:
     SizeGenerator(SymbolTable* globalTable);
 
+    virtual void Visit(LiteralNode* element) override;
     virtual void Visit(ExprNode* element) override;
     virtual void Visit(ModifiedExpr* element) override;
     virtual void Visit(BaseBinaryOperator* element) override;
@@ -83,6 +84,7 @@ class CodeGenerator : public Visitor
 {
 public:
     CodeGenerator(SymbolTable* globalTable, const std::string& filepath);
+    virtual void Visit(LiteralNode* element) override;
     virtual void Visit(ExprNode* element) override;
     virtual void Visit(ModifiedExpr* element) override;
     virtual void Visit(BaseBinaryOperator* element) override;
@@ -133,7 +135,7 @@ private:
     std::string GenerateMultOpFloat(BaseBinaryOperator* opNode);
     std::string GenerateDivOpFloat(BaseBinaryOperator* opNode);
 
-    std::string GenerateAddSubFloat(BaseBinaryOperator* opNode);
+    std::string GenerateAddSubFloat(BaseBinaryOperator* opNode, const char* commandName);
 
     // returns the string of code to stores the value of the node and stores the register in which 
     //the data was stored in the provided outRegister field or NullRegister if the operation 

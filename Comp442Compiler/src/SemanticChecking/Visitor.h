@@ -7,6 +7,7 @@
 
 class IVisitableElement;
 class IDNode;
+class LiteralNode;
 class DimensionNode;
 class DotNode;
 class ExprNode;
@@ -35,6 +36,7 @@ class Visitor
 public:
     virtual void Visit(IVisitableElement* element) { }
     virtual void Visit(IDNode* element) { }
+    virtual void Visit(LiteralNode* element) { }
     virtual void Visit(DimensionNode* element) { }
     virtual void Visit(DotNode* element) { }
     virtual void Visit(ExprNode* element) { }

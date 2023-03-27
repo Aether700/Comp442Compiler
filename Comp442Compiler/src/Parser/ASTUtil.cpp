@@ -339,11 +339,21 @@ int GetOffset(ASTNode* node)
     {
         return GetOffset((TempVarNodeBase*)node);
     }
+    else if (dynamic_cast<LiteralNode*>(node) != nullptr)
+    {
+        return GetOffset((LiteralNode*)node);
+    }
     else
     {
         DEBUG_BREAK();
     }
     return INTMAX_MAX;
+}
+
+int GetOffset(LiteralNode* node)
+{
+    ASSERT(node->GetEvaluatedType() == "float");
+    return GetOffset(node->GetSymbolTable(), node->GetTempVarName());
 }
 
 int GetOffset(VariableNode* var)

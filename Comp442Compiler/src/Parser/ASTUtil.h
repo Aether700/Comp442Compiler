@@ -45,6 +45,7 @@ bool IsArrayType(const std::string typeStr);
 
 int GetOffset(SymbolTable* context, const std::string& name);
 int GetOffset(ASTNode* node);
+int GetOffset(LiteralNode* var);
 int GetOffset(VariableNode* var);
 int GetOffset(AssignStatNode* assign);
 int GetOffset(SymbolTable* context, ITempVarNode* tempVarNode);

@@ -223,7 +223,7 @@ public:
     virtual void AcceptVisit(Visitor* visitor) override;
 };
 
-class LiteralNode : public ASTNodeBase
+class LiteralNode : public TempVarNodeBase
 {
 public:
     LiteralNode(IDNode* lexeme, TypeNode* type);
