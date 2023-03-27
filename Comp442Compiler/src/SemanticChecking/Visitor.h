@@ -10,6 +10,7 @@ class IDNode;
 class DimensionNode;
 class DotNode;
 class ExprNode;
+class SignNode;
 class ModifiedExpr;
 class BaseBinaryOperator;
 class IfStatNode;
@@ -37,6 +38,7 @@ public:
     virtual void Visit(DimensionNode* element) { }
     virtual void Visit(DotNode* element) { }
     virtual void Visit(ExprNode* element) { }
+    virtual void Visit(SignNode* element) { }
     virtual void Visit(ModifiedExpr* element) { }
     virtual void Visit(BaseBinaryOperator* element) { }
     virtual void Visit(IfStatNode* element) { }

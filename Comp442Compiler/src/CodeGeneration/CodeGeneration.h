@@ -105,31 +105,39 @@ private:
     std::string GenerateMinusExpr(ModifiedExpr* modExpr);
 
     std::string GenerateBinaryOp(BaseBinaryOperator* opNode);    
+    std::string GenerateBinaryOpInt(BaseBinaryOperator* opNode);    
+    std::string GenerateBinaryOpFloat(BaseBinaryOperator* opNode);  
 
     // code generation for different binary operators
-    std::string GenerateAddOp(BaseBinaryOperator* opNode);
-    std::string GenerateSubOp(BaseBinaryOperator* opNode);
-    std::string GenerateMultOp(BaseBinaryOperator* opNode);
-    std::string GenerateDivOp(BaseBinaryOperator* opNode);
+    std::string GenerateAddOpInt(BaseBinaryOperator* opNode);
+    std::string GenerateSubOpInt(BaseBinaryOperator* opNode);
+    std::string GenerateMultOpInt(BaseBinaryOperator* opNode);
+    std::string GenerateDivOpInt(BaseBinaryOperator* opNode);
 
-    std::string GenerateOr(BaseBinaryOperator* opNode);
-    std::string GenerateAnd(BaseBinaryOperator* opNode);
-    std::string GenerateNot(ModifiedExpr* expr);
-    std::string GenerateEqual(BaseBinaryOperator* opNode);
-    std::string GenerateNotEqual(BaseBinaryOperator* opNode);
-    std::string GenerateLessThan(BaseBinaryOperator* opNode);
-    std::string GenerateGreaterThan(BaseBinaryOperator* opNode);
-    std::string GenerateLessOrEqual(BaseBinaryOperator* opNode);
-    std::string GenerateGreaterOrEqual(BaseBinaryOperator* opNode);
+    std::string GenerateOrInt(BaseBinaryOperator* opNode);
+    std::string GenerateAndInt(BaseBinaryOperator* opNode);
+    std::string GenerateNotInt(ModifiedExpr* expr);
+    std::string GenerateEqualInt(BaseBinaryOperator* opNode);
+    std::string GenerateNotEqualInt(BaseBinaryOperator* opNode);
+    std::string GenerateLessThanInt(BaseBinaryOperator* opNode);
+    std::string GenerateGreaterThanInt(BaseBinaryOperator* opNode);
+    std::string GenerateLessOrEqualInt(BaseBinaryOperator* opNode);
+    std::string GenerateGreaterOrEqualInt(BaseBinaryOperator* opNode);
 
-    std::string GenerateArithmeticOp(BaseBinaryOperator* opNode, const char* commandName);
-    std::string GenerateAndOr(BaseBinaryOperator* opNode, const char* commandName);
-    std::string GenerateRelOp(BaseBinaryOperator* opNode, const char* commandName);
+    std::string GenerateArithmeticOpInt(BaseBinaryOperator* opNode, const char* commandName);
+    std::string GenerateAndOrInt(BaseBinaryOperator* opNode, const char* commandName);
+    std::string GenerateRelOpInt(BaseBinaryOperator* opNode, const char* commandName);
+
+    std::string GenerateAddOpFloat(BaseBinaryOperator* opNode);
+    std::string GenerateSubOpFloat(BaseBinaryOperator* opNode);
+    std::string GenerateMultOpFloat(BaseBinaryOperator* opNode);
+    std::string GenerateDivOpFloat(BaseBinaryOperator* opNode);
+
+    std::string GenerateAddSubFloat(BaseBinaryOperator* opNode);
 
     // returns the string of code to stores the value of the node and stores the register in which 
     //the data was stored in the provided outRegister field or NullRegister if the operation 
     //is not supported
-    
     std::string ComputeVal(ASTNode* node, RegisterID& outRegister);
     std::string ComputeVal(BaseBinaryOperator* node, RegisterID& outRegister);
     std::string ComputeVal(ExprNode* node, RegisterID& outRegister);
@@ -140,10 +148,17 @@ private:
     std::string LoadVarInRegister(VariableNode* node, RegisterID& outRegister);
     std::string LoadTempVarInRegister(TempVarNodeBase* tempVar, RegisterID& outRegister);
 
+    std::string LoadFloatToAddr(int offset, ASTNode* expr);
+    std::string LoadFloatToAddr(int offset, ExprNode* expr);
+    std::string LoadFloatToAddr(int offset, VariableNode* var);
     std::string LoadFloatToAddr(int offset, LiteralNode* floatLiteral);
 
+    std::string WriteNum(RegisterID numRegister);
+
+    std::string CopyData(int dataOffset, size_t dataSize, int destOffset);
     std::string CopyData(SymbolTableEntry* data, SymbolTableEntry* dest);
     std::string& GetCurrStatBlock(ASTNode* node);
+
 
     std::string m_filepath;
     std::string m_dataCode;

@@ -23,7 +23,7 @@
  - generate read statment
 */
 
-do writing floats to output
+//do writing floats to output
 
 /*
 float representation idea:

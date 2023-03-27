@@ -27,39 +27,83 @@
 -> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'float'     ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
 
 -> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'float'     ';' <LocalVarDeclOrStmt> <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
--> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'float'     ';' <Statement> <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
--> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'float'     ';' <SimpleStatement> ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
--> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'float'     ';' 'id'  <SimpleStatement2> ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
-
--> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'float'     ';' 'id'   <Indice>  <SimpleStatement3> ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
--> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'float'     ';' 'id'     <SimpleStatement3> ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
--> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'float'     ';' 'id'     '='  <Expr>  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
-
--> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'float'     ';' 'id'     '='  <ArithExpr> <Expr2>  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
--> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'float'     ';' 'id'     '='  <Term> <ArithExpr2> <Expr2>  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
--> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'float'     ';' 'id'     '='  <Factor> <Term2> <ArithExpr2> <Expr2>  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
--> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'float'     ';' 'id'     '='  'float literal'  <Term2> <ArithExpr2> <Expr2>  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
-
--> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'float'     ';' 'id'     '='  'float literal'  <ArithExpr2> <Expr2>  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
--> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'float'     ';' 'id'     '='  'float literal'  <Expr2>  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
--> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'float'     ';' 'id'     '='  'float literal'    ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
-
--> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'float'     ';' 'id'     '='  'float literal'    ';' <LocalVarDeclOrStmt> <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
--> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'float'     ';' 'id'     '='  'float literal'    ';' <Statement> <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
--> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'float'     ';' 'id'     '='  'float literal'    ';' 'write' '(' <Expr> ')'  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'float'     ';' <LocalVarDecl> <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'float'     ';' 'localvar' 'id'  ':' <Type> <LocalVarDecl2>  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
 
 
--> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'float'     ';' 'id'     '='  'float literal'    ';' 'write' '(' <ArithExpr> <Expr2> ')'  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
--> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'float'     ';' 'id'     '='  'float literal'    ';' 'write' '(' <Term> <ArithExpr2> <Expr2> ')'  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
--> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'float'     ';' 'id'     '='  'float literal'    ';' 'write' '(' <Factor> <Term2> <ArithExpr2> <Expr2> ')'  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
--> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'float'     ';' 'id'     '='  'float literal'    ';' 'write' '(' 'integer literal'  <Term2> <ArithExpr2> <Expr2> ')'  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
 
--> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'float'     ';' 'id'     '='  'float literal'    ';' 'write' '(' 'integer literal'  <ArithExpr2> <Expr2> ')'  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
--> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'float'     ';' 'id'     '='  'float literal'    ';' 'write' '(' 'integer literal'  <Expr2> ')'  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
--> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'float'     ';' 'id'     '='  'float literal'    ';' 'write' '(' 'integer literal'   ')'  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'float'     ';' 'localvar' 'id'  ':' 'float'  <LocalVarDecl2>  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'float'     ';' 'localvar' 'id'  ':' 'float'   <ArraySizeRepetition>  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'float'     ';' 'localvar' 'id'  ':' 'float'     ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'float'     ';' 'localvar' 'id'  ':' 'float'     ';' <LocalVarDeclOrStmt> <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'float'     ';' 'localvar' 'id'  ':' 'float'     ';' <Statement> <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'float'     ';' 'localvar' 'id'  ':' 'float'     ';' <SimpleStatement> ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'float'     ';' 'localvar' 'id'  ':' 'float'     ';' 'id'  <SimpleStatement2> ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'float'     ';' 'localvar' 'id'  ':' 'float'     ';' 'id'   <Indice>  <SimpleStatement3> ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'float'     ';' 'localvar' 'id'  ':' 'float'     ';' 'id'     <SimpleStatement3> ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'float'     ';' 'localvar' 'id'  ':' 'float'     ';' 'id'     '='  <Expr>  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'float'     ';' 'localvar' 'id'  ':' 'float'     ';' 'id'     '='  <ArithExpr> <Expr2>  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'float'     ';' 'localvar' 'id'  ':' 'float'     ';' 'id'     '='  <Term> <ArithExpr2> <Expr2>  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'float'     ';' 'localvar' 'id'  ':' 'float'     ';' 'id'     '='  <Factor> <Term2> <ArithExpr2> <Expr2>  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'float'     ';' 'localvar' 'id'  ':' 'float'     ';' 'id'     '='  'float literal'  <Term2> <ArithExpr2> <Expr2>  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'float'     ';' 'localvar' 'id'  ':' 'float'     ';' 'id'     '='  'float literal'  <ArithExpr2> <Expr2>  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'float'     ';' 'localvar' 'id'  ':' 'float'     ';' 'id'     '='  'float literal'  <Expr2>  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'float'     ';' 'localvar' 'id'  ':' 'float'     ';' 'id'     '='  'float literal'    ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'float'     ';' 'localvar' 'id'  ':' 'float'     ';' 'id'     '='  'float literal'    ';' <LocalVarDeclOrStmt> <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'float'     ';' 'localvar' 'id'  ':' 'float'     ';' 'id'     '='  'float literal'    ';' <Statement> <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'float'     ';' 'localvar' 'id'  ':' 'float'     ';' 'id'     '='  'float literal'    ';' <SimpleStatement> ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'float'     ';' 'localvar' 'id'  ':' 'float'     ';' 'id'     '='  'float literal'    ';' 'id'  <SimpleStatement2> ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'float'     ';' 'localvar' 'id'  ':' 'float'     ';' 'id'     '='  'float literal'    ';' 'id'   <Indice>  <SimpleStatement3> ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'float'     ';' 'localvar' 'id'  ':' 'float'     ';' 'id'     '='  'float literal'    ';' 'id'     <SimpleStatement3> ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'float'     ';' 'localvar' 'id'  ':' 'float'     ';' 'id'     '='  'float literal'    ';' 'id'     '='  <Expr>  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'float'     ';' 'localvar' 'id'  ':' 'float'     ';' 'id'     '='  'float literal'    ';' 'id'     '='  <ArithExpr> <Expr2>  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'float'     ';' 'localvar' 'id'  ':' 'float'     ';' 'id'     '='  'float literal'    ';' 'id'     '='  <Term> <ArithExpr2> <Expr2>  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'float'     ';' 'localvar' 'id'  ':' 'float'     ';' 'id'     '='  'float literal'    ';' 'id'     '='  <Factor> <Term2> <ArithExpr2> <Expr2>  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'float'     ';' 'localvar' 'id'  ':' 'float'     ';' 'id'     '='  'float literal'    ';' 'id'     '='  'float literal'  <Term2> <ArithExpr2> <Expr2>  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'float'     ';' 'localvar' 'id'  ':' 'float'     ';' 'id'     '='  'float literal'    ';' 'id'     '='  'float literal'  <ArithExpr2> <Expr2>  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'float'     ';' 'localvar' 'id'  ':' 'float'     ';' 'id'     '='  'float literal'    ';' 'id'     '='  'float literal'  <Expr2>  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'float'     ';' 'localvar' 'id'  ':' 'float'     ';' 'id'     '='  'float literal'    ';' 'id'     '='  'float literal'    ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'float'     ';' 'localvar' 'id'  ':' 'float'     ';' 'id'     '='  'float literal'    ';' 'id'     '='  'float literal'    ';' <LocalVarDeclOrStmt> <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'float'     ';' 'localvar' 'id'  ':' 'float'     ';' 'id'     '='  'float literal'    ';' 'id'     '='  'float literal'    ';' <Statement> <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'float'     ';' 'localvar' 'id'  ':' 'float'     ';' 'id'     '='  'float literal'    ';' 'id'     '='  'float literal'    ';' 'write' '(' <Expr> ')'  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
 
 
--> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'float'     ';' 'id'     '='  'float literal'    ';' 'write' '(' 'integer literal'   ')'  ';'  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'float'     ';' 'localvar' 'id'  ':' 'float'     ';' 'id'     '='  'float literal'    ';' 'id'     '='  'float literal'    ';' 'write' '(' <ArithExpr> <Expr2> ')'  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'float'     ';' 'localvar' 'id'  ':' 'float'     ';' 'id'     '='  'float literal'    ';' 'id'     '='  'float literal'    ';' 'write' '(' <Term> <ArithExpr2> <Expr2> ')'  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'float'     ';' 'localvar' 'id'  ':' 'float'     ';' 'id'     '='  'float literal'    ';' 'id'     '='  'float literal'    ';' 'write' '(' <Factor> <Term2> <ArithExpr2> <Expr2> ')'  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'float'     ';' 'localvar' 'id'  ':' 'float'     ';' 'id'     '='  'float literal'    ';' 'id'     '='  'float literal'    ';' 'write' '(' <VarOrFuncCall> <Term2> <ArithExpr2> <Expr2> ')'  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'float'     ';' 'localvar' 'id'  ':' 'float'     ';' 'id'     '='  'float literal'    ';' 'id'     '='  'float literal'    ';' 'write' '(' 'id'  <VarOrFuncCall2> <Term2> <ArithExpr2> <Expr2> ')'  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
 
--> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'float'     ';' 'id'     '='  'float literal'    ';' 'write' '(' 'integer literal'   ')'  ';'  '}'  'EOF' 
--> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'float'     ';' 'id'     '='  'float literal'    ';' 'write' '(' 'integer literal'   ')'  ';'  '}'  'EOF' 
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'float'     ';' 'localvar' 'id'  ':' 'float'     ';' 'id'     '='  'float literal'    ';' 'id'     '='  'float literal'    ';' 'write' '(' 'id'   <Indice>  <VarOrFuncCall3> <Term2> <ArithExpr2> <Expr2> ')'  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'float'     ';' 'localvar' 'id'  ':' 'float'     ';' 'id'     '='  'float literal'    ';' 'id'     '='  'float literal'    ';' 'write' '(' 'id'     <VarOrFuncCall3> <Term2> <ArithExpr2> <Expr2> ')'  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'float'     ';' 'localvar' 'id'  ':' 'float'     ';' 'id'     '='  'float literal'    ';' 'id'     '='  'float literal'    ';' 'write' '(' 'id'     <Term2> <ArithExpr2> <Expr2> ')'  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'float'     ';' 'localvar' 'id'  ':' 'float'     ';' 'id'     '='  'float literal'    ';' 'id'     '='  'float literal'    ';' 'write' '(' 'id'     <ArithExpr2> <Expr2> ')'  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'float'     ';' 'localvar' 'id'  ':' 'float'     ';' 'id'     '='  'float literal'    ';' 'id'     '='  'float literal'    ';' 'write' '(' 'id'     <AddOp> <Term>  <ArithExpr2> <Expr2> ')'  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'float'     ';' 'localvar' 'id'  ':' 'float'     ';' 'id'     '='  'float literal'    ';' 'id'     '='  'float literal'    ';' 'write' '(' 'id'     '+'  <Term>  <ArithExpr2> <Expr2> ')'  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'float'     ';' 'localvar' 'id'  ':' 'float'     ';' 'id'     '='  'float literal'    ';' 'id'     '='  'float literal'    ';' 'write' '(' 'id'     '+'  <Factor> <Term2>  <ArithExpr2> <Expr2> ')'  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'float'     ';' 'localvar' 'id'  ':' 'float'     ';' 'id'     '='  'float literal'    ';' 'id'     '='  'float literal'    ';' 'write' '(' 'id'     '+'  <VarOrFuncCall> <Term2>  <ArithExpr2> <Expr2> ')'  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'float'     ';' 'localvar' 'id'  ':' 'float'     ';' 'id'     '='  'float literal'    ';' 'id'     '='  'float literal'    ';' 'write' '(' 'id'     '+'  'id'  <VarOrFuncCall2> <Term2>  <ArithExpr2> <Expr2> ')'  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'float'     ';' 'localvar' 'id'  ':' 'float'     ';' 'id'     '='  'float literal'    ';' 'id'     '='  'float literal'    ';' 'write' '(' 'id'     '+'  'id'   <Indice>  <VarOrFuncCall3> <Term2>  <ArithExpr2> <Expr2> ')'  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'float'     ';' 'localvar' 'id'  ':' 'float'     ';' 'id'     '='  'float literal'    ';' 'id'     '='  'float literal'    ';' 'write' '(' 'id'     '+'  'id'     <VarOrFuncCall3> <Term2>  <ArithExpr2> <Expr2> ')'  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'float'     ';' 'localvar' 'id'  ':' 'float'     ';' 'id'     '='  'float literal'    ';' 'id'     '='  'float literal'    ';' 'write' '(' 'id'     '+'  'id'     <Term2>  <ArithExpr2> <Expr2> ')'  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'float'     ';' 'localvar' 'id'  ':' 'float'     ';' 'id'     '='  'float literal'    ';' 'id'     '='  'float literal'    ';' 'write' '(' 'id'     '+'  'id'      <ArithExpr2> <Expr2> ')'  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'float'     ';' 'localvar' 'id'  ':' 'float'     ';' 'id'     '='  'float literal'    ';' 'id'     '='  'float literal'    ';' 'write' '(' 'id'     '+'  'id'      <Expr2> ')'  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'float'     ';' 'localvar' 'id'  ':' 'float'     ';' 'id'     '='  'float literal'    ';' 'id'     '='  'float literal'    ';' 'write' '(' 'id'     '+'  'id'       ')'  ';' <LocalVarDeclOrStmtRepetition>  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+
+
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'float'     ';' 'localvar' 'id'  ':' 'float'     ';' 'id'     '='  'float literal'    ';' 'id'     '='  'float literal'    ';' 'write' '(' 'id'     '+'  'id'       ')'  ';'  '}'  <ClassDeclOrFuncDefRepetition> 'EOF' 
+
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'float'     ';' 'localvar' 'id'  ':' 'float'     ';' 'id'     '='  'float literal'    ';' 'id'     '='  'float literal'    ';' 'write' '(' 'id'     '+'  'id'       ')'  ';'  '}'  'EOF' 
+-> 'function' 'id'  '('   ')' '=>' 'void'   '{'  'localvar' 'id'  ':' 'float'     ';' 'localvar' 'id'  ':' 'float'     ';' 'id'     '='  'float literal'    ';' 'id'     '='  'float literal'    ';' 'write' '(' 'id'     '+'  'id'       ')'  ';'  '}'  'EOF' 

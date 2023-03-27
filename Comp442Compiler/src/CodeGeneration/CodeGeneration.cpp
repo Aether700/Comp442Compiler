@@ -265,18 +265,30 @@ void CodeGenerator::Visit(ExprNode* element)
 		ss << "sw " << GetOffset(element) << "(r" << m_topOfStackRegister << "), r" << exprRoot << "\n";
 		m_registerStack.push_front(exprRoot);
 	}
-	else if (dynamic_cast<ITempVarNode*>(element->GetRootOfExpr()) != nullptr)
+	else if (dynamic_cast<TempVarNodeBase*>(element->GetRootOfExpr()) != nullptr)
 	{
 		SymbolTable* table = element->GetSymbolTable();
 		SymbolTableEntry* dest = table->FindEntryInTable(element->GetTempVarName());
-		SymbolTableEntry* data = table->FindEntryInTable(((ITempVarNode*)element->GetRootOfExpr())
+		SymbolTableEntry* data = table->FindEntryInTable(((TempVarNodeBase*)element->GetRootOfExpr())
 			->GetTempVarName());
 		ss << CopyData(data, dest);
 	}
-	else if (dynamic_cast<LiteralNode*>(element->GetRootOfExpr()))
+	else if (dynamic_cast<LiteralNode*>(element->GetRootOfExpr()) != nullptr)
 	{
 		LiteralNode* floatLiteral = (LiteralNode*)element->GetRootOfExpr();
 		ss << LoadFloatToAddr(GetOffset(element), floatLiteral);
+	}
+	else if (dynamic_cast<VariableNode*>(element->GetRootOfExpr()) != nullptr)
+	{
+		VariableNode* var = (VariableNode*)element->GetRootOfExpr();
+		SymbolTable* table = element->GetSymbolTable();
+		SymbolTableEntry* dest = table->FindEntryInTable(element->GetTempVarName());
+		SymbolTableEntry* data = table->FindEntryInScope(var->GetVariable()->GetID().GetLexeme());
+		ss << CopyData(data, dest);
+	}
+	else
+	{
+		DEBUG_BREAK();
 	}
 	GetCurrStatBlock(element) += ss.str();
 }
@@ -370,19 +382,19 @@ void CodeGenerator::Visit(AssignStatNode* element)
 
 		m_registerStack.push_front(right);
 	}
-	else if (dynamic_cast<ITempVarNode*>(element->GetRight()) != nullptr)
+	else if (dynamic_cast<ITempVarNode*>(element->GetRight()->GetRootOfExpr()) != nullptr)
 	{
 		SymbolTable* table = element->GetSymbolTable();
 		SymbolTableEntry* dest = table->FindEntryInScope(((VariableNode*)element->GetLeft())
 			->GetVariable()->GetID().GetLexeme());
 
 		SymbolTableEntry* data = table->FindEntryInTable(((ITempVarNode*)element->GetRight())->GetTempVarName());
-		ss << CopyData(dest, data);
+		ss << CopyData(data, dest);
 	}
-	else if (dynamic_cast<LiteralNode*>(element->GetRight()) != nullptr)
+	else if (dynamic_cast<LiteralNode*>(element->GetRight()->GetRootOfExpr()) != nullptr)
 	{
-		LiteralNode* floatLiteral = (LiteralNode*)element->GetRight();
-		int offset = GetOffset(element->GetRight());
+		LiteralNode* floatLiteral = (LiteralNode*)element->GetRight()->GetRootOfExpr();
+		int offset = GetOffset(element);
 		ss << LoadFloatToAddr(offset, floatLiteral);
 	}
 	GetCurrStatBlock(element) += ss.str();
@@ -391,31 +403,45 @@ void CodeGenerator::Visit(AssignStatNode* element)
 void CodeGenerator::Visit(WriteStatNode* element)
 {
 	std::stringstream ss;
-	
-	RegisterID exprValRegister;
-	std::string codeToAdd = LoadTempVarInRegister(element->GetExpr(), exprValRegister);
-	ASSERT(exprValRegister != NullRegister);
-	ss << "\n%write stat\n" << codeToAdd;
-	ss << IncrementStackFrame(PlatformSpecifications::GetIntStrSize());
-	ss << "sw " << PlatformSpecifications::GetIntStrArg1Offset() << "(r" << m_topOfStackRegister 
-		<< "), r" << exprValRegister << "\n";
+	ss << "\n%write stat\n";
+	if (element->GetExpr()->GetEvaluatedType() == "integer")
+	{
+		RegisterID exprValRegister;
+		ss << LoadTempVarInRegister(element->GetExpr(), exprValRegister);
+		ASSERT(exprValRegister != NullRegister);
+		ss << WriteNum(exprValRegister);
+		m_registerStack.push_front(exprValRegister);
+	}
+	else if (element->GetExpr()->GetEvaluatedType() == "float")
+	{
+		RegisterID exprValRegister = m_registerStack.front();
+		int offset = GetOffset(element->GetExpr());
+		
+		// write mantissa
+		ss << "lw r" << exprValRegister << ", " << offset << "(r" << m_topOfStackRegister << ")\n";
+		ss << WriteNum(exprValRegister);
+		offset -= (int)PlatformSpecifications::GetAddressSize();
 
-	ss << "addi r" << exprValRegister << ", r" << m_zeroRegister << ", buff\n";
-	ss << "sw " << PlatformSpecifications::GetIntStrArg2Offset() << "(r" << m_topOfStackRegister
-		<< "), r" << exprValRegister << "\n";
-	
-	ss << "jl r" << m_jumpReturnRegister << ", intstr\n";
+		//write "*10^"
+		constexpr const char* constStr = "*10^";
+		constexpr size_t constStrLen = 4;
 
-	ss << "sw " << PlatformSpecifications::GetPutStrArg1Offset() << "(r" << m_topOfStackRegister 
-		<< "), r" << m_returnValRegister << "\n";
+		for (size_t i = 0; i < constStrLen; i++)
+		{
+			ss << "addi r" << exprValRegister << ", r" << m_zeroRegister 
+				<< ", " << (int)constStr[i] << "\n";
+			ss << "putc r" << exprValRegister << "\n";
+		}
 
-	ss << "jl r" << m_jumpReturnRegister << ", putstr\n";
-	ss << DecrementStackFrame();
-
+		// write exponent
+		ss << "lw r" << exprValRegister << ", " << offset << "(r" << m_topOfStackRegister << ")\n";
+		ss << WriteNum(exprValRegister);
+	}
+	else
+	{
+		DEBUG_BREAK(); // type not supported
+	}
 	GetCurrStatBlock(element) += ss.str();
-	m_registerStack.push_front(exprValRegister);
-
-	seperate for float/int, '.' == 46 in ascii
 }
 
 void CodeGenerator::Visit(ProgramNode* element)
@@ -472,7 +498,8 @@ std::string CodeGenerator::GenerateModifiedExpr(ModifiedExpr* modExpr)
 	}
 	else if (dynamic_cast<NotNode*>(modifier) != nullptr)
 	{
-		return GenerateNot(modExpr);
+		ASSERT(modExpr->GetEvaluatedType() == "integer"); // the not operator is only defined for integers
+		return GenerateNotInt(modExpr);
 	}
 	else
 	{
@@ -485,65 +512,98 @@ std::string CodeGenerator::GenerateModifiedExpr(ModifiedExpr* modExpr)
 std::string CodeGenerator::GenerateMinusExpr(ModifiedExpr* modExpr)
 {
 	std::stringstream ss;
-	RegisterID exprReg;
-	ss << "\n% minus expr\n" << ComputeVal(modExpr->GetExpr(), exprReg);
-	RegisterID tempVarReg = m_registerStack.front();
-	ss << "muli r" << tempVarReg << ", r" << exprReg << ", -1\n";
-	ss << "sw " << GetOffset(modExpr) << "(r" << m_topOfStackRegister << "), r" << tempVarReg << "\n";
+	ss << "\n% minus expr\n";
+	if (modExpr->GetExpr()->GetEvaluatedType() == "integer")
+	{
+		RegisterID exprReg;
+		ss << ComputeVal(modExpr->GetExpr(), exprReg);
+		RegisterID tempVarReg = m_registerStack.front();
+		ss << "muli r" << tempVarReg << ", r" << exprReg << ", -1\n";
+		ss << "sw " << GetOffset(modExpr) << "(r" << m_topOfStackRegister << "), r" << tempVarReg << "\n";
+		m_registerStack.push_front(exprReg);
+	}
+	else if (modExpr->GetExpr()->GetEvaluatedType() == "float")
+	{
+		RegisterID reg = m_registerStack.front();
+		m_registerStack.pop_front();
+		int offset = GetOffset(modExpr);
+		ss << LoadFloatToAddr(offset, modExpr->GetExpr());
+		ss << "lw r" << reg << ", " << offset << "(r" << m_topOfStackRegister << ")\n";
+		ss << "muli r" << reg << ", r" << reg << ", -1\n";
+		ss << "sw " << offset << "(r" << m_topOfStackRegister << "), r" << reg << "\n";
+	}
+	else
+	{
+		DEBUG_BREAK(); // type not supported
+	}
 
 	return ss.str();
 }
 
 std::string CodeGenerator::GenerateBinaryOp(BaseBinaryOperator* opNode)
 {
+	std::string type = opNode->GetEvaluatedType();
+	if (type == "integer")
+	{
+		return GenerateBinaryOpInt(opNode);
+	}
+	else
+	{
+		ASSERT(type == "float");
+		return GenerateBinaryOpFloat(opNode);
+	}
+}
+
+std::string CodeGenerator::GenerateBinaryOpInt(BaseBinaryOperator* opNode)
+{
 	const std::string& op = opNode->GetOperator()->GetOperator().GetLexeme();
 	if (op == "+")
 	{
-		return GenerateAddOp(opNode);
+		return GenerateAddOpInt(opNode);
 	}
 	else if (op == "-")
 	{
-		return GenerateSubOp(opNode);
+		return GenerateSubOpInt(opNode);
 	}
 	else if (op == "*")
 	{
-		return GenerateMultOp(opNode);
+		return GenerateMultOpInt(opNode);
 	}
 	else if (op == "/")
 	{
-		return GenerateDivOp(opNode);
+		return GenerateDivOpInt(opNode);
 	}
 	else if (op == "or")
 	{
-		return GenerateOr(opNode);
+		return GenerateOrInt(opNode);
 	}
 	else if (op == "and")
 	{
-		return GenerateAnd(opNode);
+		return GenerateAndInt(opNode);
 	}
 	else if (op == "==")
 	{
-		return GenerateEqual(opNode);
+		return GenerateEqualInt(opNode);
 	}
 	else if (op == "<>")
 	{
-		return GenerateNotEqual(opNode);
+		return GenerateNotEqualInt(opNode);
 	}
 	else if (op == "<")
 	{
-		return GenerateLessThan(opNode);
+		return GenerateLessThanInt(opNode);
 	}
 	else if (op == ">")
 	{
-		return GenerateGreaterThan(opNode);
+		return GenerateGreaterThanInt(opNode);
 	}
 	else if (op == "<=")
 	{
-		return GenerateLessOrEqual(opNode);
+		return GenerateLessOrEqualInt(opNode);
 	}
 	else if (op == ">=")
 	{
-		return GenerateGreaterOrEqual(opNode);
+		return GenerateGreaterOrEqualInt(opNode);
 	}
 	else
 	{
@@ -553,37 +613,64 @@ std::string CodeGenerator::GenerateBinaryOp(BaseBinaryOperator* opNode)
 	return "";
 }
 
-std::string CodeGenerator::GenerateAddOp(BaseBinaryOperator* opNode)
+std::string CodeGenerator::GenerateBinaryOpFloat(BaseBinaryOperator* opNode)
 {
-	return GenerateArithmeticOp(opNode, "add");
+	const std::string& op = opNode->GetOperator()->GetOperator().GetLexeme();
+	if (op == "+")
+	{
+		return GenerateAddOpFloat(opNode);
+	}
+	else if (op == "-")
+	{
+		return GenerateSubOpFloat(opNode);
+	}
+	else if (op == "*")
+	{
+		return GenerateMultOpFloat(opNode);
+	}
+	else if (op == "/")
+	{
+		return GenerateDivOpFloat(opNode);
+	}
+	else
+	{
+		// operator not supported for floats
+		DEBUG_BREAK();
+	}
+	return "";
 }
 
-std::string CodeGenerator::GenerateSubOp(BaseBinaryOperator* opNode)
+std::string CodeGenerator::GenerateAddOpInt(BaseBinaryOperator* opNode)
 {
-	return GenerateArithmeticOp(opNode, "sub");
+	return GenerateArithmeticOpInt(opNode, "add");
 }
 
-std::string CodeGenerator::GenerateMultOp(BaseBinaryOperator* opNode)
+std::string CodeGenerator::GenerateSubOpInt(BaseBinaryOperator* opNode)
 {
-	return GenerateArithmeticOp(opNode, "mul");
+	return GenerateArithmeticOpInt(opNode, "sub");
 }
 
-std::string CodeGenerator::GenerateDivOp(BaseBinaryOperator* opNode)
+std::string CodeGenerator::GenerateMultOpInt(BaseBinaryOperator* opNode)
 {
-	return GenerateArithmeticOp(opNode, "div");
+	return GenerateArithmeticOpInt(opNode, "mul");
 }
 
-std::string CodeGenerator::GenerateOr(BaseBinaryOperator* opNode)
+std::string CodeGenerator::GenerateDivOpInt(BaseBinaryOperator* opNode)
 {
-	return "\n%or operator\n" + GenerateAndOr(opNode, "add");
+	return GenerateArithmeticOpInt(opNode, "div");
 }
 
-std::string CodeGenerator::GenerateAnd(BaseBinaryOperator* opNode)
+std::string CodeGenerator::GenerateOrInt(BaseBinaryOperator* opNode)
 {
-	return "\n%and operator\n" + GenerateAndOr(opNode, "mul");
+	return "\n%or operator\n" + GenerateAndOrInt(opNode, "add");
 }
 
-std::string CodeGenerator::GenerateNot(ModifiedExpr* expr)
+std::string CodeGenerator::GenerateAndInt(BaseBinaryOperator* opNode)
+{
+	return "\n%and operator\n" + GenerateAndOrInt(opNode, "mul");
+}
+
+std::string CodeGenerator::GenerateNotInt(ModifiedExpr* expr)
 {
 	std::stringstream ss;
 	ss << "\n% not\n";
@@ -605,37 +692,37 @@ std::string CodeGenerator::GenerateNot(ModifiedExpr* expr)
 	return ss.str();
 }
 
-std::string CodeGenerator::GenerateEqual(BaseBinaryOperator* opNode)
+std::string CodeGenerator::GenerateEqualInt(BaseBinaryOperator* opNode)
 {
-	return "\n%equals\n" + GenerateRelOp(opNode, "ceq");
+	return "\n%equals\n" + GenerateRelOpInt(opNode, "ceq");
 }
 
-std::string CodeGenerator::GenerateNotEqual(BaseBinaryOperator* opNode)
+std::string CodeGenerator::GenerateNotEqualInt(BaseBinaryOperator* opNode)
 {
-	return "\n%not equals\n" + GenerateRelOp(opNode, "cne");
+	return "\n%not equals\n" + GenerateRelOpInt(opNode, "cne");
 }
 
-std::string CodeGenerator::GenerateLessThan(BaseBinaryOperator* opNode)
+std::string CodeGenerator::GenerateLessThanInt(BaseBinaryOperator* opNode)
 {
-	return "\n%less than\n" + GenerateRelOp(opNode, "clt");
+	return "\n%less than\n" + GenerateRelOpInt(opNode, "clt");
 }
 
-std::string CodeGenerator::GenerateGreaterThan(BaseBinaryOperator* opNode)
+std::string CodeGenerator::GenerateGreaterThanInt(BaseBinaryOperator* opNode)
 {
-	return "\n%greater than\n" + GenerateRelOp(opNode, "cgt");
+	return "\n%greater than\n" + GenerateRelOpInt(opNode, "cgt");
 }
 
-std::string CodeGenerator::GenerateLessOrEqual(BaseBinaryOperator* opNode)
+std::string CodeGenerator::GenerateLessOrEqualInt(BaseBinaryOperator* opNode)
 {
-	return "\n%less or equal\n" + GenerateRelOp(opNode, "cle");
+	return "\n%less or equal\n" + GenerateRelOpInt(opNode, "cle");
 }
 
-std::string CodeGenerator::GenerateGreaterOrEqual(BaseBinaryOperator* opNode)
+std::string CodeGenerator::GenerateGreaterOrEqualInt(BaseBinaryOperator* opNode)
 {
-	return "\n%greater or equal\n" + GenerateRelOp(opNode, "cge");
+	return "\n%greater or equal\n" + GenerateRelOpInt(opNode, "cge");
 }
 
-std::string CodeGenerator::GenerateArithmeticOp(BaseBinaryOperator* opNode, const char* commandName)
+std::string CodeGenerator::GenerateArithmeticOpInt(BaseBinaryOperator* opNode, const char* commandName)
 {
 	std::stringstream ss;
 	RegisterID left;
@@ -658,7 +745,7 @@ std::string CodeGenerator::GenerateArithmeticOp(BaseBinaryOperator* opNode, cons
 	return ss.str();
 }
 
-std::string CodeGenerator::GenerateAndOr(BaseBinaryOperator* opNode, const char* commandName)
+std::string CodeGenerator::GenerateAndOrInt(BaseBinaryOperator* opNode, const char* commandName)
 {
 	std::stringstream ss;
 	RegisterID left;
@@ -693,7 +780,7 @@ std::string CodeGenerator::GenerateAndOr(BaseBinaryOperator* opNode, const char*
 	return ss.str();
 }
 
-std::string CodeGenerator::GenerateRelOp(BaseBinaryOperator* opNode, const char* commandName)
+std::string CodeGenerator::GenerateRelOpInt(BaseBinaryOperator* opNode, const char* commandName)
 {
 	std::stringstream ss;
 	RegisterID left;
@@ -702,11 +789,150 @@ std::string CodeGenerator::GenerateRelOp(BaseBinaryOperator* opNode, const char*
 	ss << ComputeVal(opNode->GetRight(), right);
 	RegisterID result = m_registerStack.front();
 
-	ss << commandName <<" r" << result << ", r" << left << ", r" << right << "\n";
+	ss << commandName << " r" << result << ", r" << left << ", r" << right << "\n";
 	ss << "sw " << GetOffset(opNode) << "(r" << m_topOfStackRegister << "), r" << result << "\n";
 
 	m_registerStack.push_front(right);
 	m_registerStack.push_front(left);
+
+	return ss.str();
+}
+
+std::string CodeGenerator::GenerateAddOpFloat(BaseBinaryOperator* opNode)
+{
+	return "\n% adding floats\n" + GenerateAddSubFloat(opNode);
+}
+
+std::string CodeGenerator::GenerateSubOpFloat(BaseBinaryOperator* opNode)
+{
+	DEBUG_BREAK();
+	return "";
+}
+
+std::string CodeGenerator::GenerateMultOpFloat(BaseBinaryOperator* opNode)
+{
+	DEBUG_BREAK();
+	return "";
+}
+
+std::string CodeGenerator::GenerateDivOpFloat(BaseBinaryOperator* opNode)
+{
+	DEBUG_BREAK();
+	return "";
+}
+
+std::string CodeGenerator::GenerateAddSubFloat(BaseBinaryOperator* opNode)
+{
+	std::stringstream ss;
+	int destOffset = GetOffset(opNode);
+	int leftOffset = GetOffset(opNode->GetLeft());
+	int rightOffset = GetOffset(opNode->GetRight());
+
+	RegisterID exponentLeft = m_registerStack.front();
+	m_registerStack.pop_front();
+	RegisterID exponentRight = m_registerStack.front();
+	m_registerStack.pop_front();
+	RegisterID lessThanResult = m_registerStack.front();
+	m_registerStack.pop_front();
+
+	RegisterID exponentDiff = m_registerStack.front();
+	m_registerStack.pop_front();
+
+	RegisterID smallerFloatMantissa = m_registerStack.front();
+	m_registerStack.pop_front();
+
+	RegisterID biggerFloatMantissa = m_registerStack.front();
+	m_registerStack.pop_front();
+
+	RegisterID forLoopCounter = m_registerStack.front();
+	m_registerStack.pop_front();
+
+	RegisterID forLoopConditionResult = m_registerStack.front();
+	m_registerStack.pop_front();
+
+	RegisterID operationResultMantissa = m_registerStack.front();
+	m_registerStack.pop_front();
+
+	RegisterID modResult = m_registerStack.front();
+	m_registerStack.pop_front();
+
+	addition doesn't work
+	0.5+0.51 = 5.6 which is incorrect
+	need to adjust 0.5 to be 50 during calculation
+
+	ss << "\n% find smallest exponent\n";
+	ss << "lw r" << exponentLeft << ", " << (leftOffset - (int)PlatformSpecifications::GetAddressSize()) 
+		<< "(r" << m_topOfStackRegister << ")\n";
+	ss << "lw r" << exponentRight << ", " << (rightOffset - (int)PlatformSpecifications::GetAddressSize())
+		<< "(r" << m_topOfStackRegister << ")\n";
+
+	std::string isNotLessThan = m_tagGen.GetNextTag();
+	std::string endNotLessThan = m_tagGen.GetNextTag();
+
+	ss << "% ";
+	ss << "clt r" << lessThanResult << ", r" << exponentLeft << ", " << exponentRight << "\n";
+	ss << "bz r" << lessThanResult << ", " << isNotLessThan << "\n";
+	
+	// if left exponent is bigger than or equal to right exponent
+	ss << "sub r" << exponentDiff << ", r" << exponentLeft << ", r" << exponentRight << "\n";
+	ss << "lw r" << biggerFloatMantissa << ", " << leftOffset << "(r" << m_topOfStackRegister << ")\n";
+	ss << "lw r" << smallerFloatMantissa << ", " << rightOffset << "(r" << m_topOfStackRegister << ")\n";
+	ss << "sw " << (destOffset - (int)PlatformSpecifications::GetAddressSize()) 
+		<< "(r" << m_topOfStackRegister << "), r" << exponentRight << "\n";
+	ss << "j " << endNotLessThan << "\n";
+	
+	// if right exponent is bigger than left exponent
+	ss << isNotLessThan << " sub r" << exponentDiff << ", r" << exponentRight << ", r" << exponentLeft << "\n";
+	ss << "lw r" << biggerFloatMantissa << ", " << rightOffset << "(r" << m_topOfStackRegister << ")\n";
+	ss << "lw r" << smallerFloatMantissa << ", " << leftOffset << "(r" << m_topOfStackRegister << ")\n";	
+	ss << "sw " << (destOffset - (int)PlatformSpecifications::GetAddressSize()) 
+		<< "(r" << m_topOfStackRegister << "), r" << exponentLeft << "\n";
+
+	// adjust bigger float mantissa
+	std::string startLoop = m_tagGen.GetNextTag();
+	std::string afterEndLoop = m_tagGen.GetNextTag();
+
+	ss << "\n% adjust mantissa\n";
+	ss << endNotLessThan << " addi r" << forLoopCounter << ", r" << m_zeroRegister << ", 0\n";
+	ss << startLoop << " clt r" << forLoopConditionResult << ", r" << forLoopCounter << ", r" << exponentDiff << "\n";
+	ss << "bz r" << forLoopConditionResult << ", " << afterEndLoop << "\n";
+	ss << "divi r" << biggerFloatMantissa << ", r" << biggerFloatMantissa << ", 10\n"; // divide by 10
+	ss << "j " << startLoop << "\n";
+	ss << afterEndLoop << " ";
+
+
+
+	// do operation
+	
+	//sort left and right here if substracting
+
+	ss << "\n% perform operation\n";
+	ss << "add r" << operationResultMantissa << ", r" << smallerFloatMantissa << ", r" << biggerFloatMantissa << "\n";
+	
+	//compact result
+	std::string startCompactLoop = m_tagGen.GetNextTag();
+	std::string afterEndCompactLoop = m_tagGen.GetNextTag();
+
+	ss << "\n% compact result\n";
+	ss << startCompactLoop << " modi r" << modResult << ", r" << operationResultMantissa << ", 10\n";
+	ss << "bnz r" << modResult << ", " << afterEndCompactLoop << "\n";
+	ss << "divi r" << operationResultMantissa << ", r" << operationResultMantissa << ", 10\n"; // divide by 10
+	ss << "j " << startCompactLoop << "\n";
+	ss << afterEndCompactLoop << " ";
+
+	// store result
+	ss << "sw " << destOffset << "(r" << m_topOfStackRegister << "), r" << operationResultMantissa << "\n";
+
+	m_registerStack.push_front(modResult);
+	m_registerStack.push_front(operationResultMantissa);
+	m_registerStack.push_front(forLoopConditionResult);
+	m_registerStack.push_front(forLoopCounter);
+	m_registerStack.push_front(biggerFloatMantissa);
+	m_registerStack.push_front(smallerFloatMantissa);
+	m_registerStack.push_front(exponentDiff);
+	m_registerStack.push_front(lessThanResult);
+	m_registerStack.push_front(exponentRight);
+	m_registerStack.push_front(exponentLeft);
 
 	return ss.str();
 }
@@ -753,8 +979,10 @@ std::string CodeGenerator::ComputeVal(ExprNode* node, RegisterID& outRegister)
 
 std::string CodeGenerator::ComputeVal(ModifiedExpr* node, RegisterID& outRegister)
 {
-	Visit(node);
-	return LoadTempVarInRegister(node, outRegister);
+	std::stringstream ss;
+	ss << GenerateModifiedExpr(node);
+	ss << LoadTempVarInRegister(node, outRegister);
+	return ss.str();
 }
 
 std::string CodeGenerator::LoadVarInRegister(ASTNode* n, RegisterID& outRegister)
@@ -817,6 +1045,38 @@ std::string CodeGenerator::LoadTempVarInRegister(TempVarNodeBase* tempVar, Regis
 	return ss.str();
 }
 
+std::string CodeGenerator::LoadFloatToAddr(int offset, ASTNode* expr)
+{
+	if (dynamic_cast<LiteralNode*>(expr) != nullptr)
+	{
+		return LoadFloatToAddr(offset, (LiteralNode*)expr);
+	}
+	else if (dynamic_cast<VariableNode*>(expr) != nullptr)
+	{
+		return LoadFloatToAddr(offset, (VariableNode*)expr);
+	}
+	else
+	{
+		DEBUG_BREAK(); // node type not supported
+	}
+	return "";
+}
+
+std::string CodeGenerator::LoadFloatToAddr(int offset, ExprNode* expr)
+{
+	return LoadFloatToAddr(offset, expr->GetRootOfExpr());
+}
+
+std::string CodeGenerator::LoadFloatToAddr(int offset, VariableNode* var)
+{
+	ASSERT(var->GetEvaluatedType() == "float");
+	std::stringstream ss;
+	RegisterID reg = m_registerStack.front();
+	SymbolTableEntry* varEntry = var->GetSymbolTable()->FindEntryInScope(var->GetVariable()->GetID().GetLexeme());
+	ss << CopyData(varEntry->GetOffset(), varEntry->GetSize(), offset);
+	return ss.str();
+}
+
 std::string CodeGenerator::LoadFloatToAddr(int offset, LiteralNode* floatLiteral)
 {
 	ASSERT(floatLiteral->GetEvaluatedType() == "float");
@@ -824,7 +1084,6 @@ std::string CodeGenerator::LoadFloatToAddr(int offset, LiteralNode* floatLiteral
 	RegisterID reg = m_registerStack.front();
 	std::string mantissa;
 	std::string exponent;
-	
 	FloatToRepresentationStr(floatLiteral->GetLexemeNode()->GetID().GetLexeme(), mantissa, exponent);
 	
 	ss << "addi r" << reg << ", r" << m_zeroRegister << ", " << mantissa << "\n";
@@ -836,19 +1095,43 @@ std::string CodeGenerator::LoadFloatToAddr(int offset, LiteralNode* floatLiteral
 	return ss.str();
 }
 
-std::string CodeGenerator::CopyData(SymbolTableEntry* data, SymbolTableEntry* dest)
+std::string CodeGenerator::WriteNum(RegisterID numRegister)
 {
 	std::stringstream ss;
-	int dataOffset = data->GetOffset();
-	int destOffset = dest->GetOffset();
+	ss << IncrementStackFrame(PlatformSpecifications::GetIntStrSize());
+	ss << "sw " << PlatformSpecifications::GetIntStrArg1Offset() << "(r" << m_topOfStackRegister
+		<< "), r" << numRegister << "\n";
+
+	ss << "addi r" << numRegister << ", r" << m_zeroRegister << ", buff\n";
+	ss << "sw " << PlatformSpecifications::GetIntStrArg2Offset() << "(r" << m_topOfStackRegister
+		<< "), r" << numRegister << "\n";
+
+	ss << "jl r" << m_jumpReturnRegister << ", intstr\n";
+
+	ss << "sw " << PlatformSpecifications::GetPutStrArg1Offset() << "(r" << m_topOfStackRegister
+		<< "), r" << m_returnValRegister << "\n";
+
+	ss << "jl r" << m_jumpReturnRegister << ", putstr\n";
+	ss << DecrementStackFrame();
+	return ss.str();
+}
+
+std::string CodeGenerator::CopyData(int dataOffset, size_t dataSize, int destOffset)
+{
+	std::stringstream ss;
 	RegisterID reg = m_registerStack.front();
 
-	for (size_t i = 0; i < data->GetSize(); i += PlatformSpecifications::GetAddressSize())
+	for (size_t i = 0; i < dataSize; i += PlatformSpecifications::GetAddressSize())
 	{
 		ss << "lw r" << reg << ", " << (dataOffset - (int)i) << "(r" << m_topOfStackRegister << ")\n";
 		ss << "sw " << (destOffset - (int)i) << "(r" << m_topOfStackRegister << "), r" << reg << "\n";
 	}
 	return ss.str();
+}
+
+std::string CodeGenerator::CopyData(SymbolTableEntry* data, SymbolTableEntry* dest)
+{
+	return CopyData(data->GetOffset(), data->GetSize(), dest->GetOffset());
 }
 
 std::string& CodeGenerator::GetCurrStatBlock(ASTNode* node)

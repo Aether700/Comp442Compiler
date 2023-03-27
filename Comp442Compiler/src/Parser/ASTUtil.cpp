@@ -325,6 +325,27 @@ int GetOffset(SymbolTable* context, const std::string& name)
     return entry->GetOffset();
 }
 
+int GetOffset(ASTNode* node)
+{
+    if (dynamic_cast<VariableNode*>(node) != nullptr)
+    {
+        return GetOffset((VariableNode*)node);
+    }
+    else if (dynamic_cast<AssignStatNode*>(node) != nullptr)
+    {
+        return GetOffset((AssignStatNode*)node);
+    }
+    else if (dynamic_cast<TempVarNodeBase*>(node) != nullptr)
+    {
+        return GetOffset((TempVarNodeBase*)node);
+    }
+    else
+    {
+        DEBUG_BREAK();
+    }
+    return INTMAX_MAX;
+}
+
 int GetOffset(VariableNode* var)
 {
     VarDeclNode* declNode = (VarDeclNode*)var->GetSymbolTable()->FindEntryInScope(var->

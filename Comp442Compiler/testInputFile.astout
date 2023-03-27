@@ -10,23 +10,45 @@ Program
 |  |  |  StatBlock
 |  |  |  |  VarDecl
 |  |  |  |  |  id
-|  |  |  |  |  |  f
+|  |  |  |  |  |  a
+|  |  |  |  |  TypeNode
+|  |  |  |  |  |  float
+|  |  |  |  |  Dimensions
+|  |  |  |  VarDecl
+|  |  |  |  |  id
+|  |  |  |  |  |  b
 |  |  |  |  |  TypeNode
 |  |  |  |  |  |  float
 |  |  |  |  |  Dimensions
 |  |  |  |  AssigStat
 |  |  |  |  |  Variable
 |  |  |  |  |  |  id
-|  |  |  |  |  |  |  f
+|  |  |  |  |  |  |  a
 |  |  |  |  |  |  Dimensions
 |  |  |  |  |  Expr
 |  |  |  |  |  |  Literal
-|  |  |  |  |  |  |  122.53
+|  |  |  |  |  |  |  0.51
+|  |  |  |  |  |  |  TypeNode
+|  |  |  |  |  |  |  |  float
+|  |  |  |  AssigStat
+|  |  |  |  |  Variable
+|  |  |  |  |  |  id
+|  |  |  |  |  |  |  b
+|  |  |  |  |  |  Dimensions
+|  |  |  |  |  Expr
+|  |  |  |  |  |  Literal
+|  |  |  |  |  |  |  0.5
 |  |  |  |  |  |  |  TypeNode
 |  |  |  |  |  |  |  |  float
 |  |  |  |  WriteStat
 |  |  |  |  |  Expr
-|  |  |  |  |  |  Literal
-|  |  |  |  |  |  |  1
-|  |  |  |  |  |  |  TypeNode
-|  |  |  |  |  |  |  |  integer
+|  |  |  |  |  |  AddOp
+|  |  |  |  |  |  |  Variable
+|  |  |  |  |  |  |  |  id
+|  |  |  |  |  |  |  |  |  a
+|  |  |  |  |  |  |  |  Dimensions
+|  |  |  |  |  |  |  +
+|  |  |  |  |  |  |  Variable
+|  |  |  |  |  |  |  |  id
+|  |  |  |  |  |  |  |  |  b
+|  |  |  |  |  |  |  |  Dimensions
