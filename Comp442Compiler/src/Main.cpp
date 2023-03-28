@@ -11,8 +11,6 @@
 
 
 /* To Do
- 
- - add float support
  - generate basic objects
  - generate objects with inheritance
  - call free functions
@@ -21,14 +19,13 @@
  - call member functions/constructors
 	 - add ref to self as parameter
  - generate read statment
+ - finish float support (rel op + mult and div)
 */
-
-//do writing floats to output
 
 /*
 float representation idea:
 1 byte mantissa, 1 byte exponent
-literal = mantissa * 10^exponent
+literal = 0.mantissa * 10^exponent
 
 to write
 multiply mantissa by 10, "exponent" times (might overflow double check to be sure, maybe add additional bytes 

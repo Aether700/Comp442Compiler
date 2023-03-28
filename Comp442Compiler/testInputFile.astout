@@ -10,13 +10,7 @@ Program
 |  |  |  StatBlock
 |  |  |  |  WriteStat
 |  |  |  |  |  Expr
-|  |  |  |  |  |  AddOp
-|  |  |  |  |  |  |  Literal
-|  |  |  |  |  |  |  |  0.5
-|  |  |  |  |  |  |  |  TypeNode
-|  |  |  |  |  |  |  |  |  float
-|  |  |  |  |  |  |  -
-|  |  |  |  |  |  |  Literal
-|  |  |  |  |  |  |  |  0.56
-|  |  |  |  |  |  |  |  TypeNode
-|  |  |  |  |  |  |  |  |  float
+|  |  |  |  |  |  Literal
+|  |  |  |  |  |  |  121.4
+|  |  |  |  |  |  |  TypeNode
+|  |  |  |  |  |  |  |  float

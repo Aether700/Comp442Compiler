@@ -434,17 +434,6 @@ void CodeGenerator::Visit(WriteStatNode* element)
 		RegisterID exprValRegister = m_registerStack.front();
 		int offset = GetOffset(element->GetExpr());
 		
-		constexpr const char prefixStr[] = "0.";
-		constexpr size_t prefixStrLen = sizeof(prefixStr)/sizeof(char);
-
-		// write prefix
-		for (size_t i = 0; i < prefixStrLen; i++)
-		{
-			ss << "addi r" << exprValRegister << ", r" << m_zeroRegister 
-				<< ", " << (int)prefixStr[i] << "\n";
-			ss << "putc r" << exprValRegister << "\n";
-		}
-
 		// write mantissa
 		ss << "lw r" << exprValRegister << ", " << offset << "(r" << m_topOfStackRegister << ")\n";
 		ss << WriteNum(exprValRegister);
@@ -850,6 +839,218 @@ std::string CodeGenerator::GenerateDivOpFloat(BaseBinaryOperator* opNode)
 
 std::string CodeGenerator::GenerateAddSubFloat(BaseBinaryOperator* opNode, const char* commandName)
 {
+	size_t tempStartNumRegisters = m_registerStack.size();
+
+	std::stringstream ss;
+	int destOffset = GetOffset(opNode);
+	int leftOffset = GetOffset(opNode->GetLeft());
+	int rightOffset = GetOffset(opNode->GetRight());
+
+	RegisterID exponentLeft = m_registerStack.front();
+	m_registerStack.pop_front();
+	RegisterID exponentRight = m_registerStack.front();
+	m_registerStack.pop_front();
+	RegisterID exponentDiff = m_registerStack.front();
+	m_registerStack.pop_front();
+	
+	RegisterID smallerFloatMantissa = m_registerStack.front();
+	m_registerStack.pop_front();
+
+	RegisterID biggerFloatMantissa = m_registerStack.front();
+	m_registerStack.pop_front();
+
+	{
+		RegisterID lessThanResult = m_registerStack.front();
+
+
+		ss << "\n% find smallest exponent\n";
+		ss << "lw r" << exponentLeft << ", " << (leftOffset - (int)PlatformSpecifications::GetAddressSize())
+			<< "(r" << m_topOfStackRegister << ")\n";
+		ss << "lw r" << exponentRight << ", " << (rightOffset - (int)PlatformSpecifications::GetAddressSize())
+			<< "(r" << m_topOfStackRegister << ")\n";
+
+		std::string isNotLessThan = m_tagGen.GetNextTag();
+		std::string endNotLessThan = m_tagGen.GetNextTag();
+
+		ss << "clt r" << lessThanResult << ", r" << exponentLeft << ", r" << exponentRight << "\n";
+		ss << "bz r" << lessThanResult << ", " << isNotLessThan << "\n";
+
+
+		// if left exponent is bigger than or equal to right exponent
+		ss << "sub r" << exponentDiff << ", r" << exponentLeft << ", r" << exponentRight << "\n";
+		ss << "lw r" << biggerFloatMantissa << ", " << leftOffset << "(r" << m_topOfStackRegister << ")\n";
+		ss << "lw r" << smallerFloatMantissa << ", " << rightOffset << "(r" << m_topOfStackRegister << ")\n";
+		ss << "sw " << (destOffset - (int)PlatformSpecifications::GetAddressSize())
+			<< "(r" << m_topOfStackRegister << "), r" << exponentRight << "\n";
+		if (strcmp(commandName, "sub") == 0)
+		{
+			ss << "muli r" << smallerFloatMantissa << ", r" << smallerFloatMantissa << ", -1\n";
+		}
+		ss << "j " << endNotLessThan << "\n";
+
+		ss << isNotLessThan << " sub r" << exponentDiff << ", r" << exponentRight << ", r" << exponentLeft << "\n";
+		ss << "lw r" << biggerFloatMantissa << ", " << rightOffset << "(r" << m_topOfStackRegister << ")\n";
+		ss << "lw r" << smallerFloatMantissa << ", " << leftOffset << "(r" << m_topOfStackRegister << ")\n";
+		ss << "sw " << (destOffset - (int)PlatformSpecifications::GetAddressSize())
+			<< "(r" << m_topOfStackRegister << "), r" << exponentLeft << "\n";
+		if (strcmp(commandName, "sub") == 0)
+		{
+			ss << "muli r" << biggerFloatMantissa << ", r" << biggerFloatMantissa << ", -1\n";
+		}
+		ss << endNotLessThan << " ";
+	}
+
+	
+	RegisterID forLoopCounter = m_registerStack.front();
+	m_registerStack.pop_front();
+
+	RegisterID forLoopConditionResult = m_registerStack.front();
+	m_registerStack.pop_front();
+
+	RegisterID operationResultMantissa = m_registerStack.front();
+	m_registerStack.pop_front();
+
+
+	// adjust smaller float mantissa
+	std::string startLoop = m_tagGen.GetNextTag();
+	std::string afterEndLoop = m_tagGen.GetNextTag();
+
+	ss << "\n% adjust mantissa\n";
+	ss << " addi r" << forLoopCounter << ", r" << m_zeroRegister << ", 0\n";
+	ss << startLoop << " clt r" << forLoopConditionResult << ", r" << forLoopCounter << ", r" << exponentDiff << "\n";
+	ss << "bz r" << forLoopConditionResult << ", " << afterEndLoop << "\n";
+	ss << "muli r" << smallerFloatMantissa << ", r" << smallerFloatMantissa << ", 10\n"; // divide by 10
+	ss << "addi r" << forLoopCounter << ", r" << forLoopCounter << ", 1\n";
+	ss << "j " << startLoop << "\n";
+	ss << afterEndLoop << " ";
+	
+
+	// adjust mantissa to use correct dot positioning
+
+	// retrieve num digit per mantissa
+	RegisterID numDigitsMantissaSmallFloat = exponentLeft;
+	RegisterID numDigitsMantissaBigFloat = exponentRight;
+	RegisterID numDigitDiff = exponentDiff;
+	ss << "\n% adjust mantissa position\n";
+	ss << GetNumDigitsInNum(smallerFloatMantissa, numDigitsMantissaSmallFloat);
+	ss << GetNumDigitsInNum(biggerFloatMantissa, numDigitsMantissaBigFloat);
+	ss << "sub r" << numDigitDiff << ", r" << numDigitsMantissaBigFloat
+		<< ", r" << numDigitsMantissaSmallFloat << "\n";
+
+	// make sure difference between num digit is positive
+	RegisterID shortestMantissa = numDigitsMantissaSmallFloat;
+	RegisterID otherMantissa = numDigitsMantissaBigFloat;
+
+	{
+		RegisterID lessThanResult = m_registerStack.front();
+		ss << "clt r" << lessThanResult << ", r" << numDigitDiff << ", r" << m_zeroRegister << "\n";
+		std::string endIf = m_tagGen.GetNextTag();
+
+		ss << "bz r" << lessThanResult << ", " << endIf << "\n";
+		ss << "muli r" << numDigitDiff << ", r" << numDigitDiff << ", -1\n";
+
+		// find mantissa with less digits
+		ss << "\n% sort what mantissa to use for operation\n";
+		ss << endIf << " clt r" << lessThanResult << ", r" << numDigitsMantissaBigFloat
+			<< ", r" << numDigitsMantissaSmallFloat << "\n";
+
+		endIf = m_tagGen.GetNextTag();
+		std::string endElse = m_tagGen.GetNextTag();
+
+		ss << "bz r" << lessThanResult << ", " << endIf << "\n";
+		ss << "add r" << shortestMantissa << ", r" << m_zeroRegister << ", r" << biggerFloatMantissa << "\n";
+		ss << "add r" << otherMantissa << ", r" << m_zeroRegister << ", r" << smallerFloatMantissa << "\n";
+
+		ss << "j " << endElse << "\n";
+		ss << endIf << " add r" << shortestMantissa << ", r" << m_zeroRegister << ", r" << smallerFloatMantissa << "\n";
+		ss << "add r" << otherMantissa << ", r" << m_zeroRegister << ", r" << biggerFloatMantissa << "\n";
+
+		// multiply shortest mantissa by 10 repeatedly until both mantissa have same number of digits 
+		startLoop = m_tagGen.GetNextTag();
+		afterEndLoop = m_tagGen.GetNextTag();
+		{
+			RegisterID currExponent = m_registerStack.front();
+			ss << "\n% multiply shortest mantissa to adjust it's position\n";
+			ss << "lw r" << currExponent << ", "
+				<< (destOffset - (int)PlatformSpecifications::GetAddressSize())
+				<< "(r" << m_topOfStackRegister << ")\n";
+			ss << endElse << " addi r" << forLoopCounter << ", r" << m_zeroRegister << ", 0\n";
+
+			ss << startLoop << " clt r" << forLoopConditionResult << ", r"
+				<< forLoopCounter << ", r" << numDigitDiff << "\n";
+
+			ss << "bz r" << forLoopConditionResult << ", " << afterEndLoop << "\n";
+			ss << "muli r" << shortestMantissa << ", r" << shortestMantissa << ", 10\n"; // multiply by 10
+			ss << "addi r" << forLoopCounter << ", r" << forLoopCounter << ", 1\n";
+			ss << "subi r" << currExponent << ", r" << currExponent << ", 1\n";
+			ss << "j " << startLoop << "\n";
+			ss << afterEndLoop << " sw " << (destOffset - (int)PlatformSpecifications::GetAddressSize())
+				<< "(r" << m_topOfStackRegister << "), r" << currExponent << "\n";
+		}
+	}
+
+	// do operation
+	ss << "\n% perform operation\n";
+	constexpr size_t underflowShift = 100;
+
+	ss << "muli r" << shortestMantissa << ", r" << shortestMantissa << ", " << underflowShift << "\n";
+	ss << "muli r" << otherMantissa << ", r" << otherMantissa << ", " << underflowShift << "\n";
+	ss << "add r" << operationResultMantissa << ", r"
+		<< shortestMantissa << ", r" << otherMantissa << "\n";
+
+	//compact result
+	RegisterID modResult = m_registerStack.front();
+	m_registerStack.pop_front();
+	std::string startCompactLoop = m_tagGen.GetNextTag();
+	std::string afterEndCompactLoop = m_tagGen.GetNextTag();
+	RegisterID exponentOffset = shortestMantissa;
+
+	ss << "\n% compact result\n";
+	ss << "addi r" << exponentOffset << ", r" << m_zeroRegister << ", 2\n";
+	ss << startCompactLoop << " modi r" << modResult << ", r" << operationResultMantissa << ", 10\n";
+	ss << "bnz r" << modResult << ", " << afterEndCompactLoop << "\n";
+	ss << "bz r" << operationResultMantissa << ", " << afterEndCompactLoop << "\n";
+	ss << "divi r" << operationResultMantissa << ", r" << operationResultMantissa << ", 10\n"; // divide by 10
+	ss << "subi r" << exponentOffset << ", r" << exponentOffset << ", 1\n";
+	ss << "j " << startCompactLoop << "\n";
+
+	std::string endIfExponent = m_tagGen.GetNextTag();
+
+	ss << "\n% compact exponent if mantissa is 0\n";
+	ss << afterEndCompactLoop << " bnz r" << operationResultMantissa << ", " << endIfExponent << "\n";
+	ss << "lw r" << exponentOffset << ", " << GetOffset(opNode) << "(r" << m_topOfStackRegister << ")\n";
+	ss << "muli r" << exponentOffset << ", r" << exponentOffset << ", -1\n";
+
+
+	// store result
+	ss << "\n% store the result\n";
+	ss << endIfExponent << " sw " << destOffset << "(r" << m_topOfStackRegister << "), r"
+		<< operationResultMantissa << "\n";
+	RegisterID operationResultExponent = operationResultMantissa;
+	ss << "lw r" << operationResultExponent << ", "
+		<< (destOffset - (int)PlatformSpecifications::GetAddressSize()) << "(r" << m_topOfStackRegister << ")\n";
+	ss << "add r" << operationResultExponent << ", r" << operationResultExponent << ", r" << exponentOffset << "\n";
+	ss << "sw " << (destOffset - (int)PlatformSpecifications::GetAddressSize())
+		<< "(r" << m_topOfStackRegister << "), r" << operationResultExponent << "\n";
+
+
+	m_registerStack.push_front(numDigitsMantissaBigFloat);
+	m_registerStack.push_front(numDigitsMantissaSmallFloat);
+	m_registerStack.push_front(modResult);
+	m_registerStack.push_front(operationResultMantissa);
+	m_registerStack.push_front(forLoopConditionResult);
+	m_registerStack.push_front(forLoopCounter);
+	m_registerStack.push_front(biggerFloatMantissa);
+	m_registerStack.push_front(smallerFloatMantissa);
+	m_registerStack.push_front(exponentDiff);
+	m_registerStack.push_front(exponentLeft);
+	m_registerStack.push_front(exponentRight);
+
+
+	ASSERT(m_registerStack.size() == tempStartNumRegisters);
+
+	return ss.str();
+	/*
 	std::stringstream ss;
 	int destOffset = GetOffset(opNode);
 	int leftOffset = GetOffset(opNode->GetLeft());
@@ -948,8 +1149,6 @@ std::string CodeGenerator::GenerateAddSubFloat(BaseBinaryOperator* opNode, const
 
 	ss << "bz r" << lessThanResult << ", " << endIf << "\n";
 	ss << "muli r" << numDigitDiff << ", r" << numDigitDiff << ", -1\n";
-
-	substraction for current example still fails find why
 
 	// if here we were wrong and bigger exponent was smallFloat
 	ss << "sw " << (destOffset - (int)PlatformSpecifications::GetAddressSize())
@@ -1068,6 +1267,7 @@ std::string CodeGenerator::GenerateAddSubFloat(BaseBinaryOperator* opNode, const
 	m_registerStack.push_front(lessThanResult);
 
 	return ss.str();
+	*/
 }
 
 std::string CodeGenerator::ComputeVal(ASTNode* node, RegisterID& outRegister)

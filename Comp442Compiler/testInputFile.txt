@@ -1,6 +1,5 @@
 function main() => void
 {
-	/*
 	write(1.0);
 	
 	write(0);
@@ -26,6 +25,4 @@ function main() => void
 	write(0);
 
 	write(b - a);
-	*/
-	write(0.5 - 0.56);
 }
