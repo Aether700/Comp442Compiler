@@ -85,6 +85,11 @@ void ASTNodeBase::ChildrenAcceptVisit(Visitor* visitor)
 const std::string& TempVarNodeBase::GetTempVarName() const { return m_tempVarName; }
 void TempVarNodeBase::SetTempVarName(const std::string& name) { m_tempVarName = name; }
 
+// RefVarNode //////////////////////////////////////////////////////////////
+const std::string& RefVarNode::GetRefVarName() const { return m_varName; }
+void RefVarNode::SetRefVarName(const std::string& name) { m_varName = name; }
+
+
 // IterableNode ///////////////////////////////////////////////////////////
 std::list<ASTNode*>::iterator IterableNode::begin() { return GetChildren().begin(); }
 std::list<ASTNode*>::iterator IterableNode::end() { return GetChildren().end(); }

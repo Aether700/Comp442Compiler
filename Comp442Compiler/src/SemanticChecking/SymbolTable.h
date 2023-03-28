@@ -282,6 +282,12 @@ private:
     std::string m_type;
 };
 
+class RefEntry : public TempVarEntry
+{
+public:
+    RefEntry(size_t size);
+};
+
 class SymbolTable
 {
 public:

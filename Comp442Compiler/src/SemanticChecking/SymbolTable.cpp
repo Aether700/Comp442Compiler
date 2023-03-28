@@ -474,6 +474,10 @@ std::string TempVarEntry::ToString()
     return ss.str();
 }
 
+// RefEntry ///////////////////////////////////////////////////////////////
+RefEntry::RefEntry(size_t size) : TempVarEntry("reference", size) { }
+
+
 // SymbolTable ////////////////////////////////////////////////////////////////////
 
 SymbolTable::SymbolTable(const std::string& name) : m_name(name), m_parentEntry(nullptr), m_nameGen(nullptr) { }

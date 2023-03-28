@@ -12,6 +12,7 @@ class LiteralNode;
 class ExprNode;
 class VariableNode;
 class TempVarNodeBase;
+class RefVarNode;
 
 class PlatformSpecifications
 {
@@ -48,6 +49,7 @@ public:
     SizeGenerator(SymbolTable* globalTable);
 
     virtual void Visit(LiteralNode* element) override;
+    virtual void Visit(DotNode* element) override;
     virtual void Visit(ExprNode* element) override;
     virtual void Visit(ModifiedExpr* element) override;
     virtual void Visit(BaseBinaryOperator* element) override;
@@ -73,6 +75,7 @@ private:
     bool ClassHasOffsets(ClassTableEntry* classEntry);
 
     void CreateTempVar(TempVarNodeBase* node);
+    void CreateReference(RefVarNode* node);
 
     SymbolTable* m_globalTable;
 
@@ -85,6 +88,7 @@ class CodeGenerator : public Visitor
 public:
     CodeGenerator(SymbolTable* globalTable, const std::string& filepath);
     virtual void Visit(LiteralNode* element) override;
+    virtual void Visit(DotNode* element) override;
     virtual void Visit(ExprNode* element) override;
     virtual void Visit(ModifiedExpr* element) override;
     virtual void Visit(BaseBinaryOperator* element) override;
@@ -148,6 +152,7 @@ private:
     std::string LoadVarInRegister(ASTNode* n, RegisterID& outRegister);
     std::string LoadVarInRegister(LiteralNode* node, RegisterID& outRegister);
     std::string LoadVarInRegister(VariableNode* node, RegisterID& outRegister);
+    std::string LoadVarInRegister(RefVarNode* node, RegisterID& outRegister);
     std::string LoadTempVarInRegister(TempVarNodeBase* tempVar, RegisterID& outRegister);
 
     std::string LoadFloatToAddr(int offset, ASTNode* expr);

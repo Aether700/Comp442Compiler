@@ -7,6 +7,7 @@ DotNode* FindFirstDotNodeParent(ASTNode* node);
 bool HasDotForParent(ASTNode* node);
 DotNode* GetRootDotNode(ASTNode* node);
 DotNode* GetRootDotNode(DotNode* dot);
+bool IsRootDot(DotNode* dot);
 
 /* returns the context SymbolTable from the provided left side of a dot 
    expression or nullptr if the left side of the dot expression is invalid
@@ -49,7 +50,10 @@ int GetOffset(LiteralNode* var);
 int GetOffset(VariableNode* var);
 int GetOffset(AssignStatNode* assign);
 int GetOffset(SymbolTable* context, ITempVarNode* tempVarNode);
+int GetOffset(RefVarNode* refNode);
 int GetOffset(TempVarNodeBase* tempVarNode);
+
+int GetOffsetOfExpr(DotNode* dotExpr);
 
 // returns InvalidSize if the type provided is could not be computed 
 size_t ComputeSize(TypeNode* type, DimensionNode* dimensions);

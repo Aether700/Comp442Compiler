@@ -1,28 +1,27 @@
+class B
+{
+	public attribute z : integer;
+};
+
+class C
+{
+	public attribute w : integer;
+};
+
+class A isa B, C
+{
+	public attribute x : integer;
+	public attribute y : integer;
+};
+
 function main() => void
 {
-	write(1.0);
-	
-	write(0);
-	write(0);
-	write(0);
-	
-	localvar f : float;
-	f = -1.1;
-	write(f);
-
-	write(0);
-	write(0);
-	write(0);
-
-	localvar a : float;
-	localvar b : float;
-	a = 0.56;
-	b = 0.5;
-	write(a + b);
-	
-	write(0);
-	write(0);
-	write(0);
-
-	write(b - a);
+	localvar a : A;
+	a.x = 4;
+	a.y = 5;
+	a.z = 6;
+	a.w = 7;
+	write(a.z);
+	write(a.w);
+	write(a.z - a.y);
 }

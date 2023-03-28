@@ -1,5 +1,53 @@
 Program
 |  ClassDefList
+|  |  ClassDef
+|  |  |  id
+|  |  |  |  B
+|  |  |  InheritanceList
+|  |  |  MemVar
+|  |  |  |  Visibility
+|  |  |  |  |  public
+|  |  |  |  id
+|  |  |  |  |  z
+|  |  |  |  TypeNode
+|  |  |  |  |  integer
+|  |  |  |  Dimensions
+|  |  ClassDef
+|  |  |  id
+|  |  |  |  C
+|  |  |  InheritanceList
+|  |  |  MemVar
+|  |  |  |  Visibility
+|  |  |  |  |  public
+|  |  |  |  id
+|  |  |  |  |  w
+|  |  |  |  TypeNode
+|  |  |  |  |  integer
+|  |  |  |  Dimensions
+|  |  ClassDef
+|  |  |  id
+|  |  |  |  A
+|  |  |  InheritanceList
+|  |  |  |  id
+|  |  |  |  |  B
+|  |  |  |  id
+|  |  |  |  |  C
+|  |  |  MemVar
+|  |  |  |  Visibility
+|  |  |  |  |  public
+|  |  |  |  id
+|  |  |  |  |  x
+|  |  |  |  TypeNode
+|  |  |  |  |  integer
+|  |  |  |  Dimensions
+|  |  |  MemVar
+|  |  |  |  Visibility
+|  |  |  |  |  public
+|  |  |  |  id
+|  |  |  |  |  y
+|  |  |  |  TypeNode
+|  |  |  |  |  integer
+|  |  |  |  Dimensions
 |  FuncDefList
 |  |  FuncDef
 |  |  |  id
@@ -8,9 +56,113 @@ Program
 |  |  |  |  void
 |  |  |  FParamList
 |  |  |  StatBlock
-|  |  |  |  WriteStat
+|  |  |  |  VarDecl
+|  |  |  |  |  id
+|  |  |  |  |  |  a
+|  |  |  |  |  TypeNode
+|  |  |  |  |  |  A
+|  |  |  |  |  Dimensions
+|  |  |  |  AssigStat
+|  |  |  |  |  Dot
+|  |  |  |  |  |  Variable
+|  |  |  |  |  |  |  id
+|  |  |  |  |  |  |  |  a
+|  |  |  |  |  |  |  Dimensions
+|  |  |  |  |  |  Variable
+|  |  |  |  |  |  |  id
+|  |  |  |  |  |  |  |  x
+|  |  |  |  |  |  |  Dimensions
 |  |  |  |  |  Expr
 |  |  |  |  |  |  Literal
-|  |  |  |  |  |  |  121.4
+|  |  |  |  |  |  |  4
 |  |  |  |  |  |  |  TypeNode
-|  |  |  |  |  |  |  |  float
+|  |  |  |  |  |  |  |  integer
+|  |  |  |  AssigStat
+|  |  |  |  |  Dot
+|  |  |  |  |  |  Variable
+|  |  |  |  |  |  |  id
+|  |  |  |  |  |  |  |  a
+|  |  |  |  |  |  |  Dimensions
+|  |  |  |  |  |  Variable
+|  |  |  |  |  |  |  id
+|  |  |  |  |  |  |  |  y
+|  |  |  |  |  |  |  Dimensions
+|  |  |  |  |  Expr
+|  |  |  |  |  |  Literal
+|  |  |  |  |  |  |  5
+|  |  |  |  |  |  |  TypeNode
+|  |  |  |  |  |  |  |  integer
+|  |  |  |  AssigStat
+|  |  |  |  |  Dot
+|  |  |  |  |  |  Variable
+|  |  |  |  |  |  |  id
+|  |  |  |  |  |  |  |  a
+|  |  |  |  |  |  |  Dimensions
+|  |  |  |  |  |  Variable
+|  |  |  |  |  |  |  id
+|  |  |  |  |  |  |  |  z
+|  |  |  |  |  |  |  Dimensions
+|  |  |  |  |  Expr
+|  |  |  |  |  |  Literal
+|  |  |  |  |  |  |  6
+|  |  |  |  |  |  |  TypeNode
+|  |  |  |  |  |  |  |  integer
+|  |  |  |  AssigStat
+|  |  |  |  |  Dot
+|  |  |  |  |  |  Variable
+|  |  |  |  |  |  |  id
+|  |  |  |  |  |  |  |  a
+|  |  |  |  |  |  |  Dimensions
+|  |  |  |  |  |  Variable
+|  |  |  |  |  |  |  id
+|  |  |  |  |  |  |  |  w
+|  |  |  |  |  |  |  Dimensions
+|  |  |  |  |  Expr
+|  |  |  |  |  |  Literal
+|  |  |  |  |  |  |  7
+|  |  |  |  |  |  |  TypeNode
+|  |  |  |  |  |  |  |  integer
+|  |  |  |  WriteStat
+|  |  |  |  |  Expr
+|  |  |  |  |  |  Dot
+|  |  |  |  |  |  |  Variable
+|  |  |  |  |  |  |  |  id
+|  |  |  |  |  |  |  |  |  a
+|  |  |  |  |  |  |  |  Dimensions
+|  |  |  |  |  |  |  Variable
+|  |  |  |  |  |  |  |  id
+|  |  |  |  |  |  |  |  |  z
+|  |  |  |  |  |  |  |  Dimensions
+|  |  |  |  WriteStat
+|  |  |  |  |  Expr
+|  |  |  |  |  |  Dot
+|  |  |  |  |  |  |  Variable
+|  |  |  |  |  |  |  |  id
+|  |  |  |  |  |  |  |  |  a
+|  |  |  |  |  |  |  |  Dimensions
+|  |  |  |  |  |  |  Variable
+|  |  |  |  |  |  |  |  id
+|  |  |  |  |  |  |  |  |  w
+|  |  |  |  |  |  |  |  Dimensions
+|  |  |  |  WriteStat
+|  |  |  |  |  Expr
+|  |  |  |  |  |  AddOp
+|  |  |  |  |  |  |  Dot
+|  |  |  |  |  |  |  |  Variable
+|  |  |  |  |  |  |  |  |  id
+|  |  |  |  |  |  |  |  |  |  a
+|  |  |  |  |  |  |  |  |  Dimensions
+|  |  |  |  |  |  |  |  Variable
+|  |  |  |  |  |  |  |  |  id
+|  |  |  |  |  |  |  |  |  |  z
+|  |  |  |  |  |  |  |  |  Dimensions
+|  |  |  |  |  |  |  -
+|  |  |  |  |  |  |  Dot
+|  |  |  |  |  |  |  |  Variable
+|  |  |  |  |  |  |  |  |  id
+|  |  |  |  |  |  |  |  |  |  a
+|  |  |  |  |  |  |  |  |  Dimensions
+|  |  |  |  |  |  |  |  Variable
+|  |  |  |  |  |  |  |  |  id
+|  |  |  |  |  |  |  |  |  |  y
+|  |  |  |  |  |  |  |  |  Dimensions

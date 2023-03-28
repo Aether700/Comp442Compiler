@@ -92,6 +92,19 @@ SymbolTable* FindNameInDot(SymbolTable* globalTable, SymbolTable* contextTable,
     return nullptr;
 }
 
+int GetOffsetOfRight(ASTNode* rightOfDotExpr, SymbolTable* context)
+{
+    if (dynamic_cast<VariableNode*>(rightOfDotExpr) != nullptr)
+    {
+        VariableNode* var = (VariableNode*)rightOfDotExpr;
+        return GetOffset(context, var->GetVariable()->GetID().GetLexeme());
+    }
+    else
+    {
+        DEBUG_BREAK();
+    }
+}
+
 ////////////////////////////////////////////////////////////////////////
 DotNode* FindRootDotNodeParent(ASTNode* node)
 {
@@ -139,6 +152,11 @@ DotNode* GetRootDotNode(DotNode* dot)
         curr = curr->GetParent();
     }
     return (DotNode*)curr;
+}
+
+bool IsRootDot(DotNode* dot)
+{
+    return dynamic_cast<DotNode*>(dot->GetParent()) == nullptr;
 }
 
 SymbolTable* GetContextTable(SymbolTable* globalTable, SymbolTable* prevContext, 
@@ -305,7 +323,6 @@ bool IsValidSelf(SymbolTable* contextTable, VariableNode* var)
         || parentEntry->GetKind() == SymbolTableEntryKind::MemFuncDecl);
 }
 
-
 bool IsArrayType(const std::string typeStr)
 {
     for (char c : typeStr)
@@ -320,7 +337,7 @@ bool IsArrayType(const std::string typeStr)
 
 int GetOffset(SymbolTable* context, const std::string& name)
 {
-    SymbolTableEntry* entry = context->FindEntryInTable(name);
+    SymbolTableEntry* entry = context->FindEntryInScope(name);
     ASSERT(entry != nullptr);
     return entry->GetOffset();
 }
@@ -342,6 +359,10 @@ int GetOffset(ASTNode* node)
     else if (dynamic_cast<LiteralNode*>(node) != nullptr)
     {
         return GetOffset((LiteralNode*)node);
+    }
+    else if (dynamic_cast<RefVarNode*>(node) != nullptr)
+    {
+        return GetOffset((RefVarNode*)node);
     }
     else
     {
@@ -381,11 +402,6 @@ int GetOffset(VariableNode* var)
         }
     }
 
-    /*
-    in[2][3][6]
-    in[3][0][1] -> 3 * (in * 3 * 6) + 0 * (in * 6) + 1 * in
-    */
-
     int internalOffset = 0;
     size_t dimensionIndex = 1; // skip the first dimension 
     for (ASTNode* baseNode : var->GetDimension()->GetChildren())
@@ -421,7 +437,19 @@ int GetOffset(VariableNode* var)
 int GetOffset(AssignStatNode* assign)
 {
     // currently assumes that the assignment is made to a simple variable
-    return GetOffset((VariableNode*)assign->GetLeft());
+    if (dynamic_cast<VariableNode*>(assign->GetLeft()) != nullptr)
+    {
+        return GetOffset((VariableNode*)assign->GetLeft());
+    }
+    else if (dynamic_cast<DotNode*>(assign->GetLeft()) != nullptr)
+    {
+        return GetOffsetOfExpr((DotNode*)assign->GetLeft());
+    }
+    else
+    {
+        DEBUG_BREAK();
+    }
+    return INTMAX_MAX;
 }
 
 int GetOffset(SymbolTable* context, ITempVarNode* tempVarNode)
@@ -429,10 +457,21 @@ int GetOffset(SymbolTable* context, ITempVarNode* tempVarNode)
     return GetOffset(context, tempVarNode->GetTempVarName());
 }
 
+int GetOffset(RefVarNode* refNode)
+{
+    return GetOffset(refNode->GetSymbolTable(), refNode->GetRefVarName());
+}
+
 int GetOffset(TempVarNodeBase* tempVar)
 {
-    auto temp = tempVar->ToString();
     return GetOffset(tempVar->GetSymbolTable(), tempVar->GetTempVarName());
+}
+
+int GetOffsetOfExpr(DotNode* dotExpr)
+{
+    SymbolTable* global = GetGlobalTable(dotExpr->GetSymbolTable());
+    SymbolTableEntry* classEntry = global->FindEntryInTable(dotExpr->GetLeft()->GetEvaluatedType());
+    return GetOffset(dotExpr->GetLeft()) + GetOffsetOfRight(dotExpr->GetRight(), classEntry->GetSubTable());
 }
 
 size_t ComputeSize(TypeNode* type, DimensionNode* dimensions)

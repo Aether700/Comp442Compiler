@@ -80,6 +80,16 @@ private:
     std::string m_tempVarName;
 };
 
+class RefVarNode : public ASTNodeBase
+{
+public:
+    const std::string& GetRefVarName() const;
+    void SetRefVarName(const std::string& name);
+
+private:
+    std::string m_varName;
+};
+
 class IterableNode : public ASTNodeBase
 {
 public:
@@ -261,7 +271,7 @@ public:
     virtual void AcceptVisit(Visitor* visitor) override;
 };
 
-class DotNode : public ASTNodeBase
+class DotNode : public RefVarNode
 {
 public:
     DotNode(ASTNode* leftSide, ASTNode* rightSide);
