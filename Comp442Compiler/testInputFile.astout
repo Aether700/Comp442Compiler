@@ -8,50 +8,15 @@ Program
 |  |  |  |  void
 |  |  |  FParamList
 |  |  |  StatBlock
-|  |  |  |  VarDecl
-|  |  |  |  |  id
-|  |  |  |  |  |  a
-|  |  |  |  |  TypeNode
-|  |  |  |  |  |  float
-|  |  |  |  |  Dimensions
-|  |  |  |  VarDecl
-|  |  |  |  |  id
-|  |  |  |  |  |  b
-|  |  |  |  |  TypeNode
-|  |  |  |  |  |  float
-|  |  |  |  |  Dimensions
-|  |  |  |  AssigStat
-|  |  |  |  |  Variable
-|  |  |  |  |  |  id
-|  |  |  |  |  |  |  a
-|  |  |  |  |  |  Dimensions
+|  |  |  |  WriteStat
 |  |  |  |  |  Expr
-|  |  |  |  |  |  Literal
-|  |  |  |  |  |  |  0.5
-|  |  |  |  |  |  |  TypeNode
-|  |  |  |  |  |  |  |  float
-|  |  |  |  AssigStat
-|  |  |  |  |  Variable
-|  |  |  |  |  |  id
-|  |  |  |  |  |  |  b
-|  |  |  |  |  |  Dimensions
-|  |  |  |  |  Expr
-|  |  |  |  |  |  ModifiedExpr
-|  |  |  |  |  |  |  Sign
-|  |  |  |  |  |  |  |  -
+|  |  |  |  |  |  AddOp
 |  |  |  |  |  |  |  Literal
 |  |  |  |  |  |  |  |  0.5
 |  |  |  |  |  |  |  |  TypeNode
 |  |  |  |  |  |  |  |  |  float
-|  |  |  |  WriteStat
-|  |  |  |  |  Expr
-|  |  |  |  |  |  AddOp
-|  |  |  |  |  |  |  Variable
-|  |  |  |  |  |  |  |  id
-|  |  |  |  |  |  |  |  |  a
-|  |  |  |  |  |  |  |  Dimensions
 |  |  |  |  |  |  |  -
-|  |  |  |  |  |  |  Variable
-|  |  |  |  |  |  |  |  id
-|  |  |  |  |  |  |  |  |  b
-|  |  |  |  |  |  |  |  Dimensions
+|  |  |  |  |  |  |  Literal
+|  |  |  |  |  |  |  |  0.56
+|  |  |  |  |  |  |  |  TypeNode
+|  |  |  |  |  |  |  |  |  float

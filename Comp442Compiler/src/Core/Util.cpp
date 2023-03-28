@@ -48,9 +48,24 @@ void FloatToRepresentationStr(const std::string& floatStr, std::string& outManti
 	std::string firstPart = floatStr.substr(0, dotPos);
 	std::string secondPart = floatStr.substr(dotPos + 1);
 	outMantissa = firstPart + secondPart;
-	std::stringstream ss;
-	ss << firstPart.length();
-	outExponent = ss.str();
+
+	// compact mantissa
+	while (outMantissa.back() == '0')
+	{
+		outMantissa = outMantissa.substr(0, outMantissa.length() - 1);
+	}
+
+	if (firstPart == "0")
+	{
+		outExponent = "0";
+	}
+	else
+	{
+		std::stringstream ss;
+		ss << firstPart.length();
+		outExponent = ss.str();
+	}
+
 }
 
 

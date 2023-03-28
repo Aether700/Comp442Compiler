@@ -265,7 +265,10 @@ CodeGenerator::CodeGenerator(SymbolTable* globalTable, const std::string& filepa
 
 void CodeGenerator::Visit(LiteralNode* element)
 {
-	LoadFloatToAddr(GetOffset(element), element);
+	if (element->GetEvaluatedType() == "float")
+	{
+		GetCurrStatBlock(element) += LoadFloatToAddr(GetOffset(element), element);
+	}
 }
 
 
@@ -876,8 +879,7 @@ std::string CodeGenerator::GenerateAddSubFloat(BaseBinaryOperator* opNode, const
 	std::string isNotLessThan = m_tagGen.GetNextTag();
 	std::string endNotLessThan = m_tagGen.GetNextTag();
 
-	ss << "% ";
-	ss << "clt r" << lessThanResult << ", r" << exponentLeft << ", " << exponentRight << "\n";
+	ss << "clt r" << lessThanResult << ", r" << exponentLeft << ", r" << exponentRight << "\n";
 	ss << "bz r" << lessThanResult << ", " << isNotLessThan << "\n";
 	
 	// if left exponent is bigger than or equal to right exponent
@@ -926,7 +928,7 @@ std::string CodeGenerator::GenerateAddSubFloat(BaseBinaryOperator* opNode, const
 
 	// make sure difference between num digit is positive
 	
-	// assume bigger exponent is BigFloat 
+	// assume exponent with most numDigits is BigFloat 
 	ss << "sw " << (destOffset - (int)PlatformSpecifications::GetAddressSize())
 		<< "(r" << m_topOfStackRegister << "), r" << numDigitsMantissaBigFloat << "\n";
 	ss << "clt r" << lessThanResult << ", r" << numDigitDiff << ", r" << m_zeroRegister << "\n";
@@ -934,11 +936,13 @@ std::string CodeGenerator::GenerateAddSubFloat(BaseBinaryOperator* opNode, const
 	std::string endIf = m_tagGen.GetNextTag();
 
 	ss << "bz r" << lessThanResult << ", " << endIf << "\n";
-	ss << "muli r" << numDigitDiff << ", r" << numDigitDiff << ", -1\n" << endIf << " ";
+	ss << "muli r" << numDigitDiff << ", r" << numDigitDiff << ", -1\n";
+
+	substraction for current example still fails find why
 
 	// if here we were wrong and bigger exponent was smallFloat
 	ss << "sw " << (destOffset - (int)PlatformSpecifications::GetAddressSize())
-		<< "(r" << m_topOfStackRegister << "), r" << numDigitsMantissaSmallFloat << "\n";
+		<< "(r" << m_topOfStackRegister << "), r" << numDigitsMantissaSmallFloat << "\n" << endIf << " ";
 
 	// find mantissa with less digits
 	RegisterID shortestMantissa = numDigitsMantissaSmallFloat;
@@ -981,10 +985,7 @@ std::string CodeGenerator::GenerateAddSubFloat(BaseBinaryOperator* opNode, const
 	ss << "j " << startLoop << "\n";
 	ss << afterEndLoop << " ";
 
-	// do operation
 	
-	current test input file fails to provide correct result, outputs 0 when it should 
-	output 1 (problem is not only flipping if stat below)
 	// if substracting make sure the order of the parameters is correct
 	if (strcmp(commandName, "sub") == 0)
 	{
@@ -999,6 +1000,7 @@ std::string CodeGenerator::GenerateAddSubFloat(BaseBinaryOperator* opNode, const
 		ss << endOfIf << " ";
 	}
 
+	// do operation
 	ss << "\n% perform operation\n";
 	constexpr size_t underflowShift = 100;
 
