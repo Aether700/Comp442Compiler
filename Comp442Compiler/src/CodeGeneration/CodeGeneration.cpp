@@ -434,14 +434,25 @@ void CodeGenerator::Visit(WriteStatNode* element)
 		RegisterID exprValRegister = m_registerStack.front();
 		int offset = GetOffset(element->GetExpr());
 		
+		constexpr const char prefixStr[] = "0.";
+		constexpr size_t prefixStrLen = sizeof(prefixStr)/sizeof(char);
+
+		// write prefix
+		for (size_t i = 0; i < prefixStrLen; i++)
+		{
+			ss << "addi r" << exprValRegister << ", r" << m_zeroRegister 
+				<< ", " << (int)prefixStr[i] << "\n";
+			ss << "putc r" << exprValRegister << "\n";
+		}
+
 		// write mantissa
 		ss << "lw r" << exprValRegister << ", " << offset << "(r" << m_topOfStackRegister << ")\n";
 		ss << WriteNum(exprValRegister);
 		offset -= (int)PlatformSpecifications::GetAddressSize();
 
 		//write "*10^"
-		constexpr const char* constStr = "*10^";
-		constexpr size_t constStrLen = 4;
+		constexpr const char constStr[] = "*10^";
+		constexpr size_t constStrLen = sizeof(constStr)/sizeof(char);
 
 		for (size_t i = 0; i < constStrLen; i++)
 		{
