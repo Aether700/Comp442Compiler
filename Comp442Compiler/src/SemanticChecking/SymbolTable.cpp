@@ -1,5 +1,6 @@
 #include "SymbolTable.h"
 #include "../Parser/AST.h"
+#include "../Parser/ASTUtil.h"
 #include "../Core/Core.h"
 #include "../CodeGeneration/CodeGeneration.h"
 
@@ -47,6 +48,10 @@ std::ostream& operator<<(std::ostream& stream, SymbolTableEntryKind kind)
 
     case SymbolTableEntryKind::ReturnAddress:
         stream << "return address";
+        break;
+
+    case SymbolTableEntryKind::ReturnValue:
+        stream << "return value";
         break;
 
     default:
@@ -502,6 +507,26 @@ ASTNode* ReturnAddressEntry::GetNode() { return nullptr; }
 SymbolTable* ReturnAddressEntry::GetSubTable() { return nullptr; }
 
 std::string ReturnAddressEntry::ToString()
+{
+    std::stringstream ss;
+    ss << GetKind() << s_seperator << GetName() << s_seperator << GetEvaluatedType() << s_seperator
+        << GetSize() << s_seperator << GetOffset();
+    return ss.str();
+}
+
+// ReturnValueEntry ///////////////////////////////////////////////////////
+
+ReturnValueEntry::ReturnValueEntry(TagTableEntry* funcEntry) : SymbolTableEntry(SymbolTableEntryKind::ReturnValue), 
+    m_funcEntry(funcEntry) 
+{
+    SetName("returnValue");
+}
+
+std::string ReturnValueEntry::GetEvaluatedType() const { return m_funcEntry->GetEvaluatedType(); }
+ASTNode* ReturnValueEntry::GetNode() { return nullptr;  }
+SymbolTable* ReturnValueEntry::GetSubTable() { return nullptr; }
+
+std::string ReturnValueEntry::ToString()
 {
     std::stringstream ss;
     ss << GetKind() << s_seperator << GetName() << s_seperator << GetEvaluatedType() << s_seperator

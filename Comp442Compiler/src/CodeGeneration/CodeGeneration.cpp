@@ -27,7 +27,7 @@ void SizeGenerator::Visit(DotNode* element)
 
 void SizeGenerator::Visit(ExprNode* element)
 {
-	CreateTempVar(element);
+	TryAddTempVar(element);
 }
 
 void SizeGenerator::Visit(ModifiedExpr* element)
@@ -37,7 +37,6 @@ void SizeGenerator::Visit(ModifiedExpr* element)
 
 void SizeGenerator::Visit(BaseBinaryOperator* element)
 {
-	auto temp = element->ToString();
 	CreateTempVar(element);
 }
 
@@ -49,6 +48,14 @@ void SizeGenerator::Visit(VarDeclNode* element)
 void SizeGenerator::Visit(FParamNode* element)
 {
 	TryAddTempVar(element);
+}
+
+void SizeGenerator::Visit(FuncCallNode* element)
+{
+	if (element->GetEvaluatedType() != "void")
+	{
+		CreateTempVar(element);
+	}
 }
 
 void SizeGenerator::Visit(FunctionDefNode* element)
@@ -148,8 +155,45 @@ void SizeGenerator::TryAddTempVar(VarDeclNode* element)
 	}
 }
 
+void SizeGenerator::TryAddTempVar(TempVarNodeBase* element)
+{
+	size_t size = ComputeSize(element->GetEvaluatedType());
+	if (size == InvalidSize)
+	{
+		size = FindSize(GetGlobalTable(element->GetSymbolTable()), element->GetEvaluatedType());
+	}
+
+	if (size != InvalidSize)
+	{
+		CreateTempVar(element);
+	}
+	else
+	{
+		m_toRevisit.push_back(element);
+	}
+}
+
 size_t SizeGenerator::ComputeSizeOfFunc(SymbolTable* funcTable)
 {
+	{
+		std::string typeStr = funcTable->GetParentEntry()->GetEvaluatedType();
+		if (typeStr != "void")
+		{
+			size_t returnValueSize = ComputeSize(typeStr);
+			if (returnValueSize == InvalidSize)
+			{
+				returnValueSize = FindSize(GetGlobalTable(funcTable), typeStr);
+			}
+
+			if (returnValueSize == InvalidSize)
+			{
+				return InvalidSize;
+			}
+
+			funcTable->FindEntryInTable("returnValue")->SetSize(returnValueSize);
+		}
+	}
+
 	size_t totalSize = 0;
 	for (SymbolTableEntry* entry : *funcTable)
 	{
@@ -171,6 +215,12 @@ void SizeGenerator::ProcessFunc(ASTNode* func, SymbolTableEntryKind expectedKind
 		funcTable->AddEntry(new ReturnAddressEntry());
 		funcEntry->SetTag(m_funcTagGen.GetNextTag());
 	}
+
+	if (funcEntry->GetEvaluatedType() != "void")
+	{
+		funcTable->AddEntry(new ReturnValueEntry(funcEntry));
+	}
+
 	ASSERT(funcEntry != nullptr && funcEntry->GetKind() == expectedKind);
 	size_t funcSize = ComputeSizeOfFunc(funcEntry->GetSubTable());
 	if (funcSize == InvalidSize)
@@ -195,6 +245,7 @@ void SizeGenerator::ComputeOffsets(SymbolTable* table, int startOffset)
 		case SymbolTableEntryKind::TempVar:
 		case SymbolTableEntryKind::Parameter:
 		case SymbolTableEntryKind::ReturnAddress:
+		case SymbolTableEntryKind::ReturnValue:
 			entry->SetOffset(offset);
 			offset -= (int)entry->GetSize();
 			break;
@@ -263,6 +314,10 @@ void SizeGenerator::CreateTempVar(TempVarNodeBase* node)
 {
 	std::string typeStr = node->GetEvaluatedType();
 	size_t size = ComputeSize(typeStr);
+	if (size == InvalidSize)
+	{
+		size = FindSize(GetGlobalTable(node->GetSymbolTable()), typeStr);
+	}
 	ASSERT(size != InvalidSize);
 	TempVarEntry* entry = new TempVarEntry(typeStr, size);
 	node->GetSymbolTable()->AddEntry(entry);
@@ -354,22 +409,10 @@ void CodeGenerator::Visit(BaseBinaryOperator* element)
 
 void CodeGenerator::Visit(FuncCallNode* element)
 {
-	std::stringstream ss;
-	TagTableEntry* funcEntry = (TagTableEntry*)element->GetSymbolTable()
-		->FindEntryInScope(element->GetID()->GetID().GetLexeme());
-
-	size_t currFrameSize = GetCurrFrameSize(element);
-
-	ss << IncrementStackFrame(currFrameSize);
-
-	// pass parameters here
-
-	ss << "jl r" << m_jumpReturnRegister << ", " << funcEntry->GetTag();
-	
-	// handle returned value here
-
-	ss << DecrementStackFrame(currFrameSize);
-	GetCurrStatBlock(element) += ss.str();
+	if (dynamic_cast<StatBlockNode*>(element->GetParent()) != nullptr)
+	{
+		GetCurrStatBlock(element) += CallFunc(element);
+	}
 }
 
 void CodeGenerator::Visit(FunctionDefNode* element)
@@ -453,13 +496,23 @@ void CodeGenerator::Visit(AssignStatNode* element)
 
 		m_registerStack.push_front(right);
 	}
-	else if (dynamic_cast<ITempVarNode*>(element->GetRight()->GetRootOfExpr()) != nullptr)
+	else if (dynamic_cast<FuncCallNode*>(element->GetRight()->GetRootOfExpr()) != nullptr)
+	{
+		FuncCallNode* function = (FuncCallNode*)element->GetRight()->GetRootOfExpr();
+		SymbolTable* table = element->GetSymbolTable();
+		SymbolTableEntry* dest = table->FindEntryInScope(((VariableNode*)element->GetLeft())
+			->GetVariable()->GetID().GetLexeme());
+
+		ss << CallFunc(function);
+		ss << CopyData(GetOffset(function), dest->GetSize(), dest->GetOffset());
+	}
+	else if (dynamic_cast<TempVarNodeBase*>(element->GetRight()->GetRootOfExpr()) != nullptr)
 	{
 		SymbolTable* table = element->GetSymbolTable();
 		SymbolTableEntry* dest = table->FindEntryInScope(((VariableNode*)element->GetLeft())
 			->GetVariable()->GetID().GetLexeme());
 
-		SymbolTableEntry* data = table->FindEntryInTable(((ITempVarNode*)element->GetRight())->GetTempVarName());
+		SymbolTableEntry* data = table->FindEntryInTable(((TempVarNodeBase*)element->GetRight())->GetTempVarName());
 		ss << CopyData(data, dest);
 	}
 	else if (dynamic_cast<LiteralNode*>(element->GetRight()->GetRootOfExpr()) != nullptr)
@@ -513,6 +566,16 @@ void CodeGenerator::Visit(WriteStatNode* element)
 	{
 		DEBUG_BREAK(); // type not supported
 	}
+	GetCurrStatBlock(element) += ss.str();
+}
+
+void CodeGenerator::Visit(ReturnStatNode* element)
+{
+	std::stringstream ss;
+	SymbolTable* table = element->GetSymbolTable();
+	SymbolTableEntry* exprEntry = table->FindEntryInTable(element->GetExpr()->GetTempVarName());
+	SymbolTableEntry* returnValEntry = table->FindEntryInTable("returnValue");
+	ss << CopyData(exprEntry, returnValEntry);
 	GetCurrStatBlock(element) += ss.str();
 }
 
@@ -1084,7 +1147,6 @@ std::string CodeGenerator::GenerateAddSubFloat(BaseBinaryOperator* opNode, const
 	ss << "sw " << (destOffset - (int)PlatformSpecifications::GetAddressSize())
 		<< "(r" << m_topOfStackRegister << "), r" << operationResultExponent << "\n";
 
-
 	m_registerStack.push_front(numDigitsMantissaBigFloat);
 	m_registerStack.push_front(numDigitsMantissaSmallFloat);
 	m_registerStack.push_front(modResult);
@@ -1113,6 +1175,10 @@ std::string CodeGenerator::ComputeVal(ASTNode* node, RegisterID& outRegister)
 	{
 		return ComputeVal((BaseBinaryOperator*)node, outRegister);
 	}
+	else if (dynamic_cast<FuncCallNode*>(node) != nullptr)
+	{
+		return ComputeVal((FuncCallNode*)node, outRegister);
+	}
 	else if (dynamic_cast<ModifiedExpr*>(node) != nullptr)
 	{
 		return ComputeVal((ModifiedExpr*)node, outRegister);
@@ -1135,6 +1201,17 @@ std::string CodeGenerator::ComputeVal(BaseBinaryOperator* node, RegisterID& outR
 	std::stringstream ss;
 	ss << GenerateBinaryOp(node);
 	ss << LoadVarInRegister(node, outRegister);
+	return ss.str();
+}
+
+std::string CodeGenerator::ComputeVal(FuncCallNode* node, RegisterID& outRegister)
+{
+	std::stringstream ss;
+	ss << CallFunc(node);
+	outRegister = m_registerStack.front();
+	m_registerStack.pop_front();
+	ss << "lw r" << outRegister << ", " << GetOffset(node) << "(r" << m_topOfStackRegister << ")\n";
+
 	return ss.str();
 }
 
@@ -1289,6 +1366,13 @@ std::string CodeGenerator::GenerateFunc(TagTableEntry* funcEntry, const std::str
 
 	ss << statBlock;
 
+	if (funcEntry->GetEvaluatedType() != "void")
+	{
+		SymbolTableEntry* returnValEntry = funcTable->FindEntryInTable("returnValue");
+		ss << "addi r" << m_returnValRegister << ", r" << m_topOfStackRegister 
+			<< ", " << returnValEntry->GetOffset() << "\n";
+	}
+
 	ss << "lw r" << m_jumpReturnRegister << ", " 
 		<< returnAddressEntry->GetOffset() << "(r" << m_topOfStackRegister << ")\n";
 	ss << "jr r" << m_jumpReturnRegister << "\n";
@@ -1336,6 +1420,19 @@ std::string CodeGenerator::CopyData(SymbolTableEntry* data, SymbolTableEntry* de
 	return CopyData(data->GetOffset(), data->GetSize(), dest->GetOffset());
 }
 
+std::string CodeGenerator::CopyDataAtRef(RegisterID dataAddress, size_t dataSize, int destOffset)
+{
+	std::stringstream ss;
+	RegisterID reg = m_registerStack.front();
+	ss << "\n% copy data at reference\n";
+	for (size_t i = 0; i < dataSize; i += PlatformSpecifications::GetAddressSize())
+	{
+		ss << "lw r" << reg << ", " << i << "(r" << dataAddress << ")\n";
+		ss << "sw " << (destOffset - (int)i) << "(r" << m_topOfStackRegister << "), r" << reg << "\n";
+	}
+	return ss.str();
+}
+
 std::string CodeGenerator::GetNumDigitsInNum(RegisterID num, RegisterID& outNumDigits)
 {
 	std::stringstream ss;
@@ -1378,4 +1475,38 @@ std::string& CodeGenerator::GetCurrStatBlock(ASTNode* node)
 size_t CodeGenerator::GetCurrFrameSize(ASTNode* node)
 {
 	return node->GetSymbolTable()->GetParentEntry()->GetSize();
+}
+
+std::string CodeGenerator::CallFunc(FuncCallNode* funcCall)
+{
+	std::stringstream ss;
+	TagTableEntry* funcEntry = (TagTableEntry*)funcCall->GetSymbolTable()
+		->FindEntryInScope(funcCall->GetID()->GetID().GetLexeme());
+
+	size_t currFrameSize = GetCurrFrameSize(funcCall);
+
+	ss << IncrementStackFrame(currFrameSize);
+
+	// pass parameters here
+
+	ss << "jl r" << m_jumpReturnRegister << ", " << funcEntry->GetTag();
+	ss << DecrementStackFrame(currFrameSize);
+
+	// handle return value
+	if (funcEntry->GetEvaluatedType() != "void")
+	{
+		size_t dataSize = ComputeSize(funcCall->GetEvaluatedType());
+		if (dataSize == InvalidSize)
+		{
+			dataSize = FindSize(GetGlobalTable(funcCall->GetSymbolTable()), funcCall->GetEvaluatedType());
+		}
+		ASSERT(dataSize != InvalidSize);
+
+		SymbolTableEntry* returnValEntry = funcEntry->GetSubTable()->FindEntryInTable("returnValue");
+		ss << "\n% handle return value\n";
+
+		ss << CopyDataAtRef(m_returnValRegister, dataSize, GetOffset(funcCall)) << "\n";
+	}
+
+	return ss.str();
 }

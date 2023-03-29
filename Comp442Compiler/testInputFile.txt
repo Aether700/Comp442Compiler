@@ -1,20 +1,39 @@
-
-function g()=>void
+class A
 {
-	localvar x : integer;
-	x = 9;
-	write(x / 3);
+	public attribute x : integer;
+	public attribute y : integer;
+};
+
+/*
+function f() =>integer
+{
+	localvar i : integer;
+	i = 0;
+	while (i < 3)
+	{
+		i = i + 2;
+	};
+	return(i);
 }
+*/
 
-function f()=>void
+function CreateA()=>A
 {
-	localvar x : integer;
-	x = 4;
-	g();
-	write(x * 2);
+	localvar a : A;
+	a.x = 3;
+	a.y = 7;
+	return(a);
 }
 
 function main() => void
 {
-	f();
+	/*
+	localvar x : integer;
+	x = f();
+	write(x + 2);
+	*/
+
+	localvar a : A;
+	a = CreateA();
+	write(a.y);
 }

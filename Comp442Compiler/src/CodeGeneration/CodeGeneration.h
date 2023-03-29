@@ -55,6 +55,7 @@ public:
     virtual void Visit(BaseBinaryOperator* element) override;
     virtual void Visit(VarDeclNode* element) override;
     virtual void Visit(FParamNode* element) override;
+    virtual void Visit(FuncCallNode* element) override;
     virtual void Visit(FunctionDefNode* element) override;
     virtual void Visit(MemVarNode* element) override;
     virtual void Visit(MemFuncDeclNode* element) override;
@@ -64,6 +65,7 @@ public:
 
 private:
     void TryAddTempVar(VarDeclNode* element);
+    void TryAddTempVar(TempVarNodeBase* element);
     
     // returns InvalidType if could not compute
     size_t ComputeSizeOfFunc(SymbolTable* funcTable);
@@ -99,6 +101,7 @@ public:
     virtual void Visit(WhileStatNode* element) override;
     virtual void Visit(AssignStatNode* element) override;
     virtual void Visit(WriteStatNode* element) override;
+    virtual void Visit(ReturnStatNode* element) override;
     virtual void Visit(ProgramNode* element) override;
 
 
@@ -148,6 +151,7 @@ private:
     //is not supported
     std::string ComputeVal(ASTNode* node, RegisterID& outRegister);
     std::string ComputeVal(BaseBinaryOperator* node, RegisterID& outRegister);
+    std::string ComputeVal(FuncCallNode* node, RegisterID& outRegister);
     std::string ComputeVal(ExprNode* node, RegisterID& outRegister);
     std::string ComputeVal(ModifiedExpr* node, RegisterID& outRegister);
 
@@ -168,11 +172,14 @@ private:
 
     std::string CopyData(int dataOffset, size_t dataSize, int destOffset);
     std::string CopyData(SymbolTableEntry* data, SymbolTableEntry* dest);
+    std::string CopyDataAtRef(RegisterID dataAddress, size_t dataSize, int destOffset);
 
     std::string GetNumDigitsInNum(RegisterID num, RegisterID& outNumDigits);
 
     std::string& GetCurrStatBlock(ASTNode* node);
     size_t GetCurrFrameSize(ASTNode* node);
+
+    std::string CallFunc(FuncCallNode* funcCall);
 
 
     std::string m_filepath;

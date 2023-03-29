@@ -20,6 +20,8 @@
  - finish float support (rel op + mult and div)
 */
 
+curr input file doesn't provide the correct input
+
 /*
 float representation idea:
 1 byte mantissa, 1 byte exponent

@@ -35,7 +35,8 @@ enum class SymbolTableEntryKind
     MemFuncDef,
     Parameter,
     TempVar,
-    ReturnAddress
+    ReturnAddress,
+    ReturnValue
 };
 
 std::ostream& operator<<(std::ostream& stream, SymbolTableEntryKind kind);
@@ -311,6 +312,20 @@ public:
     virtual SymbolTable* GetSubTable() override;
 
     virtual std::string ToString() override;
+};
+
+class ReturnValueEntry : public SymbolTableEntry
+{
+public:
+    ReturnValueEntry(TagTableEntry* funcEntry);
+    virtual std::string GetEvaluatedType() const;
+    virtual ASTNode* GetNode() override;
+    virtual SymbolTable* GetSubTable() override;
+
+    virtual std::string ToString() override;
+
+private:
+    TagTableEntry* m_funcEntry;
 };
 
 class SymbolTable

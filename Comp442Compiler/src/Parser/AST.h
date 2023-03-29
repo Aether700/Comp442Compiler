@@ -444,7 +444,7 @@ public:
 
 };
 
-class FuncCallNode : public ASTNodeBase
+class FuncCallNode : public TempVarNodeBase
 {
 public:
     FuncCallNode(IDNode* id, AParamListNode* parameters);
