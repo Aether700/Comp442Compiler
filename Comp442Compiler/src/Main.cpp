@@ -11,14 +11,12 @@
 
 
 /* To Do
- - generate basic objects
- - generate objects with inheritance
- - call free functions
-	 - store and compute offset for returning address of functions, return value etc
-	 - store return value in given register for calling scope
+ - handle return value for function calls
+ - handle passing parameters to function calls
+ - generate read statment
  - call member functions/constructors
 	 - add ref to self as parameter
- - generate read statment
+ - support multiple inheritance
  - finish float support (rel op + mult and div)
 */
 

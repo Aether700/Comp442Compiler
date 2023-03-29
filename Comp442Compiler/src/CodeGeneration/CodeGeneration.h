@@ -81,6 +81,7 @@ private:
 
     std::list<ASTNode*> m_toRevisit;
     std::list<ClassTableEntry*> m_classesWithOffsets;
+    TagGenerator m_funcTagGen;
 };
 
 class CodeGenerator : public Visitor
@@ -92,6 +93,7 @@ public:
     virtual void Visit(ExprNode* element) override;
     virtual void Visit(ModifiedExpr* element) override;
     virtual void Visit(BaseBinaryOperator* element) override;
+    virtual void Visit(FuncCallNode* element) override;
     virtual void Visit(FunctionDefNode* element) override;
     virtual void Visit(IfStatNode* element) override;
     virtual void Visit(WhileStatNode* element) override;
@@ -103,9 +105,9 @@ public:
     void OutputCode() const;
 
 private:
-    // adds the provided framesize to the scope size stack and moves the stack pointer by the previous top of the stack 
+    // moves the stack pointer by the provided frameSize 
     std::string IncrementStackFrame(size_t frameSize);
-    std::string DecrementStackFrame();
+    std::string DecrementStackFrame(size_t frameSize);
 
     std::string GenerateModifiedExpr(ModifiedExpr* modExpr);
     std::string GenerateMinusExpr(ModifiedExpr* modExpr);
@@ -160,7 +162,9 @@ private:
     std::string LoadFloatToAddr(int offset, VariableNode* var);
     std::string LoadFloatToAddr(int offset, LiteralNode* floatLiteral);
 
-    std::string WriteNum(RegisterID numRegister);
+    std::string GenerateFunc(TagTableEntry* funcEntry, const std::string& statBlock);
+
+    std::string WriteNum(RegisterID numRegister, size_t frameSize);
 
     std::string CopyData(int dataOffset, size_t dataSize, int destOffset);
     std::string CopyData(SymbolTableEntry* data, SymbolTableEntry* dest);
@@ -168,6 +172,7 @@ private:
     std::string GetNumDigitsInNum(RegisterID num, RegisterID& outNumDigits);
 
     std::string& GetCurrStatBlock(ASTNode* node);
+    size_t GetCurrFrameSize(ASTNode* node);
 
 
     std::string m_filepath;
@@ -180,7 +185,6 @@ private:
     RegisterID m_jumpReturnRegister;
     RegisterID m_returnValRegister;
     std::list<RegisterID> m_registerStack;
-    std::list<size_t> m_scopeSizeStack;
     std::unordered_map<ASTNode*, std::string> m_statBlocks;
 
     TagGenerator m_tagGen;

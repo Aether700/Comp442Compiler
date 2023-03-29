@@ -1,27 +1,20 @@
-class B
-{
-	public attribute z : integer;
-};
 
-class C
+function g()=>void
 {
-	public attribute w : integer;
-};
+	localvar x : integer;
+	x = 9;
+	write(x / 3);
+}
 
-class A isa B, C
+function f()=>void
 {
-	public attribute x : integer;
-	public attribute y : integer;
-};
+	localvar x : integer;
+	x = 4;
+	g();
+	write(x * 2);
+}
 
 function main() => void
 {
-	localvar a : A;
-	a.x = 4;
-	a.y = 5;
-	a.z = 6;
-	a.w = 7;
-	write(a.z);
-	write(a.w);
-	write(a.z - a.y);
+	f();
 }

@@ -7,7 +7,7 @@
 #include <fstream>
 
 // SizeGenerator ////////////////////////////////////////////////////////////////////////
-SizeGenerator::SizeGenerator(SymbolTable* globalTable) : m_globalTable(globalTable) { }
+SizeGenerator::SizeGenerator(SymbolTable* globalTable) : m_globalTable(globalTable), m_funcTagGen("funcTag") { }
 
 void SizeGenerator::Visit(LiteralNode* element)
 {
@@ -164,7 +164,13 @@ size_t SizeGenerator::ComputeSizeOfFunc(SymbolTable* funcTable)
 
 void SizeGenerator::ProcessFunc(ASTNode* func, SymbolTableEntryKind expectedKind)
 {
-	SymbolTableEntry* funcEntry = func->GetSymbolTable()->GetParentEntry();
+	TagTableEntry* funcEntry = (TagTableEntry*)func->GetSymbolTable()->GetParentEntry();
+	SymbolTable* funcTable = funcEntry->GetSubTable();
+	if (funcEntry->GetName() != "main")
+	{
+		funcTable->AddEntry(new ReturnAddressEntry());
+		funcEntry->SetTag(m_funcTagGen.GetNextTag());
+	}
 	ASSERT(funcEntry != nullptr && funcEntry->GetKind() == expectedKind);
 	size_t funcSize = ComputeSizeOfFunc(funcEntry->GetSubTable());
 	if (funcSize == InvalidSize)
@@ -188,6 +194,7 @@ void SizeGenerator::ComputeOffsets(SymbolTable* table, int startOffset)
 		case SymbolTableEntryKind::LocalVariable:
 		case SymbolTableEntryKind::TempVar:
 		case SymbolTableEntryKind::Parameter:
+		case SymbolTableEntryKind::ReturnAddress:
 			entry->SetOffset(offset);
 			offset -= (int)entry->GetSize();
 			break;
@@ -275,7 +282,6 @@ CodeGenerator::CodeGenerator(SymbolTable* globalTable, const std::string& filepa
 	m_topOfStackRegister(14), m_zeroRegister(0), m_jumpReturnRegister(15), m_returnValRegister(13),
 	m_registerStack({1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12}), m_tagGen("memAddress") 
 {
-	m_scopeSizeStack.push_front(globalTable->FindEntryInTable("main")->GetSize());
 }
 
 void CodeGenerator::Visit(LiteralNode* element)
@@ -346,6 +352,26 @@ void CodeGenerator::Visit(BaseBinaryOperator* element)
 	GetCurrStatBlock(element) += GenerateBinaryOp(element);
 }
 
+void CodeGenerator::Visit(FuncCallNode* element)
+{
+	std::stringstream ss;
+	TagTableEntry* funcEntry = (TagTableEntry*)element->GetSymbolTable()
+		->FindEntryInScope(element->GetID()->GetID().GetLexeme());
+
+	size_t currFrameSize = GetCurrFrameSize(element);
+
+	ss << IncrementStackFrame(currFrameSize);
+
+	// pass parameters here
+
+	ss << "jl r" << m_jumpReturnRegister << ", " << funcEntry->GetTag();
+	
+	// handle returned value here
+
+	ss << DecrementStackFrame(currFrameSize);
+	GetCurrStatBlock(element) += ss.str();
+}
+
 void CodeGenerator::Visit(FunctionDefNode* element)
 {
 	const std::string& funcStatBlock = m_statBlocks[element->GetBody()];
@@ -361,7 +387,9 @@ void CodeGenerator::Visit(FunctionDefNode* element)
 	}
 	else
 	{
-		DEBUG_BREAK(); // not supported yet
+		TagTableEntry* funcEntry = (TagTableEntry*)element->GetSymbolTable()->GetParentTable()
+			->FindEntryInTable(element->GetID()->GetID().GetLexeme());
+		m_executableCode += GenerateFunc(funcEntry, funcStatBlock);
 	}
 }
 
@@ -446,13 +474,14 @@ void CodeGenerator::Visit(AssignStatNode* element)
 void CodeGenerator::Visit(WriteStatNode* element)
 {
 	std::stringstream ss;
+	size_t currFrameSize = GetCurrFrameSize(element);
 	ss << "\n%write stat\n";
 	if (element->GetExpr()->GetEvaluatedType() == "integer")
 	{
 		RegisterID exprValRegister;
 		ss << LoadTempVarInRegister(element->GetExpr(), exprValRegister);
 		ASSERT(exprValRegister != NullRegister);
-		ss << WriteNum(exprValRegister);
+		ss << WriteNum(exprValRegister, currFrameSize);
 		m_registerStack.push_front(exprValRegister);
 	}
 	else if (element->GetExpr()->GetEvaluatedType() == "float")
@@ -462,7 +491,7 @@ void CodeGenerator::Visit(WriteStatNode* element)
 		
 		// write mantissa
 		ss << "lw r" << exprValRegister << ", " << offset << "(r" << m_topOfStackRegister << ")\n";
-		ss << WriteNum(exprValRegister);
+		ss << WriteNum(exprValRegister, currFrameSize);
 		offset -= (int)PlatformSpecifications::GetAddressSize();
 
 		//write "*10^"
@@ -478,7 +507,7 @@ void CodeGenerator::Visit(WriteStatNode* element)
 
 		// write exponent
 		ss << "lw r" << exprValRegister << ", " << offset << "(r" << m_topOfStackRegister << ")\n";
-		ss << WriteNum(exprValRegister);
+		ss << WriteNum(exprValRegister, currFrameSize);
 	}
 	else
 	{
@@ -503,19 +532,15 @@ void CodeGenerator::OutputCode() const
 
 std::string CodeGenerator::IncrementStackFrame(size_t frameSize)
 {
-	size_t change = m_scopeSizeStack.front();
-	m_scopeSizeStack.push_front(frameSize);
 	std::stringstream ss;
-	ss << "\naddi r" << m_topOfStackRegister << ", r" << m_topOfStackRegister << ", -" << change << "\n";
+	ss << "\naddi r" << m_topOfStackRegister << ", r" << m_topOfStackRegister << ", -" << frameSize << "\n";
 	return ss.str();
 }
 
-std::string CodeGenerator::DecrementStackFrame()
+std::string CodeGenerator::DecrementStackFrame(size_t frameSize)
 {
-	m_scopeSizeStack.pop_front();
-	size_t change = m_scopeSizeStack.front();
 	std::stringstream ss;
-	ss << "\nsubi r" << m_topOfStackRegister << ", r" << m_topOfStackRegister << ", -" << change << "\n";
+	ss << "\nsubi r" << m_topOfStackRegister << ", r" << m_topOfStackRegister << ", -" << frameSize << "\n";
 	return ss.str();
 }
 
@@ -1251,10 +1276,31 @@ std::string CodeGenerator::LoadFloatToAddr(int offset, LiteralNode* floatLiteral
 	return ss.str();
 }
 
-std::string CodeGenerator::WriteNum(RegisterID numRegister)
+std::string CodeGenerator::GenerateFunc(TagTableEntry* funcEntry, const std::string& statBlock)
 {
 	std::stringstream ss;
-	ss << IncrementStackFrame(PlatformSpecifications::GetIntStrSize());
+
+	SymbolTable* funcTable = funcEntry->GetSubTable();
+	SymbolTableEntry* returnAddressEntry = funcTable->FindEntryInTable("returnAddress");
+	
+	ss << "\n% start of func \"" << funcEntry->GetName() << "\"\n";
+	ss << funcEntry->GetTag() << " sw " << returnAddressEntry->GetOffset() << "(r" 
+		<< m_topOfStackRegister << "), r" << m_jumpReturnRegister << "\n";
+
+	ss << statBlock;
+
+	ss << "lw r" << m_jumpReturnRegister << ", " 
+		<< returnAddressEntry->GetOffset() << "(r" << m_topOfStackRegister << ")\n";
+	ss << "jr r" << m_jumpReturnRegister << "\n";
+	ss << "% end of func \"" << funcEntry->GetName() << "\"\n";
+	return ss.str();
+}
+
+std::string CodeGenerator::WriteNum(RegisterID numRegister, size_t frameSize)
+{
+	std::stringstream ss;
+
+	ss << IncrementStackFrame(frameSize);
 	ss << "sw " << PlatformSpecifications::GetIntStrArg1Offset() << "(r" << m_topOfStackRegister
 		<< "), r" << numRegister << "\n";
 
@@ -1268,7 +1314,7 @@ std::string CodeGenerator::WriteNum(RegisterID numRegister)
 		<< "), r" << m_returnValRegister << "\n";
 
 	ss << "jl r" << m_jumpReturnRegister << ", putstr\n";
-	ss << DecrementStackFrame();
+	ss << DecrementStackFrame(frameSize);
 	return ss.str();
 }
 
@@ -1327,4 +1373,9 @@ std::string& CodeGenerator::GetCurrStatBlock(ASTNode* node)
 	}
 
 	return m_statBlocks[statBlock];
+}
+
+size_t CodeGenerator::GetCurrFrameSize(ASTNode* node)
+{
+	return node->GetSymbolTable()->GetParentEntry()->GetSize();
 }

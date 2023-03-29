@@ -35,6 +35,7 @@ enum class SymbolTableEntryKind
     MemFuncDef,
     Parameter,
     TempVar,
+    ReturnAddress
 };
 
 std::ostream& operator<<(std::ostream& stream, SymbolTableEntryKind kind);
@@ -96,7 +97,20 @@ public:
     virtual ~ScopeTableEntry();
 };
 
-class FreeFuncTableEntry : public ScopeTableEntry
+class TagTableEntry : public ScopeTableEntry
+{
+public:
+    TagTableEntry(SymbolTableEntryKind kind);
+    virtual ~TagTableEntry();
+
+    const std::string& GetTag() const;
+    void SetTag(const std::string& tag);
+
+private:
+    std::string m_tag;
+};
+
+class FreeFuncTableEntry : public TagTableEntry
 {
 public:
     FreeFuncTableEntry(FunctionDefNode* node, const std::string& parametersType, 
@@ -165,7 +179,7 @@ private:
     MemVarNode* GetMemVarNode() const;
 };
 
-class MemFuncTableEntry : public ScopeTableEntry
+class MemFuncTableEntry : public TagTableEntry
 {
 public:
     MemFuncTableEntry(MemFuncDeclNode* node, const std::string& parameterTypes);
@@ -216,7 +230,7 @@ private:
     std::string m_parameterTypes;
 };
 
-class ConstructorTableEntry : public ScopeTableEntry
+class ConstructorTableEntry : public TagTableEntry
 {
 public:
     ConstructorTableEntry(ConstructorDeclNode* node, const std::string& parameterTypes);
@@ -286,6 +300,17 @@ class RefEntry : public TempVarEntry
 {
 public:
     RefEntry(size_t size);
+};
+
+class ReturnAddressEntry : public SymbolTableEntry
+{
+public:
+    ReturnAddressEntry();
+    virtual std::string GetEvaluatedType() const;
+    virtual ASTNode* GetNode() override;
+    virtual SymbolTable* GetSubTable() override;
+
+    virtual std::string ToString() override;
 };
 
 class SymbolTable

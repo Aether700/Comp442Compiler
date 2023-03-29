@@ -613,8 +613,13 @@ std::string VariableNode::GetEvaluatedType()
         {
             DotNode* dotParent = (DotNode*) GetParent();
             SymbolTable* globalTable = GetGlobalTable(GetSymbolTable());
+            ASTNode* prevTerm = dotParent->GetLeft();
+            if (prevTerm == this)
+            {
+                prevTerm = ((DotNode*)dotParent->GetParent())->GetLeft();
+            }
             SymbolTableEntry* leftScopeTableEntry 
-                = globalTable->FindEntryInScope(dotParent->GetLeft()->GetEvaluatedType());
+                = globalTable->FindEntryInScope(prevTerm->GetEvaluatedType());
             if (leftScopeTableEntry != nullptr 
                 && leftScopeTableEntry->GetKind() == SymbolTableEntryKind::Class)
             {

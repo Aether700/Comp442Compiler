@@ -1,6 +1,7 @@
 #include "SymbolTable.h"
 #include "../Parser/AST.h"
 #include "../Core/Core.h"
+#include "../CodeGeneration/CodeGeneration.h"
 
 // SymbolTableEntryKind ////////////////////////////////////////////////////////
 
@@ -42,6 +43,10 @@ std::ostream& operator<<(std::ostream& stream, SymbolTableEntryKind kind)
 
     case SymbolTableEntryKind::TempVar:
         stream << "temp var";
+        break;
+
+    case SymbolTableEntryKind::ReturnAddress:
+        stream << "return address";
         break;
 
     default:
@@ -107,10 +112,17 @@ std::string VarSymbolTableEntry::ToString()
 ScopeTableEntry::ScopeTableEntry(SymbolTableEntryKind kind) : SymbolTableEntry(kind) { }
 ScopeTableEntry::~ScopeTableEntry() { }
 
+// TagTableEntry ////////////////////////////////////////////////////////////////
+TagTableEntry::TagTableEntry(SymbolTableEntryKind kind) : ScopeTableEntry(kind) { }
+TagTableEntry::~TagTableEntry() { }
+
+const std::string& TagTableEntry::GetTag() const { return m_tag; }
+void TagTableEntry::SetTag(const std::string& tag) { m_tag = tag; }
+
 // FreeFuncTableEntry /////////////////////////////////////////////////////////////
 FreeFuncTableEntry::FreeFuncTableEntry(FunctionDefNode* node, 
     const std::string& parametersType, SymbolTable* subTable) 
-    : ScopeTableEntry(SymbolTableEntryKind::FreeFunction), m_subTable(subTable),
+    : TagTableEntry(SymbolTableEntryKind::FreeFunction), m_subTable(subTable),
     m_paramTypes(parametersType), m_funcNode(node)
 {
     SetName(node->GetID()->GetID().GetLexeme());
@@ -256,7 +268,7 @@ MemVarNode* MemVarTableEntry::GetMemVarNode() const
 // MemFuncTableEntry /////////////////////////////////////////////////////////
 
 MemFuncTableEntry::MemFuncTableEntry(MemFuncDeclNode* node, 
-    const std::string& parameterTypes) : ScopeTableEntry(SymbolTableEntryKind::MemFuncDecl),
+    const std::string& parameterTypes) : TagTableEntry(SymbolTableEntryKind::MemFuncDecl),
     m_declaration(node), m_definition(nullptr), 
     m_definitionSubTable(nullptr), m_parameterTypes(parameterTypes)
 {
@@ -355,7 +367,7 @@ std::string MemFuncDefEntry::ToString()
 // ConstructorTableEntry ///////////////////////////////////////////////////////////////
 ConstructorTableEntry::ConstructorTableEntry(ConstructorDeclNode* node, 
     const std::string& parameterTypes) 
-    : ScopeTableEntry(SymbolTableEntryKind::ConstructorDecl), m_declaration(node),
+    : TagTableEntry(SymbolTableEntryKind::ConstructorDecl), m_declaration(node),
     m_definition(nullptr), m_definitionSubTable(nullptr), 
     m_parameterTypes(parameterTypes) 
 {
@@ -477,6 +489,25 @@ std::string TempVarEntry::ToString()
 // RefEntry ///////////////////////////////////////////////////////////////
 RefEntry::RefEntry(size_t size) : TempVarEntry("reference", size) { }
 
+
+// ReturnAddressEntry ///////////////////////////////////////////////////////
+ReturnAddressEntry::ReturnAddressEntry() : SymbolTableEntry(SymbolTableEntryKind::ReturnAddress) 
+{
+    SetName("returnAddress");
+    SetSize(PlatformSpecifications::GetAddressSize());
+}
+
+std::string ReturnAddressEntry::GetEvaluatedType() const { return "integer"; }
+ASTNode* ReturnAddressEntry::GetNode() { return nullptr; }
+SymbolTable* ReturnAddressEntry::GetSubTable() { return nullptr; }
+
+std::string ReturnAddressEntry::ToString()
+{
+    std::stringstream ss;
+    ss << GetKind() << s_seperator << GetName() << s_seperator << GetEvaluatedType() << s_seperator
+        << GetSize() << s_seperator << GetOffset();
+    return ss.str();
+}
 
 // SymbolTable ////////////////////////////////////////////////////////////////////
 

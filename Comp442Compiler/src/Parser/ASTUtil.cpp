@@ -99,10 +99,30 @@ int GetOffsetOfRight(ASTNode* rightOfDotExpr, SymbolTable* context)
         VariableNode* var = (VariableNode*)rightOfDotExpr;
         return GetOffset(context, var->GetVariable()->GetID().GetLexeme());
     }
+    else if (dynamic_cast<DotNode*>(rightOfDotExpr) != nullptr)
+    {
+        DotNode* dot = (DotNode*)rightOfDotExpr;
+        ASTNode* leftOfDot = dot->GetLeft();
+        SymbolTable* newContext = nullptr;
+        if (dynamic_cast<VariableNode*>(leftOfDot) != nullptr)
+        {
+            VariableNode* var = (VariableNode*)leftOfDot;
+            auto temp = var->GetVariable()->GetID().GetLexeme();
+            SymbolTable* global = GetGlobalTable(context);
+            newContext = global->FindEntryInTable(var->GetEvaluatedType())->GetSubTable();
+        }
+        else if (dynamic_cast<FuncCallNode*>(leftOfDot) != nullptr)
+        {
+            FuncCallNode* var = (FuncCallNode*)leftOfDot;
+            newContext = context->FindEntryInScope(var->GetID()->GetID().GetLexeme())->GetParentTable();
+        }
+        return GetOffsetOfRight(dot->GetRight(), newContext);
+    }
     else
     {
         DEBUG_BREAK();
     }
+    return INTMAX_MAX;
 }
 
 ////////////////////////////////////////////////////////////////////////
