@@ -30,6 +30,8 @@ SymbolTable* GetGlobalTable(SymbolTable* currTable);
 SymbolTable* GetContextTableFromName(SymbolTable* currContext, 
     DotNode* dot, const std::string& name);
 
+TagTableEntry* FindEntryForFuncCall(FuncCallNode* funcCall);
+
 template<typename ParentNode>
 bool HasNodeInParentTree(ASTNode* n)
 {
@@ -60,6 +62,9 @@ int GetOffset(RefVarNode* refNode);
 int GetOffset(TempVarNodeBase* tempVarNode);
 
 int GetOffsetOfExpr(DotNode* dotExpr);
+int GetInternalOffsetOfExpr(DotNode* dotExpr);
+
+int GetOffsetOfRight(ASTNode* rightOfDotExpr, SymbolTable* context);
 
 // returns InvalidSize if the type provided is could not be computed 
 size_t ComputeSize(TypeNode* type, DimensionNode* dimensions);
@@ -67,3 +72,6 @@ size_t ComputeSize(const std::string& typeStr);
 
 // returns the size of a class object
 size_t FindSize(SymbolTable* globalTable, const std::string& typeStr);
+
+bool IsRefWhenParameter(const std::string& typeStr);
+bool IsParam(SymbolTable* context, const std::string& name);

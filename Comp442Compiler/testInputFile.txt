@@ -3,8 +3,13 @@ class A
 	public attribute x : integer;
 	public attribute y : integer;
 	public attribute z : integer;
+	public attribute b : B;
 };
 
+class B
+{
+	public attribute x : integer;
+};
 /*
 function f() =>integer
 {
@@ -16,12 +21,11 @@ function f() =>integer
 	};
 	return(i);
 }
-*/
 
 function CreateA()=>A
 {
 	localvar a : A;
-	a.x = 3;
+	a.x = 15;
 	a.y = 7;
 	a.z = 36;
 	return(a);
@@ -32,9 +36,26 @@ function f(x : integer) =>void
 	write(x);
 }
 
+function f(a : A, y : integer, z : integer) => integer
+{
+	return (a.y + y - z * 2);
+}
+*/
+
+function f(a:A)=>void
+{
+	write(a.b.x);
+}
+
 function main() => void
 {
 	localvar a : A;
-	a = CreateA();
-	f(a.x);
+	a.x = 5;
+	a.y = 7;
+	a.z = 12;
+	a.b.x = 12;
+	f(a);
+	//a = CreateA();
+	//f(a.x); // writes 15
+	//write(f(a, 5, 3)); // writes 6
 }

@@ -11,16 +11,13 @@
 
 
 /* To Do
- - handle passing parameters to function calls
- - implement parameters being passed by reference
  - generate read statment
  - call member functions/constructors
 	 - add ref to self as parameter
+ - implement parameters being passed by reference for arrays
  - support multiple inheritance
  - finish float support (rel op + mult and div)
 */
-
-working on parameters, current input file crashes with alignment error
 
 /*
 float representation idea:

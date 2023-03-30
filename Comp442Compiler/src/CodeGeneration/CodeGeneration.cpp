@@ -155,6 +155,32 @@ void SizeGenerator::TryAddTempVar(VarDeclNode* element)
 	}
 }
 
+void SizeGenerator::TryAddTempVar(FParamNode* element)
+{
+	std::string typeStr = element->GetEvaluatedType();
+	size_t size;
+	if (IsRefWhenParameter(typeStr))
+	{
+		size = PlatformSpecifications::GetAddressSize();
+	}
+	else
+	{
+		size = ComputeSize(typeStr);
+	}
+
+	if (size != InvalidSize)
+	{
+		SymbolTable* table = element->GetSymbolTable();
+		SymbolTableEntry* entry = table->FindEntryInTable(element->GetID()->GetID().GetLexeme());
+		ASSERT(entry != nullptr);
+		entry->SetSize(size);
+	}
+	else
+	{
+		m_toRevisit.push_back(element);
+	}
+}
+
 void SizeGenerator::TryAddTempVar(TempVarNodeBase* element)
 {
 	size_t size = ComputeSize(element->GetEvaluatedType());
@@ -561,7 +587,7 @@ void CodeGenerator::Visit(WriteStatNode* element)
 	if (element->GetExpr()->GetEvaluatedType() == "integer")
 	{
 		RegisterID exprValRegister;
-		ss << LoadTempVarInRegister(element->GetExpr(), exprValRegister);
+		ss << LoadVarInRegister(element->GetExpr(), exprValRegister);
 		ASSERT(exprValRegister != NullRegister);
 		ss << WriteNum(exprValRegister, currFrameSize);
 		m_registerStack.push_front(exprValRegister);
@@ -835,7 +861,7 @@ std::string CodeGenerator::GenerateNotInt(ModifiedExpr* expr)
 	std::stringstream ss;
 	ss << "\n% not\n";
 	RegisterID exprRegister;
-	ss << LoadTempVarInRegister(expr, exprRegister);
+	ss << LoadVarInRegister(expr, exprRegister);
 
 	std::string isFalse = m_tagGen.GetNextTag();
 	std::string endIsFalse = m_tagGen.GetNextTag();
@@ -1220,9 +1246,9 @@ std::string CodeGenerator::ComputeVal(ASTNode* node, RegisterID& outRegister)
 	{
 		return LoadVarInRegister((VariableNode*)node, outRegister);
 	}
-	else if (dynamic_cast<RefVarNode*>(node) != nullptr)
+	else if (dynamic_cast<DotNode*>(node) != nullptr)
 	{
-		return LoadVarInRegister((RefVarNode*)node, outRegister);
+		return LoadVarInRegister((DotNode*)node, outRegister);
 	}
 	else
 	{
@@ -1260,7 +1286,7 @@ std::string CodeGenerator::ComputeVal(ModifiedExpr* node, RegisterID& outRegiste
 {
 	std::stringstream ss;
 	ss << GenerateModifiedExpr(node);
-	ss << LoadTempVarInRegister(node, outRegister);
+	ss << LoadVarInRegister(node, outRegister);
 	return ss.str();
 }
 
@@ -1271,13 +1297,21 @@ std::string CodeGenerator::LoadVarInRegister(ASTNode* n, RegisterID& outRegister
 		LiteralNode* literal = (LiteralNode*)n;
 		return LoadVarInRegister(literal, outRegister);
 	}
+	else if (dynamic_cast<ExprNode*>(n) != nullptr)
+	{
+		return LoadVarInRegister(((ExprNode*)n)->GetRootOfExpr(), outRegister);
+	}
+	else if (dynamic_cast<FuncCallNode*>(n) != nullptr)
+	{
+		return LoadVarInRegister((FuncCallNode*)n, outRegister);
+	}
 	else if (dynamic_cast<TempVarNodeBase*>(n) != nullptr)
 	{
-		return LoadTempVarInRegister((TempVarNodeBase*)n, outRegister);
+		return LoadVarInRegister((TempVarNodeBase*)n, outRegister);
 	}
-	else if (dynamic_cast<RefVarNode*>(n) != nullptr)
+	else if (dynamic_cast<DotNode*>(n) != nullptr)
 	{
-		return LoadVarInRegister((RefVarNode*)n, outRegister);
+		return LoadVarInRegister((DotNode*)n, outRegister);
 	}
 	else if (dynamic_cast<VariableNode*>(n) != nullptr)
 	{
@@ -1319,18 +1353,51 @@ std::string CodeGenerator::LoadVarInRegister(VariableNode* node, RegisterID& out
 	return ss.str();
 }
 
-std::string CodeGenerator::LoadVarInRegister(RefVarNode* node, RegisterID& outRegister)
+std::string CodeGenerator::LoadVarInRegister(DotNode* node, RegisterID& outRegister)
 {
 	std::stringstream ss;
 	outRegister = m_registerStack.front();
 	m_registerStack.pop_front();
-	RegisterID tempAddr = m_registerStack.front();
-	ss << "lw r" << tempAddr << ", " << GetOffset(node) << "(r" << m_topOfStackRegister << ")\n";
-	ss << "lw r" << outRegister << ", 0(r" << tempAddr << ")\n";
+
+	if (dynamic_cast<VariableNode*>(node->GetLeft()) != nullptr)
+	{
+		VariableNode* var = (VariableNode*)node->GetLeft();
+		if (IsParam(var->GetSymbolTable(), var->GetVariable()->GetID().GetLexeme()))
+		{
+			RegisterID addrRegister = m_registerStack.front();
+			ss << "lw r" << addrRegister << ", " << GetOffset(var) << "(r" << m_topOfStackRegister << ")\n";
+			ss << "lw r" << outRegister << ", " << GetInternalOffsetOfExpr(node) << "(r" << addrRegister << ")\n";
+		}
+		else
+		{
+			ss << "lw r" << outRegister << ", " << 
+				GetOffsetOfExpr(node) << "(r" << m_topOfStackRegister << ")\n";
+		}
+	}
+	else
+	{
+		DEBUG_BREAK(); // unexpected node type
+	}
+
 	return ss.str();
 }
 
-std::string CodeGenerator::LoadTempVarInRegister(TempVarNodeBase* tempVar, RegisterID& outRegister)
+std::string CodeGenerator::LoadVarInRegister(FuncCallNode* node, RegisterID& outRegister)
+{
+	std::stringstream ss;
+	outRegister = m_registerStack.front();
+	m_registerStack.pop_front();
+	ss << CallFunc(node);
+	ss << "lw r" << outRegister << ", " << GetOffset(node) << "(r" << m_topOfStackRegister << ")\n";
+	return ss.str();
+}
+
+std::string CodeGenerator::LoadVarInRegister(ExprNode* expr, RegisterID& outRegister)
+{
+	return LoadVarInRegister(expr->GetRootOfExpr(), outRegister);
+}
+
+std::string CodeGenerator::LoadVarInRegister(TempVarNodeBase* tempVar, RegisterID& outRegister)
 {
 	std::stringstream ss;
 	outRegister = m_registerStack.front();
@@ -1511,14 +1578,14 @@ std::string& CodeGenerator::GetCurrStatBlock(ASTNode* node)
 
 size_t CodeGenerator::GetCurrFrameSize(ASTNode* node)
 {
+	SymbolTableEntry* temp = node->GetSymbolTable()->GetParentEntry();
 	return node->GetSymbolTable()->GetParentEntry()->GetSize();
 }
 
 std::string CodeGenerator::CallFunc(FuncCallNode* funcCall)
 {
 	std::stringstream ss;
-	TagTableEntry* funcEntry = (TagTableEntry*)funcCall->GetSymbolTable()
-		->FindEntryInScope(funcCall->GetID()->GetID().GetLexeme());
+	TagTableEntry* funcEntry = FindEntryForFuncCall(funcCall);
 
 	SymbolTable* funcTable = funcEntry->GetSubTable();
 
@@ -1527,12 +1594,20 @@ std::string CodeGenerator::CallFunc(FuncCallNode* funcCall)
 	std::string fparamsStr = FunctionParamTypeToStr(fparams);
 
 	size_t currFrameSize = GetCurrFrameSize(funcCall);
+	RegisterID prevStackTop = m_registerStack.front();
+	m_registerStack.pop_front();
 	ss << "\n% calling function \"" << funcEntry->GetName() << "(" << fparamsStr << ")\"\n";
+	ss << "add r" << prevStackTop << ", r" << m_topOfStackRegister << ", r" << m_zeroRegister << "\n";
 	ss << IncrementStackFrame(currFrameSize);
 	
+
 	// send parameters to function
 	if (funcCall->GetParameters()->GetNumChild() != 0)
 	{
+		// use old top of stack to fetch data
+		RegisterID newTopOfStack = m_topOfStackRegister;
+		m_topOfStackRegister = prevStackTop;
+
 		ss << "\n% sending parameters to function\n\n";
 		AParamListNode* aparams = funcCall->GetParameters();
 		auto aparamIt = aparams->GetChildren().begin();
@@ -1542,15 +1617,26 @@ std::string CodeGenerator::CallFunc(FuncCallNode* funcCall)
 			ASTNode* baseAParam = *aparamIt;
 			SymbolTableEntry* fparamEntry = funcTable->FindEntryInTable(currParam->GetID()->GetID().GetLexeme());
 			RegisterID currReg;
-			ss << ComputeVal(baseAParam, currReg);
-			ASSERT(currReg != NullRegister);
-			ss << "sw " << fparamEntry->GetOffset() << "(r" << m_topOfStackRegister << "), r" << currReg << "\n";
+			if (IsRefWhenParameter(fparamEntry->GetEvaluatedType()))
+			{
+				currReg = m_registerStack.front();
+				m_registerStack.pop_front();
+				ss << "add r" << currReg << ", r" << m_zeroRegister << ", r" << prevStackTop << "\n";
+			}
+			else
+			{
+				ss << ComputeVal(baseAParam, currReg);
+				ASSERT(currReg != NullRegister);
+			}
+			ss << "sw " << fparamEntry->GetOffset() << "(r" << newTopOfStack << "), r" << currReg << "\n";
 			m_registerStack.push_front(currReg);
 			aparamIt++;
 		}
 
 		ss << "\n";
+		m_topOfStackRegister = newTopOfStack;
 	}
+	m_registerStack.push_front(prevStackTop);
 
 	ss << "jl r" << m_jumpReturnRegister << ", " << funcEntry->GetTag();
 	ss << DecrementStackFrame(currFrameSize);
@@ -1558,20 +1644,32 @@ std::string CodeGenerator::CallFunc(FuncCallNode* funcCall)
 	// handle return value
 	if (funcEntry->GetEvaluatedType() != "void")
 	{
-		size_t dataSize = ComputeSize(funcCall->GetEvaluatedType());
-		if (dataSize == InvalidSize)
-		{
-			dataSize = FindSize(GetGlobalTable(funcCall->GetSymbolTable()), funcCall->GetEvaluatedType());
-		}
-		ASSERT(dataSize != InvalidSize);
-
-		SymbolTableEntry* returnValEntry = funcEntry->GetSubTable()->FindEntryInTable("returnValue");
-		ss << "\n% handle return value\n";
-
-		ss << CopyDataAtRef(m_returnValRegister, dataSize, GetOffset(funcCall));
+		ss << HandleFuncReturnVal(funcCall, funcEntry);
 	}
 
 	ss << "% finished calling function \"" << funcEntry->GetName() << "(" << fparamsStr << ")\"\n\n";
 
+	return ss.str();
+}
+
+std::string CodeGenerator::HandleFuncReturnVal(FuncCallNode* funcCall, SymbolTableEntry* funcEntry)
+{
+	if (funcEntry == nullptr)
+	{
+		funcEntry = funcCall->GetSymbolTable()->FindEntryInScope(funcCall->GetID()->GetID().GetLexeme());
+	}
+
+	std::stringstream ss;
+	size_t dataSize = ComputeSize(funcCall->GetEvaluatedType());
+	if (dataSize == InvalidSize)
+	{
+		dataSize = FindSize(GetGlobalTable(funcCall->GetSymbolTable()), funcCall->GetEvaluatedType());
+	}
+	ASSERT(dataSize != InvalidSize);
+
+	SymbolTableEntry* returnValEntry = funcEntry->GetSubTable()->FindEntryInTable("returnValue");
+	ss << "\n% handle return value\n";
+
+	ss << CopyDataAtRef(m_returnValRegister, dataSize, GetOffset(funcCall));
 	return ss.str();
 }

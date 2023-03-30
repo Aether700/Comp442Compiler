@@ -28,12 +28,61 @@ Program
 |  |  |  |  TypeNode
 |  |  |  |  |  integer
 |  |  |  |  Dimensions
+|  |  |  MemVar
+|  |  |  |  Visibility
+|  |  |  |  |  public
+|  |  |  |  id
+|  |  |  |  |  b
+|  |  |  |  TypeNode
+|  |  |  |  |  B
+|  |  |  |  Dimensions
+|  |  ClassDef
+|  |  |  id
+|  |  |  |  B
+|  |  |  InheritanceList
+|  |  |  MemVar
+|  |  |  |  Visibility
+|  |  |  |  |  public
+|  |  |  |  id
+|  |  |  |  |  x
+|  |  |  |  TypeNode
+|  |  |  |  |  integer
+|  |  |  |  Dimensions
 |  FuncDefList
 |  |  FuncDef
 |  |  |  id
-|  |  |  |  CreateA
+|  |  |  |  f
 |  |  |  TypeNode
-|  |  |  |  A
+|  |  |  |  void
+|  |  |  FParamList
+|  |  |  |  FParam
+|  |  |  |  |  id
+|  |  |  |  |  |  a
+|  |  |  |  |  TypeNode
+|  |  |  |  |  |  A
+|  |  |  |  |  Dimensions
+|  |  |  StatBlock
+|  |  |  |  WriteStat
+|  |  |  |  |  Expr
+|  |  |  |  |  |  Dot
+|  |  |  |  |  |  |  Variable
+|  |  |  |  |  |  |  |  id
+|  |  |  |  |  |  |  |  |  a
+|  |  |  |  |  |  |  |  Dimensions
+|  |  |  |  |  |  |  Dot
+|  |  |  |  |  |  |  |  Variable
+|  |  |  |  |  |  |  |  |  id
+|  |  |  |  |  |  |  |  |  |  b
+|  |  |  |  |  |  |  |  |  Dimensions
+|  |  |  |  |  |  |  |  Variable
+|  |  |  |  |  |  |  |  |  id
+|  |  |  |  |  |  |  |  |  |  x
+|  |  |  |  |  |  |  |  |  Dimensions
+|  |  FuncDef
+|  |  |  id
+|  |  |  |  main
+|  |  |  TypeNode
+|  |  |  |  void
 |  |  |  FParamList
 |  |  |  StatBlock
 |  |  |  |  VarDecl
@@ -54,7 +103,7 @@ Program
 |  |  |  |  |  |  |  Dimensions
 |  |  |  |  |  Expr
 |  |  |  |  |  |  Literal
-|  |  |  |  |  |  |  3
+|  |  |  |  |  |  |  5
 |  |  |  |  |  |  |  TypeNode
 |  |  |  |  |  |  |  |  integer
 |  |  |  |  AssigStat
@@ -84,68 +133,35 @@ Program
 |  |  |  |  |  |  |  Dimensions
 |  |  |  |  |  Expr
 |  |  |  |  |  |  Literal
-|  |  |  |  |  |  |  36
+|  |  |  |  |  |  |  12
 |  |  |  |  |  |  |  TypeNode
 |  |  |  |  |  |  |  |  integer
-|  |  |  |  ReturnStat
-|  |  |  |  |  Expr
+|  |  |  |  AssigStat
+|  |  |  |  |  Dot
 |  |  |  |  |  |  Variable
 |  |  |  |  |  |  |  id
 |  |  |  |  |  |  |  |  a
 |  |  |  |  |  |  |  Dimensions
-|  |  FuncDef
-|  |  |  id
-|  |  |  |  f
-|  |  |  TypeNode
-|  |  |  |  void
-|  |  |  FParamList
-|  |  |  |  FParam
-|  |  |  |  |  id
-|  |  |  |  |  |  x
-|  |  |  |  |  TypeNode
-|  |  |  |  |  |  integer
-|  |  |  |  |  Dimensions
-|  |  |  StatBlock
-|  |  |  |  WriteStat
+|  |  |  |  |  |  Dot
+|  |  |  |  |  |  |  Variable
+|  |  |  |  |  |  |  |  id
+|  |  |  |  |  |  |  |  |  b
+|  |  |  |  |  |  |  |  Dimensions
+|  |  |  |  |  |  |  Variable
+|  |  |  |  |  |  |  |  id
+|  |  |  |  |  |  |  |  |  x
+|  |  |  |  |  |  |  |  Dimensions
 |  |  |  |  |  Expr
-|  |  |  |  |  |  Variable
-|  |  |  |  |  |  |  id
-|  |  |  |  |  |  |  |  x
-|  |  |  |  |  |  |  Dimensions
-|  |  FuncDef
-|  |  |  id
-|  |  |  |  main
-|  |  |  TypeNode
-|  |  |  |  void
-|  |  |  FParamList
-|  |  |  StatBlock
-|  |  |  |  VarDecl
-|  |  |  |  |  id
-|  |  |  |  |  |  a
-|  |  |  |  |  TypeNode
-|  |  |  |  |  |  A
-|  |  |  |  |  Dimensions
-|  |  |  |  AssigStat
-|  |  |  |  |  Variable
-|  |  |  |  |  |  id
-|  |  |  |  |  |  |  a
-|  |  |  |  |  |  Dimensions
-|  |  |  |  |  Expr
-|  |  |  |  |  |  FuncCall
-|  |  |  |  |  |  |  id
-|  |  |  |  |  |  |  |  CreateA
-|  |  |  |  |  |  |  AParams
+|  |  |  |  |  |  Literal
+|  |  |  |  |  |  |  12
+|  |  |  |  |  |  |  TypeNode
+|  |  |  |  |  |  |  |  integer
 |  |  |  |  FuncCall
 |  |  |  |  |  id
 |  |  |  |  |  |  f
 |  |  |  |  |  AParams
 |  |  |  |  |  |  Expr
-|  |  |  |  |  |  |  Dot
-|  |  |  |  |  |  |  |  Variable
-|  |  |  |  |  |  |  |  |  id
-|  |  |  |  |  |  |  |  |  |  a
-|  |  |  |  |  |  |  |  |  Dimensions
-|  |  |  |  |  |  |  |  Variable
-|  |  |  |  |  |  |  |  |  id
-|  |  |  |  |  |  |  |  |  |  x
-|  |  |  |  |  |  |  |  |  Dimensions
+|  |  |  |  |  |  |  Variable
+|  |  |  |  |  |  |  |  id
+|  |  |  |  |  |  |  |  |  a
+|  |  |  |  |  |  |  |  Dimensions

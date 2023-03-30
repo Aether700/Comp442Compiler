@@ -64,6 +64,7 @@ public:
     virtual void Visit(ProgramNode* element) override;
 
 private:
+    void TryAddTempVar(FParamNode* element);
     void TryAddTempVar(VarDeclNode* element);
     void TryAddTempVar(TempVarNodeBase* element);
     
@@ -158,8 +159,10 @@ private:
     std::string LoadVarInRegister(ASTNode* n, RegisterID& outRegister);
     std::string LoadVarInRegister(LiteralNode* node, RegisterID& outRegister);
     std::string LoadVarInRegister(VariableNode* node, RegisterID& outRegister);
-    std::string LoadVarInRegister(RefVarNode* node, RegisterID& outRegister);
-    std::string LoadTempVarInRegister(TempVarNodeBase* tempVar, RegisterID& outRegister);
+    std::string LoadVarInRegister(DotNode* node, RegisterID& outRegister);
+    std::string LoadVarInRegister(FuncCallNode* node, RegisterID& outRegister);
+    std::string LoadVarInRegister(ExprNode* tempVar, RegisterID& outRegister);
+    std::string LoadVarInRegister(TempVarNodeBase* tempVar, RegisterID& outRegister);
 
     std::string LoadFloatToAddr(int offset, ASTNode* expr);
     std::string LoadFloatToAddr(int offset, ExprNode* expr);
@@ -180,6 +183,7 @@ private:
     size_t GetCurrFrameSize(ASTNode* node);
 
     std::string CallFunc(FuncCallNode* funcCall);
+    std::string HandleFuncReturnVal(FuncCallNode* funcCall, SymbolTableEntry* funcEntry = nullptr);
 
 
     std::string m_filepath;

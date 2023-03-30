@@ -1183,7 +1183,8 @@ void SemanticChecker::TestDotRemainder(SymbolTable* contextTable,
             GetVariable()->GetID().GetLexeme());
 
         if (varEntry == nullptr || (varEntry->GetKind() != SymbolTableEntryKind::MemVar 
-            && varEntry->GetKind() != SymbolTableEntryKind::LocalVariable))
+            && varEntry->GetKind() != SymbolTableEntryKind::LocalVariable
+            && varEntry->GetKind() != SymbolTableEntryKind::Parameter))
         {
             bool hasError = true;
             if (contextTable == m_globalTable 

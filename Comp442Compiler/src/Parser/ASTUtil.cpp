@@ -164,39 +164,6 @@ SymbolTable* FindNameInDot(SymbolTable* globalTable, SymbolTable* contextTable,
     return nullptr;
 }
 
-int GetOffsetOfRight(ASTNode* rightOfDotExpr, SymbolTable* context)
-{
-    if (dynamic_cast<VariableNode*>(rightOfDotExpr) != nullptr)
-    {
-        VariableNode* var = (VariableNode*)rightOfDotExpr;
-        return GetOffset(context, var->GetVariable()->GetID().GetLexeme());
-    }
-    else if (dynamic_cast<DotNode*>(rightOfDotExpr) != nullptr)
-    {
-        DotNode* dot = (DotNode*)rightOfDotExpr;
-        ASTNode* leftOfDot = dot->GetLeft();
-        SymbolTable* newContext = nullptr;
-        if (dynamic_cast<VariableNode*>(leftOfDot) != nullptr)
-        {
-            VariableNode* var = (VariableNode*)leftOfDot;
-            auto temp = var->GetVariable()->GetID().GetLexeme();
-            SymbolTable* global = GetGlobalTable(context);
-            newContext = global->FindEntryInTable(var->GetEvaluatedType())->GetSubTable();
-        }
-        else if (dynamic_cast<FuncCallNode*>(leftOfDot) != nullptr)
-        {
-            FuncCallNode* var = (FuncCallNode*)leftOfDot;
-            newContext = context->FindEntryInScope(var->GetID()->GetID().GetLexeme())->GetParentTable();
-        }
-        return GetOffsetOfRight(dot->GetRight(), newContext);
-    }
-    else
-    {
-        DEBUG_BREAK();
-    }
-    return INTMAX_MAX;
-}
-
 ////////////////////////////////////////////////////////////////////////
 DotNode* FindRootDotNodeParent(ASTNode* node)
 {
@@ -393,6 +360,31 @@ SymbolTable* GetContextTableFromName(SymbolTable* currContext,
     return FindNameInDot(GetGlobalTable(currContext), currContext, dot, name);
 }
 
+TagTableEntry* FindEntryForFuncCall(FuncCallNode* funcCall)
+{
+    const std::string& funcName = funcCall->GetID()->GetID().GetLexeme();
+    AParamListNode* aparams = funcCall->GetParameters();
+    SymbolTable* table = funcCall->GetSymbolTable();
+    SymbolTableEntry* tempEntry = table->FindEntryInScope(funcName);
+    ASSERT(tempEntry != nullptr);
+    table = tempEntry->GetParentTable();
+
+    for (SymbolTableEntry* currEntry : *table)
+    {
+        if (currEntry->GetKind() == SymbolTableEntryKind::ConstructorDecl 
+            || currEntry->GetKind() == SymbolTableEntryKind::FreeFunction 
+            || currEntry->GetKind() == SymbolTableEntryKind::MemFuncDecl)
+        {
+            FunctionDefNode* funcNode = (FunctionDefNode*)currEntry->GetNode();
+            if (currEntry->GetName() == funcName && HasMatchingParameters(funcNode->GetParameters(), aparams))
+            {
+                return (TagTableEntry*)currEntry;
+            }
+        }
+    }
+    return nullptr;
+}
+
 StatBlockNode* GetParentStatBlock(ASTNode* node)
 {
     ASTNode* curr = node->GetParent();
@@ -561,9 +553,47 @@ int GetOffset(TempVarNodeBase* tempVar)
 
 int GetOffsetOfExpr(DotNode* dotExpr)
 {
+    return GetOffset(dotExpr->GetLeft()) + GetInternalOffsetOfExpr(dotExpr);
+}
+
+int GetInternalOffsetOfExpr(DotNode* dotExpr)
+{
     SymbolTable* global = GetGlobalTable(dotExpr->GetSymbolTable());
     SymbolTableEntry* classEntry = global->FindEntryInTable(dotExpr->GetLeft()->GetEvaluatedType());
-    return GetOffset(dotExpr->GetLeft()) + GetOffsetOfRight(dotExpr->GetRight(), classEntry->GetSubTable());
+    return GetOffsetOfRight(dotExpr->GetRight(), classEntry->GetSubTable());
+}
+
+int GetOffsetOfRight(ASTNode* rightOfDotExpr, SymbolTable* context)
+{
+    if (dynamic_cast<VariableNode*>(rightOfDotExpr) != nullptr)
+    {
+        VariableNode* var = (VariableNode*)rightOfDotExpr;
+        return GetOffset(context, var->GetVariable()->GetID().GetLexeme());
+    }
+    else if (dynamic_cast<DotNode*>(rightOfDotExpr) != nullptr)
+    {
+        DotNode* dot = (DotNode*)rightOfDotExpr;
+        ASTNode* leftOfDot = dot->GetLeft();
+        SymbolTable* newContext = nullptr;
+        if (dynamic_cast<VariableNode*>(leftOfDot) != nullptr)
+        {
+            VariableNode* var = (VariableNode*)leftOfDot;
+            auto temp = var->GetVariable()->GetID().GetLexeme();
+            SymbolTable* global = GetGlobalTable(context);
+            newContext = global->FindEntryInTable(var->GetEvaluatedType())->GetSubTable();
+        }
+        else if (dynamic_cast<FuncCallNode*>(leftOfDot) != nullptr)
+        {
+            FuncCallNode* var = (FuncCallNode*)leftOfDot;
+            newContext = context->FindEntryInScope(var->GetID()->GetID().GetLexeme())->GetParentTable();
+        }
+        return GetOffsetOfRight(dot->GetRight(), newContext);
+    }
+    else
+    {
+        DEBUG_BREAK();
+    }
+    return INTMAX_MAX;
 }
 
 size_t ComputeSize(TypeNode* type, DimensionNode* dimensions)
@@ -575,10 +605,6 @@ size_t ComputeSize(TypeNode* type, DimensionNode* dimensions)
         baseSize = PlatformSpecifications::GetIntSize();
     }
     else if (typeStr == "float")
-    {
-        baseSize = PlatformSpecifications::GetFloatSize();
-    }
-    else if (typeStr == "bool")
     {
         baseSize = PlatformSpecifications::GetFloatSize();
     }
@@ -636,4 +662,18 @@ size_t FindSize(SymbolTable* globalTable, const std::string& typeStr)
     SymbolTableEntry* classEntry = globalTable->FindEntryInTable(typeStr);
     ASSERT(classEntry != nullptr);
     return classEntry->GetSize();
+}
+
+bool IsRefWhenParameter(const std::string& typeStr)
+{
+    if (IsArrayType(typeStr))
+    {
+        return true;
+    }
+    return typeStr != "integer" && typeStr != "float";
+}
+
+bool IsParam(SymbolTable* context, const std::string& name)
+{
+    return context->FindEntryInScope(name)->GetKind() == SymbolTableEntryKind::Parameter;
 }
