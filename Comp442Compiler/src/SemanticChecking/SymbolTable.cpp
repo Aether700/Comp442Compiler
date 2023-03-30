@@ -622,12 +622,19 @@ SymbolTableEntry* SymbolTable::FindEntryInScope(const std::string& name)
     }
 
     SymbolTableEntry* parentEntry = GetParentEntry();
-    if (parentEntry != nullptr && parentEntry->GetKind() == SymbolTableEntryKind::Class)
+    if (parentEntry != nullptr)
     {
-        SymbolTableEntry* entry = FindInInheritanceScope(name);
-        if (entry != nullptr)
+        if (parentEntry->GetKind() == SymbolTableEntryKind::Class)
         {
-            return entry;
+            SymbolTableEntry* entry = FindInInheritanceScope(name);
+            if (entry != nullptr)
+            {
+                return entry;
+            }
+        }
+        else if (parentEntry->GetName() == name)
+        {
+            return parentEntry;
         }
     }
 
@@ -682,6 +689,7 @@ SymbolTableEntry* SymbolTable::FindExistingEntry(SymbolTableEntry* entry)
         {
             return originalEntry;
         }
+        originalEntry = nullptr;
     }
     else if (entry->GetKind() == SymbolTableEntryKind::MemFuncDecl 
         && originalEntry->GetKind() == SymbolTableEntryKind::MemFuncDecl)

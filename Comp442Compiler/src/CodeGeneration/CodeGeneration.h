@@ -166,7 +166,7 @@ private:
     std::string LoadFloatToAddr(int offset, VariableNode* var);
     std::string LoadFloatToAddr(int offset, LiteralNode* floatLiteral);
 
-    std::string GenerateFunc(TagTableEntry* funcEntry, const std::string& statBlock);
+    std::string GenerateFunc(TagTableEntry* funcEntry, const std::string& statBlock, const std::string& fparamStr);
 
     std::string WriteNum(RegisterID numRegister, size_t frameSize);
 

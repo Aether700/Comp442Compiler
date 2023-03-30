@@ -2,6 +2,12 @@
 #include "AST.h"
 #include "../SemanticChecking/SymbolTable.h"
 
+
+std::string VarDeclToTypeStr(VarDeclNode* var);
+std::string FunctionParamTypeToStr(FParamListNode* params);
+
+bool HasMatchingParameters(FParamListNode* fparam, AParamListNode* aparam);
+
 DotNode* FindRootDotNodeParent(ASTNode* node);
 DotNode* FindFirstDotNodeParent(ASTNode* node);
 bool HasDotForParent(ASTNode* node);

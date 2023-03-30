@@ -95,6 +95,25 @@ Program
 |  |  |  |  |  |  |  Dimensions
 |  |  FuncDef
 |  |  |  id
+|  |  |  |  f
+|  |  |  TypeNode
+|  |  |  |  void
+|  |  |  FParamList
+|  |  |  |  FParam
+|  |  |  |  |  id
+|  |  |  |  |  |  x
+|  |  |  |  |  TypeNode
+|  |  |  |  |  |  integer
+|  |  |  |  |  Dimensions
+|  |  |  StatBlock
+|  |  |  |  WriteStat
+|  |  |  |  |  Expr
+|  |  |  |  |  |  Variable
+|  |  |  |  |  |  |  id
+|  |  |  |  |  |  |  |  x
+|  |  |  |  |  |  |  Dimensions
+|  |  FuncDef
+|  |  |  id
 |  |  |  |  main
 |  |  |  TypeNode
 |  |  |  |  void
@@ -116,14 +135,17 @@ Program
 |  |  |  |  |  |  |  id
 |  |  |  |  |  |  |  |  CreateA
 |  |  |  |  |  |  |  AParams
-|  |  |  |  WriteStat
-|  |  |  |  |  Expr
-|  |  |  |  |  |  Dot
-|  |  |  |  |  |  |  Variable
-|  |  |  |  |  |  |  |  id
-|  |  |  |  |  |  |  |  |  a
-|  |  |  |  |  |  |  |  Dimensions
-|  |  |  |  |  |  |  Variable
-|  |  |  |  |  |  |  |  id
-|  |  |  |  |  |  |  |  |  x
-|  |  |  |  |  |  |  |  Dimensions
+|  |  |  |  FuncCall
+|  |  |  |  |  id
+|  |  |  |  |  |  f
+|  |  |  |  |  AParams
+|  |  |  |  |  |  Expr
+|  |  |  |  |  |  |  Dot
+|  |  |  |  |  |  |  |  Variable
+|  |  |  |  |  |  |  |  |  id
+|  |  |  |  |  |  |  |  |  |  a
+|  |  |  |  |  |  |  |  |  Dimensions
+|  |  |  |  |  |  |  |  Variable
+|  |  |  |  |  |  |  |  |  id
+|  |  |  |  |  |  |  |  |  |  x
+|  |  |  |  |  |  |  |  |  Dimensions

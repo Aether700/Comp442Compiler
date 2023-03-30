@@ -7,6 +7,78 @@
 
 // helpers //////////////////////////////////////////////////////////////
 
+std::string VarDeclToTypeStr(VarDeclNode* var)
+{
+    ASSERT(var != nullptr);
+    std::stringstream ss;
+    ss << var->GetType()->GetType().GetLexeme();
+
+    if (var->GetDimension() != nullptr)
+    {
+        for (ASTNode* dimension : *var->GetDimension())
+        {
+            LiteralNode* literal = dynamic_cast<LiteralNode*>(dimension);
+            if (literal != nullptr)
+            {
+                ss << "[" << literal->GetLexemeNode()->GetID().GetLexeme() << "]";
+            }
+            else
+            {
+                ASSERT(dynamic_cast<UnspecificedDimensionNode*>(dimension) != nullptr);
+                ss << "[]";
+            }
+        }
+    }
+    return ss.str();
+}
+
+
+std::string FunctionParamTypeToStr(FParamListNode* params)
+{
+    std::stringstream typeStr;
+    bool hasParam = false;
+    for (ASTNode* param : *params)
+    {
+        VarDeclNode* var = dynamic_cast<VarDeclNode*>(param);
+        ASSERT(var != nullptr);
+        typeStr << VarDeclToTypeStr(var) << ", ";
+        hasParam = true;
+    }
+
+    if (hasParam)
+    {
+        // remove last ", "
+        std::string tempCopy = typeStr.str();
+        std::string trimmedStr = tempCopy.substr(0, tempCopy.length() - 2);
+        typeStr.str("");
+        typeStr << trimmedStr;
+    }
+
+    return typeStr.str();
+}
+
+bool HasMatchingParameters(FParamListNode* fparam, AParamListNode* aparam)
+{
+    if (fparam->GetNumChild() != aparam->GetNumChild())
+    {
+        return false;
+    }
+
+    auto it = aparam->GetChildren().begin();
+    for (ASTNode* f : fparam->GetChildren())
+    {
+        FParamNode* currParam = (FParamNode*)f;
+        if (currParam->GetEvaluatedType() != (*it)->GetEvaluatedType())
+        {
+            return false;
+        }
+        it++;
+    }
+
+    return true;
+}
+
+
 SymbolTable* FindNameInDot(SymbolTable* globalTable, SymbolTable* contextTable, 
     ASTNode* dotRemainder, const std::string& name)
 {

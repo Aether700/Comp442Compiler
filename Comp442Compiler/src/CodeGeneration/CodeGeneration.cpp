@@ -430,9 +430,25 @@ void CodeGenerator::Visit(FunctionDefNode* element)
 	}
 	else
 	{
-		TagTableEntry* funcEntry = (TagTableEntry*)element->GetSymbolTable()->GetParentTable()
-			->FindEntryInTable(element->GetID()->GetID().GetLexeme());
-		m_executableCode += GenerateFunc(funcEntry, funcStatBlock);
+		SymbolTable* parentTable = element->GetSymbolTable()->GetParentTable();
+		TagTableEntry* funcEntry = nullptr;
+		std::string fparamsStr = FunctionParamTypeToStr(element->GetParameters());
+		for(SymbolTableEntry* entry : *parentTable)
+		{
+			if (entry->GetName() == element->GetID()->GetID().GetLexeme() 
+				&& entry->GetKind() == SymbolTableEntryKind::FreeFunction)
+			{
+				FreeFuncTableEntry* freeFuncEntry = (FreeFuncTableEntry*)entry;
+				if (freeFuncEntry->GetParamTypes() == fparamsStr)
+				{
+					funcEntry = freeFuncEntry;
+					break;
+				}
+			}
+		}
+
+		ASSERT(funcEntry != nullptr);
+		m_executableCode += GenerateFunc(funcEntry, funcStatBlock, fparamsStr);
 	}
 }
 
@@ -499,10 +515,23 @@ void CodeGenerator::Visit(AssignStatNode* element)
 	else if (dynamic_cast<FuncCallNode*>(element->GetRight()->GetRootOfExpr()) != nullptr)
 	{
 		FuncCallNode* function = (FuncCallNode*)element->GetRight()->GetRootOfExpr();
-		SymbolTable* table = element->GetSymbolTable();
-		SymbolTableEntry* dest = table->FindEntryInScope(((VariableNode*)element->GetLeft())
-			->GetVariable()->GetID().GetLexeme());
+		SymbolTable* globalTable = GetGlobalTable(element->GetSymbolTable());
+		SymbolTableEntry* dest = nullptr;
 
+		for (SymbolTableEntry* entry : *globalTable)
+		{
+			if (entry->GetKind() == SymbolTableEntryKind::FreeFunction)
+			{
+				FunctionDefNode* funcDefNode = (FunctionDefNode*)entry->GetNode();
+				if (HasMatchingParameters(funcDefNode->GetParameters(), function->GetParameters()))
+				{
+					dest = entry;
+					break;
+				}
+			}
+		}
+
+		ASSERT(dest != nullptr);
 		ss << CallFunc(function);
 		ss << CopyData(GetOffset(function), dest->GetSize(), dest->GetOffset());
 	}
@@ -1191,7 +1220,14 @@ std::string CodeGenerator::ComputeVal(ASTNode* node, RegisterID& outRegister)
 	{
 		return LoadVarInRegister((VariableNode*)node, outRegister);
 	}
-
+	else if (dynamic_cast<RefVarNode*>(node) != nullptr)
+	{
+		return LoadVarInRegister((RefVarNode*)node, outRegister);
+	}
+	else
+	{
+		DEBUG_BREAK(); // unknown node
+	}
 	outRegister = NullRegister;
 	return "";
 }
@@ -1353,14 +1389,15 @@ std::string CodeGenerator::LoadFloatToAddr(int offset, LiteralNode* floatLiteral
 	return ss.str();
 }
 
-std::string CodeGenerator::GenerateFunc(TagTableEntry* funcEntry, const std::string& statBlock)
+std::string CodeGenerator::GenerateFunc(TagTableEntry* funcEntry, const std::string& statBlock, 
+	const std::string& fparamsStr)
 {
 	std::stringstream ss;
 
 	SymbolTable* funcTable = funcEntry->GetSubTable();
 	SymbolTableEntry* returnAddressEntry = funcTable->FindEntryInTable("returnAddress");
 	
-	ss << "\n% start of func \"" << funcEntry->GetName() << "\"\n";
+	ss << "\n% start of func \"" << funcEntry->GetName() << "(" << fparamsStr << ")\"\n";
 	ss << funcEntry->GetTag() << " sw " << returnAddressEntry->GetOffset() << "(r" 
 		<< m_topOfStackRegister << "), r" << m_jumpReturnRegister << "\n";
 
@@ -1376,7 +1413,7 @@ std::string CodeGenerator::GenerateFunc(TagTableEntry* funcEntry, const std::str
 	ss << "lw r" << m_jumpReturnRegister << ", " 
 		<< returnAddressEntry->GetOffset() << "(r" << m_topOfStackRegister << ")\n";
 	ss << "jr r" << m_jumpReturnRegister << "\n";
-	ss << "% end of func \"" << funcEntry->GetName() << "\"\n";
+	ss << "\n% end of func \"" << funcEntry->GetName() << "(" << fparamsStr << ")\"\n";
 	return ss.str();
 }
 
@@ -1483,11 +1520,37 @@ std::string CodeGenerator::CallFunc(FuncCallNode* funcCall)
 	TagTableEntry* funcEntry = (TagTableEntry*)funcCall->GetSymbolTable()
 		->FindEntryInScope(funcCall->GetID()->GetID().GetLexeme());
 
+	SymbolTable* funcTable = funcEntry->GetSubTable();
+
+	FunctionDefNode* funcNode = (FunctionDefNode*)funcEntry->GetNode();
+	FParamListNode* fparams = funcNode->GetParameters();
+	std::string fparamsStr = FunctionParamTypeToStr(fparams);
+
 	size_t currFrameSize = GetCurrFrameSize(funcCall);
-
+	ss << "\n% calling function \"" << funcEntry->GetName() << "(" << fparamsStr << ")\"\n";
 	ss << IncrementStackFrame(currFrameSize);
+	
+	// send parameters to function
+	if (funcCall->GetParameters()->GetNumChild() != 0)
+	{
+		ss << "\n% sending parameters to function\n\n";
+		AParamListNode* aparams = funcCall->GetParameters();
+		auto aparamIt = aparams->GetChildren().begin();
+		for (ASTNode* baseNode : fparams->GetChildren())
+		{
+			FParamNode* currParam = (FParamNode*)baseNode;
+			ASTNode* baseAParam = *aparamIt;
+			SymbolTableEntry* fparamEntry = funcTable->FindEntryInTable(currParam->GetID()->GetID().GetLexeme());
+			RegisterID currReg;
+			ss << ComputeVal(baseAParam, currReg);
+			ASSERT(currReg != NullRegister);
+			ss << "sw " << fparamEntry->GetOffset() << "(r" << m_topOfStackRegister << "), r" << currReg << "\n";
+			m_registerStack.push_front(currReg);
+			aparamIt++;
+		}
 
-	// pass parameters here
+		ss << "\n";
+	}
 
 	ss << "jl r" << m_jumpReturnRegister << ", " << funcEntry->GetTag();
 	ss << DecrementStackFrame(currFrameSize);
@@ -1505,8 +1568,10 @@ std::string CodeGenerator::CallFunc(FuncCallNode* funcCall)
 		SymbolTableEntry* returnValEntry = funcEntry->GetSubTable()->FindEntryInTable("returnValue");
 		ss << "\n% handle return value\n";
 
-		ss << CopyDataAtRef(m_returnValRegister, dataSize, GetOffset(funcCall)) << "\n";
+		ss << CopyDataAtRef(m_returnValRegister, dataSize, GetOffset(funcCall));
 	}
+
+	ss << "% finished calling function \"" << funcEntry->GetName() << "(" << fparamsStr << ")\"\n\n";
 
 	return ss.str();
 }

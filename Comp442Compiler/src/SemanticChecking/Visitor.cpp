@@ -34,55 +34,6 @@ void CheckForLocalVarOverShadowing(NodeType* element)
     }
 }
 
-std::string VarDeclToTypeStr(VarDeclNode* var)
-{
-    ASSERT(var != nullptr);
-    std::stringstream ss;
-    ss << var->GetType()->GetType().GetLexeme();
-
-    if (var->GetDimension() != nullptr)
-    {
-        for (ASTNode* dimension : *var->GetDimension())
-        {
-            LiteralNode* literal = dynamic_cast<LiteralNode*>(dimension);
-            if (literal != nullptr)
-            {
-                ss << "[" << literal->GetLexemeNode()->GetID().GetLexeme() << "]";
-            }   
-            else 
-            {
-                ASSERT(dynamic_cast<UnspecificedDimensionNode*>(dimension) != nullptr);
-                ss << "[]";
-            }
-        }
-    }
-    return ss.str();
-}
-
-std::string FunctionParamTypeToStr(FParamListNode* params)
-{
-    std::stringstream typeStr;
-    bool hasParam = false;
-    for (ASTNode* param : *params)
-    {
-        VarDeclNode* var = dynamic_cast<VarDeclNode*>(param);
-        ASSERT(var != nullptr);
-        typeStr << VarDeclToTypeStr(var) << ", ";
-        hasParam = true;
-    }
-
-    if (hasParam)
-    {
-        // remove last ", "
-        std::string tempCopy = typeStr.str();
-        std::string trimmedStr = tempCopy.substr(0, tempCopy.length() - 2);
-        typeStr.str("");
-        typeStr << trimmedStr;
-    }
-    
-    return typeStr.str();
-}
-
 // returns the idnode of the node provided or the nullptr if there is no such node
 IDNode* GetIDFromEntry(SymbolTableEntry* entry)
 {
@@ -596,12 +547,26 @@ void SymbolTableAssembler::Visit(ProgramNode* element)
         SymbolTableEntry* originalEntry = m_globalScopeTable->AddEntry(entry);
         if (originalEntry != nullptr)
         {
-            IDNode* originalNode = GetIDFromEntry(originalEntry);
-            IDNode* errorNode = GetIDFromEntry(entry);
-            SemanticErrorManager::AddError(
-                new DuplicateSymbolError(originalNode->GetID(), 
-                errorNode->GetID()));
-            toDelete.push_front(entry);
+            if (entry->GetKind() == SymbolTableEntryKind::FreeFunction
+                && originalEntry->GetKind() == SymbolTableEntryKind::FreeFunction)
+            {
+                FreeFuncTableEntry* funcEntry = (FreeFuncTableEntry*)entry;
+                FreeFuncTableEntry* originalFuncEntry = (FreeFuncTableEntry*)originalEntry;
+                if (funcEntry->GetParamTypes() == originalFuncEntry->GetParamTypes())
+                {
+                    IDNode* originalNode = GetIDFromEntry(originalEntry);
+                    IDNode* errorNode = GetIDFromEntry(entry);
+                    SemanticErrorManager::AddError(
+                        new DuplicateSymbolError(originalNode->GetID(),
+                            errorNode->GetID()));
+                    toDelete.push_front(entry);
+                }
+                else
+                {
+                    IDNode* funcID = GetIDFromEntry(entry);
+                    SemanticErrorManager::AddWarning(new OverloadedFreeFuncWarn(funcID->GetID()));
+                }
+            }
         }
 
         if (entry->GetKind() == SymbolTableEntryKind::Class)
@@ -1192,27 +1157,6 @@ bool SemanticChecker::HasFoundOverLoadedFunc(const std::list<std::string>& funcL
         }
     }
     return false;
-}
-
-bool SemanticChecker::HasMatchingParameters(FParamListNode* fparam, AParamListNode* aparam)
-{
-    if (fparam->GetNumChild() != aparam->GetNumChild())
-    {
-        return false;
-    }
-
-    auto it = aparam->GetChildren().begin();
-    for (ASTNode* f : fparam->GetChildren())
-    {
-        FParamNode* currParam = (FParamNode*)f;
-        if (currParam->GetEvaluatedType() != (*it)->GetEvaluatedType())
-        {
-            return false;
-        }
-        it++;
-    }
-
-    return true;
 }
 
 void SemanticChecker::TestDotRemainder(SymbolTable* contextTable, 

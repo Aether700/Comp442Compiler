@@ -27,15 +27,14 @@ function CreateA()=>A
 	return(a);
 }
 
+function f(x : integer) =>void
+{
+	write(x);
+}
+
 function main() => void
 {
-	/*
-	localvar x : integer;
-	x = f();
-	write(x + 2);
-	*/
-
 	localvar a : A;
 	a = CreateA();
-	write(a.x);
+	f(a.x);
 }

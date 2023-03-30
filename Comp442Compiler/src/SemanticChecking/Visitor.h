@@ -127,8 +127,6 @@ private:
     bool HasFoundOverLoadedFunc(const std::list<std::string>& funcList, 
         const std::string& name);
 
-    bool HasMatchingParameters(FParamListNode* fparam, AParamListNode* aparam);
-
     // recursively go down the dot chain to try and find the type of the dot expression
     void TestDotRemainder(SymbolTable* contextTable, ASTNode* dotRemainder);
 
