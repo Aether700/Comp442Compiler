@@ -2,6 +2,7 @@ class A
 {
 	public attribute x : integer;
 	public attribute y : integer;
+	public attribute z : integer;
 };
 
 /*
@@ -22,6 +23,7 @@ function CreateA()=>A
 	localvar a : A;
 	a.x = 3;
 	a.y = 7;
+	a.z = 36;
 	return(a);
 }
 
@@ -35,5 +37,5 @@ function main() => void
 
 	localvar a : A;
 	a = CreateA();
-	write(a.y);
+	write(a.x);
 }

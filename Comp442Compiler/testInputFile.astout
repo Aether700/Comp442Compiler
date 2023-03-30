@@ -20,6 +20,14 @@ Program
 |  |  |  |  TypeNode
 |  |  |  |  |  integer
 |  |  |  |  Dimensions
+|  |  |  MemVar
+|  |  |  |  Visibility
+|  |  |  |  |  public
+|  |  |  |  id
+|  |  |  |  |  z
+|  |  |  |  TypeNode
+|  |  |  |  |  integer
+|  |  |  |  Dimensions
 |  FuncDefList
 |  |  FuncDef
 |  |  |  id
@@ -64,6 +72,21 @@ Program
 |  |  |  |  |  |  |  7
 |  |  |  |  |  |  |  TypeNode
 |  |  |  |  |  |  |  |  integer
+|  |  |  |  AssigStat
+|  |  |  |  |  Dot
+|  |  |  |  |  |  Variable
+|  |  |  |  |  |  |  id
+|  |  |  |  |  |  |  |  a
+|  |  |  |  |  |  |  Dimensions
+|  |  |  |  |  |  Variable
+|  |  |  |  |  |  |  id
+|  |  |  |  |  |  |  |  z
+|  |  |  |  |  |  |  Dimensions
+|  |  |  |  |  Expr
+|  |  |  |  |  |  Literal
+|  |  |  |  |  |  |  36
+|  |  |  |  |  |  |  TypeNode
+|  |  |  |  |  |  |  |  integer
 |  |  |  |  ReturnStat
 |  |  |  |  |  Expr
 |  |  |  |  |  |  Variable
@@ -102,5 +125,5 @@ Program
 |  |  |  |  |  |  |  |  Dimensions
 |  |  |  |  |  |  |  Variable
 |  |  |  |  |  |  |  |  id
-|  |  |  |  |  |  |  |  |  y
+|  |  |  |  |  |  |  |  |  x
 |  |  |  |  |  |  |  |  Dimensions

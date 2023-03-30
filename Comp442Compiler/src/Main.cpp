@@ -11,7 +11,6 @@
 
 
 /* To Do
- - handle return value for function calls
  - handle passing parameters to function calls
  - generate read statment
  - call member functions/constructors
@@ -19,8 +18,6 @@
  - support multiple inheritance
  - finish float support (rel op + mult and div)
 */
-
-curr input file doesn't provide the correct input
 
 /*
 float representation idea:

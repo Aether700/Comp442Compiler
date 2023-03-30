@@ -1427,7 +1427,7 @@ std::string CodeGenerator::CopyDataAtRef(RegisterID dataAddress, size_t dataSize
 	ss << "\n% copy data at reference\n";
 	for (size_t i = 0; i < dataSize; i += PlatformSpecifications::GetAddressSize())
 	{
-		ss << "lw r" << reg << ", " << i << "(r" << dataAddress << ")\n";
+		ss << "lw r" << reg << ", -" << i << "(r" << dataAddress << ")\n";
 		ss << "sw " << (destOffset - (int)i) << "(r" << m_topOfStackRegister << "), r" << reg << "\n";
 	}
 	return ss.str();
