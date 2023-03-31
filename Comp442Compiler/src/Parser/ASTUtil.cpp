@@ -32,7 +32,6 @@ std::string VarDeclToTypeStr(VarDeclNode* var)
     return ss.str();
 }
 
-
 std::string FunctionParamTypeToStr(FParamListNode* params)
 {
     std::stringstream typeStr;
@@ -77,7 +76,6 @@ bool HasMatchingParameters(FParamListNode* fparam, AParamListNode* aparam)
 
     return true;
 }
-
 
 SymbolTable* FindNameInDot(SymbolTable* globalTable, SymbolTable* contextTable, 
     ASTNode* dotRemainder, const std::string& name)
@@ -218,6 +216,45 @@ bool IsRootDot(DotNode* dot)
     return dynamic_cast<DotNode*>(dot->GetParent()) == nullptr;
 }
 
+bool DotIsVar(DotNode* dot)
+{
+    DotNode* currNode = dot;
+    while (dynamic_cast<DotNode*>(currNode->GetRight()) != nullptr)
+    {
+        currNode = (DotNode*)currNode->GetRight();
+    }
+
+    return dynamic_cast<VariableNode*>(currNode->GetRight()) != nullptr;
+}
+
+FuncCallNode* FindFirstFuncCallInDot(DotNode* dot)
+{
+    DotNode* currNode = dot;
+    while (dynamic_cast<DotNode*>(currNode->GetRight()) != nullptr)
+    {
+        if (dynamic_cast<FuncCallNode*>(currNode->GetLeft()) != nullptr)
+        {
+            return (FuncCallNode*)currNode->GetLeft();
+        }
+        currNode = (DotNode*)currNode->GetRight();
+    }
+    
+    if (dynamic_cast<FuncCallNode*>(currNode->GetLeft()) != nullptr)
+    {
+        return (FuncCallNode*)currNode->GetLeft();
+    }
+    else if (dynamic_cast<FuncCallNode*>(currNode->GetRight()) != nullptr)
+    {
+        return (FuncCallNode*)currNode->GetRight();
+    }
+    return nullptr;
+}
+
+bool DotHasFuncCall(DotNode* dot)
+{
+    return FindFirstFuncCallInDot(dot) != nullptr;
+}
+
 SymbolTable* GetContextTable(SymbolTable* globalTable, SymbolTable* prevContext, 
     ASTNode* node, bool logErrors)
 {
@@ -229,7 +266,7 @@ SymbolTable* GetContextTable(SymbolTable* globalTable, SymbolTable* prevContext,
 
         std::string type;
 
-        if (entry == nullptr)
+        if (entry == nullptr || var->GetVariable()->GetID().GetLexeme() == "self")
         {
             bool hasError = false;
             if (var->GetVariable()->GetID().GetLexeme() == "self")
@@ -269,9 +306,14 @@ SymbolTable* GetContextTable(SymbolTable* globalTable, SymbolTable* prevContext,
             type = entry->GetEvaluatedType();
         }
 
+        if (IsArrayType(type))
+        {
+            type = var->GetEvaluatedType();
+        }
+
         SymbolTableEntry* classEntry = globalTable->FindEntryInTable(type);
         
-        if (classEntry == nullptr || classEntry->GetKind() != SymbolTableEntryKind::Class)
+        if ((classEntry == nullptr || classEntry->GetKind() != SymbolTableEntryKind::Class))
         {
             if (logErrors)
             {
@@ -360,16 +402,19 @@ SymbolTable* GetContextTableFromName(SymbolTable* currContext,
     return FindNameInDot(GetGlobalTable(currContext), currContext, dot, name);
 }
 
-TagTableEntry* FindEntryForFuncCall(FuncCallNode* funcCall)
+TagTableEntry* FindEntryForFuncCall(FuncCallNode* funcCall, SymbolTable* context)
 {
     const std::string& funcName = funcCall->GetID()->GetID().GetLexeme();
     AParamListNode* aparams = funcCall->GetParameters();
-    SymbolTable* table = funcCall->GetSymbolTable();
-    SymbolTableEntry* tempEntry = table->FindEntryInScope(funcName);
+    if (context == nullptr)
+    {
+        context = funcCall->GetSymbolTable();
+    }
+    SymbolTableEntry* tempEntry = context->FindEntryInScope(funcName);
     ASSERT(tempEntry != nullptr);
-    table = tempEntry->GetParentTable();
+    context = tempEntry->GetParentTable();
 
-    for (SymbolTableEntry* currEntry : *table)
+    for (SymbolTableEntry* currEntry : *context)
     {
         if (currEntry->GetKind() == SymbolTableEntryKind::ConstructorDecl 
             || currEntry->GetKind() == SymbolTableEntryKind::FreeFunction 
@@ -379,6 +424,22 @@ TagTableEntry* FindEntryForFuncCall(FuncCallNode* funcCall)
             if (currEntry->GetName() == funcName && HasMatchingParameters(funcNode->GetParameters(), aparams))
             {
                 return (TagTableEntry*)currEntry;
+            }
+        }
+    }
+    return nullptr;
+}
+
+TagTableEntry* FindConstructorEntry(SymbolTable* classTable, AParamListNode* params)
+{
+    for (SymbolTableEntry* entry : *classTable)
+    {
+        if (entry->GetKind() == SymbolTableEntryKind::ConstructorDecl)
+        {
+            ConstructorDefNode* constructorNode = (ConstructorDefNode*)entry->GetNode();
+            if (HasMatchingParameters(constructorNode->GetParameters(), params))
+            {
+                return (TagTableEntry*)entry;
             }
         }
     }
@@ -405,6 +466,20 @@ bool IsValidSelf(SymbolTable* contextTable, VariableNode* var)
     return parentEntry != nullptr && (parentEntry->GetKind() 
         == SymbolTableEntryKind::ConstructorDecl 
         || parentEntry->GetKind() == SymbolTableEntryKind::MemFuncDecl);
+}
+
+bool IsArrayType(ASTNode* n)
+{
+    if (dynamic_cast<VariableNode*>(n) != nullptr)
+    {
+        return ((VariableNode*)n)->GetDimension()->GetNumChild() > 0;
+    }
+    else if (dynamic_cast<DotNode*>(n) != nullptr)
+    {
+        DotNode* dot = (DotNode*)n;
+        return IsArrayType(dot->GetLeft()) || IsArrayType(dot->GetRight());
+    }
+    return false;
 }
 
 bool IsArrayType(const std::string typeStr)
@@ -444,9 +519,16 @@ int GetOffset(ASTNode* node)
     {
         return GetOffset((LiteralNode*)node);
     }
-    else if (dynamic_cast<RefVarNode*>(node) != nullptr)
+    else if (dynamic_cast<DotNode*>(node) != nullptr)
     {
-        return GetOffset((RefVarNode*)node);
+        if (IsRef(node))
+        {
+            return GetOffset((RefVarNode*)node);
+        }
+        else
+        {
+            return GetOffset(((DotNode*)node)->GetLeft());
+        }
     }
     else
     {
@@ -463,8 +545,15 @@ int GetOffset(LiteralNode* node)
 
 int GetOffset(VariableNode* var)
 {
-    VarDeclNode* declNode = (VarDeclNode*)var->GetSymbolTable()->FindEntryInScope(var->
-        GetVariable()->GetID().GetLexeme())->GetNode();
+    SymbolTableEntry* varEntry = var->GetSymbolTable()->FindEntryInScope(var->
+        GetVariable()->GetID().GetLexeme());
+
+    if (varEntry->GetName() == "self")
+    {
+        return varEntry->GetOffset();
+    }
+
+    VarDeclNode* declNode = (VarDeclNode*)varEntry->GetNode();
     if (!IsArrayType(declNode->GetEvaluatedType()))
     {
         return GetOffset(var->GetSymbolTable(), var->GetVariable()->GetID().GetLexeme());
@@ -502,32 +591,24 @@ int GetOffset(VariableNode* var)
             dimensionIndex++;
             internalOffset += index * currOffset;
         }
+        else
+        {
+            DEBUG_BREAK(); // not supported use ComputeOffsetAtRuntime 
+        }
     }
 
     return varOffset + internalOffset;
-
-    /*
-    // temp
-    //for now assume one dimension arrays only and only literal nodes
-    ASSERT(numDimensions == 1);
-
-    LiteralNode* l = (LiteralNode*)var->GetDimension()->GetChildren().front();
-    int index = std::stoi(l->GetLexemeNode()->GetID().GetLexeme());
-    return varOffset - (index * ComputeSize(declNode->GetType(), nullptr));
-    //////////////////////////////////////////
-    */
 }
 
 int GetOffset(AssignStatNode* assign)
 {
-    // currently assumes that the assignment is made to a simple variable
     if (dynamic_cast<VariableNode*>(assign->GetLeft()) != nullptr)
     {
         return GetOffset((VariableNode*)assign->GetLeft());
     }
     else if (dynamic_cast<DotNode*>(assign->GetLeft()) != nullptr)
     {
-        return GetOffsetOfExpr((DotNode*)assign->GetLeft());
+        return GetOffset(assign->GetLeft());
     }
     else
     {
@@ -682,11 +763,22 @@ bool IsRef(ASTNode* node)
 {
     if (dynamic_cast<DotNode*>(node) != nullptr)
     {
-        return IsRef(((DotNode*)node)->GetRight());
+        return IsRef(((DotNode*)node)->GetLeft());
     }
     else if (dynamic_cast<VariableNode*>(node) != nullptr)
     {
-        return HasDotForParent(node);
+        VariableNode* var = (VariableNode*)node;
+        SymbolTable* table = var->GetSymbolTable();
+        const std::string& varName = var->GetVariable()->GetID().GetLexeme();
+
+
+        if (varName == "self" && table->GetParentEntry()->GetKind() == SymbolTableEntryKind::MemFuncDecl)
+        {
+            return true;
+        }
+
+        return IsParam(table, varName) 
+            && IsRefWhenParameter(var->GetEvaluatedType());
     }
 
     return false;

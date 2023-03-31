@@ -75,6 +75,7 @@ private:
     void TryAddTempVar(FParamNode* element);
     void TryAddTempVar(VarDeclNode* element);
     void TryAddTempVar(TempVarNodeBase* element);
+    void TryAddTempVar(ConstructorDeclNode* element);
     
     // returns InvalidType if could not compute
     size_t ComputeSizeOfFunc(SymbolTable* funcTable);
@@ -104,8 +105,11 @@ public:
     virtual void Visit(ExprNode* element) override;
     virtual void Visit(ModifiedExpr* element) override;
     virtual void Visit(BaseBinaryOperator* element) override;
+    virtual void Visit(VarDeclNode* element) override;
     virtual void Visit(FuncCallNode* element) override;
     virtual void Visit(FunctionDefNode* element) override;
+    virtual void Visit(MemFuncDefNode* element) override;
+    virtual void Visit(ConstructorDefNode* element) override;
     virtual void Visit(IfStatNode* element) override;
     virtual void Visit(WhileStatNode* element) override;
     virtual void Visit(AssignStatNode* element) override;
@@ -190,10 +194,17 @@ private:
 
     std::string GetNumDigitsInNum(RegisterID num, RegisterID& outNumDigits);
 
+    std::string ComputeOffsetAtRuntime(VariableNode* var, RegisterID& outRegister);
+
     std::string& GetCurrStatBlock(ASTNode* node);
     size_t GetCurrFrameSize(ASTNode* node);
 
+    std::string PrepareToCallFunc(FuncCallNode* funcCall, TagTableEntry* funcEntry, RegisterID& prevStackTop);
+    std::string HandleParametersForFuncCall(AParamListNode* aparams, TagTableEntry* funcEntry, RegisterID prevStackTop);
     std::string CallFunc(FuncCallNode* funcCall);
+    std::string CallMemFunc(FuncCallNode* funcCall, SymbolTable* context, int selfOffset);
+    std::string CallMemFunc(DotNode* dotExpr);
+    std::string CallConstructor(VarDeclNode* decl);
     std::string HandleFuncReturnVal(FuncCallNode* funcCall, SymbolTableEntry* funcEntry = nullptr);
 
 

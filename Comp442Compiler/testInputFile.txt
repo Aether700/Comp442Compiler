@@ -3,10 +3,14 @@ class A
 	public attribute x : integer;
 };
 
-
 function main()=>void
 {
-	localvar countHolder : A;
-	read(countHolder.x);
-	write(countHolder.x); 
+	localvar arr : A[3];
+	arr[0].x = 1;
+	arr[2 * 3 - 5].x = 2;
+	arr[2].x = 3;
+
+	write(arr[0].x);
+	write(arr[6/2-2].x);
+	write(arr[2].x);
 }

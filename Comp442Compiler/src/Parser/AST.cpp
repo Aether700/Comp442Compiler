@@ -599,6 +599,15 @@ std::string VariableNode::GetEvaluatedType()
     SymbolTableEntry* entry = GetSymbolTable()
         ->FindEntryInScope(GetVariable()->GetID().GetLexeme());
 
+    if (GetVariable()->GetID().GetLexeme() == "self"
+        && (GetSymbolTable()->GetParentEntry()->GetKind()
+            == SymbolTableEntryKind::MemFuncDecl
+            || GetSymbolTable()->GetParentEntry()->GetKind()
+            == SymbolTableEntryKind::ConstructorDecl))
+    {
+        return GetSymbolTable()->GetParentTable()->GetName();
+    }
+    
     if (entry == nullptr)
     {
         if (GetVariable()->GetID().GetLexeme() == "self" 

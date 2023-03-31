@@ -11,11 +11,10 @@
 
 
 /* To Do
- - call member functions/constructors
-	 - add ref to self as parameter
+ - check can use arrays of objects and access specific mem var of the object (might already work)
+ - object accessing mem var which is an object which accesses a mem var
  - implement parameters being passed by reference for arrays
  - support multiple inheritance
- - finish float support (rel op + mult and div)
  - check can read into arrays
 */
 

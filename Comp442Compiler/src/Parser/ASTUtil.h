@@ -14,6 +14,9 @@ bool HasDotForParent(ASTNode* node);
 DotNode* GetRootDotNode(ASTNode* node);
 DotNode* GetRootDotNode(DotNode* dot);
 bool IsRootDot(DotNode* dot);
+bool DotIsVar(DotNode* dot);
+FuncCallNode* FindFirstFuncCallInDot(DotNode* dot);
+bool DotHasFuncCall(DotNode* dot);
 
 /* returns the context SymbolTable from the provided left side of a dot 
    expression or nullptr if the left side of the dot expression is invalid
@@ -30,7 +33,8 @@ SymbolTable* GetGlobalTable(SymbolTable* currTable);
 SymbolTable* GetContextTableFromName(SymbolTable* currContext, 
     DotNode* dot, const std::string& name);
 
-TagTableEntry* FindEntryForFuncCall(FuncCallNode* funcCall);
+TagTableEntry* FindEntryForFuncCall(FuncCallNode* funcCall, SymbolTable* context = nullptr);
+TagTableEntry* FindConstructorEntry(SymbolTable* classTable, AParamListNode* params);
 
 template<typename ParentNode>
 bool HasNodeInParentTree(ASTNode* n)
@@ -50,6 +54,7 @@ StatBlockNode* GetParentStatBlock(ASTNode* node);
 
 bool IsValidSelf(SymbolTable* contextTable, VariableNode* var);
 
+bool IsArrayType(ASTNode* n);
 bool IsArrayType(const std::string typeStr);
 
 int GetOffset(SymbolTable* context, const std::string& name);

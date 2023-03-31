@@ -301,6 +301,7 @@ class RefEntry : public TempVarEntry
 {
 public:
     RefEntry(size_t size);
+    virtual std::string GetEvaluatedType() const override;
 };
 
 class ReturnAddressEntry : public SymbolTableEntry

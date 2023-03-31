@@ -430,7 +430,7 @@ std::string ConstructorTableEntry::ToString()
     std::stringstream ss;
     ss << GetKind() << s_seperator << GetName() << s_seperator 
         << "(" << GetParamTypes() << "):" << GetReturnType() 
-        << s_seperator << GetVisibility() << GetSize();
+        << s_seperator << GetVisibility() << s_seperator << GetSize();
 
     return ss.str();
 }
@@ -494,6 +494,10 @@ std::string TempVarEntry::ToString()
 // RefEntry ///////////////////////////////////////////////////////////////
 RefEntry::RefEntry(size_t size) : TempVarEntry("reference", size) { }
 
+std::string RefEntry::GetEvaluatedType() const
+{
+    return "reference";
+}
 
 // ReturnAddressEntry ///////////////////////////////////////////////////////
 ReturnAddressEntry::ReturnAddressEntry() : SymbolTableEntry(SymbolTableEntryKind::ReturnAddress) 
@@ -551,6 +555,8 @@ const std::string& SymbolTable::GetName() const { return m_name; }
 
 SymbolTableEntry* SymbolTable::AddEntry(SymbolTableEntry* entry) 
 {
+    if (entry->GetKind() != SymbolTableEntryKind::ConstructorDef 
+        && entry->GetKind() != SymbolTableEntryKind::ConstructorDecl)
     {
         SymbolTableEntry* originalEntry = FindExistingEntry(entry);
         if (originalEntry != nullptr)

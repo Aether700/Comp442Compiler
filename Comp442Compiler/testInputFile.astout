@@ -22,28 +22,124 @@ Program
 |  |  |  StatBlock
 |  |  |  |  VarDecl
 |  |  |  |  |  id
-|  |  |  |  |  |  countHolder
+|  |  |  |  |  |  arr
 |  |  |  |  |  TypeNode
 |  |  |  |  |  |  A
 |  |  |  |  |  Dimensions
-|  |  |  |  ReadStat
+|  |  |  |  |  |  Literal
+|  |  |  |  |  |  |  3
+|  |  |  |  |  |  |  TypeNode
+|  |  |  |  |  |  |  |  integer
+|  |  |  |  AssigStat
 |  |  |  |  |  Dot
 |  |  |  |  |  |  Variable
 |  |  |  |  |  |  |  id
-|  |  |  |  |  |  |  |  countHolder
+|  |  |  |  |  |  |  |  arr
 |  |  |  |  |  |  |  Dimensions
+|  |  |  |  |  |  |  |  Literal
+|  |  |  |  |  |  |  |  |  0
+|  |  |  |  |  |  |  |  |  TypeNode
+|  |  |  |  |  |  |  |  |  |  integer
 |  |  |  |  |  |  Variable
 |  |  |  |  |  |  |  id
 |  |  |  |  |  |  |  |  x
 |  |  |  |  |  |  |  Dimensions
+|  |  |  |  |  Expr
+|  |  |  |  |  |  Literal
+|  |  |  |  |  |  |  1
+|  |  |  |  |  |  |  TypeNode
+|  |  |  |  |  |  |  |  integer
+|  |  |  |  AssigStat
+|  |  |  |  |  Dot
+|  |  |  |  |  |  Variable
+|  |  |  |  |  |  |  id
+|  |  |  |  |  |  |  |  arr
+|  |  |  |  |  |  |  Dimensions
+|  |  |  |  |  |  |  |  AddOp
+|  |  |  |  |  |  |  |  |  MultOp
+|  |  |  |  |  |  |  |  |  |  Literal
+|  |  |  |  |  |  |  |  |  |  |  2
+|  |  |  |  |  |  |  |  |  |  |  TypeNode
+|  |  |  |  |  |  |  |  |  |  |  |  integer
+|  |  |  |  |  |  |  |  |  |  *
+|  |  |  |  |  |  |  |  |  |  Literal
+|  |  |  |  |  |  |  |  |  |  |  3
+|  |  |  |  |  |  |  |  |  |  |  TypeNode
+|  |  |  |  |  |  |  |  |  |  |  |  integer
+|  |  |  |  |  |  |  |  |  -
+|  |  |  |  |  |  |  |  |  Literal
+|  |  |  |  |  |  |  |  |  |  5
+|  |  |  |  |  |  |  |  |  |  TypeNode
+|  |  |  |  |  |  |  |  |  |  |  integer
+|  |  |  |  |  |  Variable
+|  |  |  |  |  |  |  id
+|  |  |  |  |  |  |  |  x
+|  |  |  |  |  |  |  Dimensions
+|  |  |  |  |  Expr
+|  |  |  |  |  |  Literal
+|  |  |  |  |  |  |  2
+|  |  |  |  |  |  |  TypeNode
+|  |  |  |  |  |  |  |  integer
+|  |  |  |  AssigStat
+|  |  |  |  |  Dot
+|  |  |  |  |  |  Variable
+|  |  |  |  |  |  |  id
+|  |  |  |  |  |  |  |  arr
+|  |  |  |  |  |  |  Dimensions
+|  |  |  |  |  |  |  |  Literal
+|  |  |  |  |  |  |  |  |  2
+|  |  |  |  |  |  |  |  |  TypeNode
+|  |  |  |  |  |  |  |  |  |  integer
+|  |  |  |  |  |  Variable
+|  |  |  |  |  |  |  id
+|  |  |  |  |  |  |  |  x
+|  |  |  |  |  |  |  Dimensions
+|  |  |  |  |  Expr
+|  |  |  |  |  |  Literal
+|  |  |  |  |  |  |  3
+|  |  |  |  |  |  |  TypeNode
+|  |  |  |  |  |  |  |  integer
 |  |  |  |  WriteStat
 |  |  |  |  |  Expr
 |  |  |  |  |  |  Dot
 |  |  |  |  |  |  |  Variable
 |  |  |  |  |  |  |  |  id
-|  |  |  |  |  |  |  |  |  countHolder
+|  |  |  |  |  |  |  |  |  arr
 |  |  |  |  |  |  |  |  Dimensions
+|  |  |  |  |  |  |  |  |  Literal
+|  |  |  |  |  |  |  |  |  |  0
+|  |  |  |  |  |  |  |  |  |  TypeNode
+|  |  |  |  |  |  |  |  |  |  |  integer
 |  |  |  |  |  |  |  Variable
 |  |  |  |  |  |  |  |  id
 |  |  |  |  |  |  |  |  |  x
 |  |  |  |  |  |  |  |  Dimensions
+|  |  |  |  WriteStat
+|  |  |  |  |  Expr
+|  |  |  |  |  |  Dot
+|  |  |  |  |  |  |  Variable
+|  |  |  |  |  |  |  |  id
+|  |  |  |  |  |  |  |  |  arr
+|  |  |  |  |  |  |  |  Dimensions
+|  |  |  |  |  |  |  |  |  AddOp
+|  |  |  |  |  |  |  |  |  |  MultOp
+|  |  |  |  |  |  |  |  |  |  |  Literal
+|  |  |  |  |  |  |  |  |  |  |  |  6
+|  |  |  |  |  |  |  |  |  |  |  |  TypeNode
+|  |  |  |  |  |  |  |  |  |  |  |  |  integer
+|  |  |  |  |  |  |  |  |  |  |  /
+|  |  |  |  |  |  |  |  |  |  |  Literal
+|  |  |  |  |  |  |  |  |  |  |  |  2
+|  |  |  |  |  |  |  |  |  |  |  |  TypeNode
+|  |  |  |  |  |  |  |  |  |  |  |  |  integer
+|  |  |  |  |  |  |  |  |  |  -
+|  |  |  |  |  |  |  |  |  |  Literal
+|  |  |  |  |  |  |  |  |  |  |  2
+|  |  |  |  |  |  |  |  |  |  |  TypeNode
+|  |  |  |  |  |  |  |  |  |  |  |  integer
+|  |  |  |  |  |  |  Variable
+|  |  |  |  |  |  |  |  id
+|  |  |  |  |  |  |  |  |  x
+|  |  |  |  |  |  |  |  Dimensions
+|  |  |  |  WriteStat
+|  |  |  |  | 
