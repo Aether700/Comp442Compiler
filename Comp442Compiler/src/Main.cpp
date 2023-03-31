@@ -11,12 +11,12 @@
 
 
 /* To Do
- - generate read statment
  - call member functions/constructors
 	 - add ref to self as parameter
  - implement parameters being passed by reference for arrays
  - support multiple inheritance
  - finish float support (rel op + mult and div)
+ - check can read into arrays
 */
 
 /*

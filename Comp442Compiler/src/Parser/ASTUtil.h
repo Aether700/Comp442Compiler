@@ -75,3 +75,5 @@ size_t FindSize(SymbolTable* globalTable, const std::string& typeStr);
 
 bool IsRefWhenParameter(const std::string& typeStr);
 bool IsParam(SymbolTable* context, const std::string& name);
+
+bool IsRef(ASTNode* node);

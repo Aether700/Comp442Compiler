@@ -17,6 +17,7 @@ class BaseBinaryOperator;
 class IfStatNode;
 class WhileStatNode;
 class WriteStatNode;
+class ReadStatNode;
 class ReturnStatNode;
 class AssignStatNode;
 class StatBlockNode;
@@ -46,6 +47,7 @@ public:
     virtual void Visit(IfStatNode* element) { }
     virtual void Visit(WhileStatNode* element) { }
     virtual void Visit(WriteStatNode* element) { }
+    virtual void Visit(ReadStatNode* element) { }
     virtual void Visit(ReturnStatNode* element) { }
     virtual void Visit(AssignStatNode* element) { }
     virtual void Visit(VarDeclNode* element) { }

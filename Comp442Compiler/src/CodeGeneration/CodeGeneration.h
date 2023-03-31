@@ -23,6 +23,10 @@ public:
 
     static constexpr int GetPutStrArg1Offset() { return s_putstrFirstArgOffset; }
 
+    static constexpr int GetGetStrArg1Offset() { return s_getstrFirstArgOffset; }
+
+    static constexpr int GetStrIntArg1Offset() { return s_strintFirstArgOffset; }
+
     static constexpr size_t GetAddressSize() { return s_addressSize; }
     static constexpr size_t GetIntSize() { return s_intSize; }
     static constexpr size_t GetFloatSize() { return s_floatSize; }
@@ -39,6 +43,10 @@ private:
     static constexpr int s_intstrSecondArgOffset = -12;
 
     static constexpr int s_putstrFirstArgOffset = -8;
+
+    static constexpr int s_getstrFirstArgOffset = -8;
+
+    static constexpr int s_strintFirstArgOffset = -8;
 };
 
 
@@ -102,6 +110,7 @@ public:
     virtual void Visit(WhileStatNode* element) override;
     virtual void Visit(AssignStatNode* element) override;
     virtual void Visit(WriteStatNode* element) override;
+    virtual void Visit(ReadStatNode* element) override;
     virtual void Visit(ReturnStatNode* element) override;
     virtual void Visit(ProgramNode* element) override;
 
@@ -176,6 +185,8 @@ private:
     std::string CopyData(int dataOffset, size_t dataSize, int destOffset);
     std::string CopyData(SymbolTableEntry* data, SymbolTableEntry* dest);
     std::string CopyDataAtRef(RegisterID dataAddress, size_t dataSize, int destOffset);
+    std::string CopyDataIntoRef(RegisterID value, RegisterID destAddr);
+    std::string CopyDataIntoRef(SymbolTableEntry* data, RegisterID destAddr);
 
     std::string GetNumDigitsInNum(RegisterID num, RegisterID& outNumDigits);
 

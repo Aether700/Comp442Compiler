@@ -12,72 +12,7 @@ Program
 |  |  |  |  TypeNode
 |  |  |  |  |  integer
 |  |  |  |  Dimensions
-|  |  |  MemVar
-|  |  |  |  Visibility
-|  |  |  |  |  public
-|  |  |  |  id
-|  |  |  |  |  y
-|  |  |  |  TypeNode
-|  |  |  |  |  integer
-|  |  |  |  Dimensions
-|  |  |  MemVar
-|  |  |  |  Visibility
-|  |  |  |  |  public
-|  |  |  |  id
-|  |  |  |  |  z
-|  |  |  |  TypeNode
-|  |  |  |  |  integer
-|  |  |  |  Dimensions
-|  |  |  MemVar
-|  |  |  |  Visibility
-|  |  |  |  |  public
-|  |  |  |  id
-|  |  |  |  |  b
-|  |  |  |  TypeNode
-|  |  |  |  |  B
-|  |  |  |  Dimensions
-|  |  ClassDef
-|  |  |  id
-|  |  |  |  B
-|  |  |  InheritanceList
-|  |  |  MemVar
-|  |  |  |  Visibility
-|  |  |  |  |  public
-|  |  |  |  id
-|  |  |  |  |  x
-|  |  |  |  TypeNode
-|  |  |  |  |  integer
-|  |  |  |  Dimensions
 |  FuncDefList
-|  |  FuncDef
-|  |  |  id
-|  |  |  |  f
-|  |  |  TypeNode
-|  |  |  |  void
-|  |  |  FParamList
-|  |  |  |  FParam
-|  |  |  |  |  id
-|  |  |  |  |  |  a
-|  |  |  |  |  TypeNode
-|  |  |  |  |  |  A
-|  |  |  |  |  Dimensions
-|  |  |  StatBlock
-|  |  |  |  WriteStat
-|  |  |  |  |  Expr
-|  |  |  |  |  |  Dot
-|  |  |  |  |  |  |  Variable
-|  |  |  |  |  |  |  |  id
-|  |  |  |  |  |  |  |  |  a
-|  |  |  |  |  |  |  |  Dimensions
-|  |  |  |  |  |  |  Dot
-|  |  |  |  |  |  |  |  Variable
-|  |  |  |  |  |  |  |  |  id
-|  |  |  |  |  |  |  |  |  |  b
-|  |  |  |  |  |  |  |  |  Dimensions
-|  |  |  |  |  |  |  |  Variable
-|  |  |  |  |  |  |  |  |  id
-|  |  |  |  |  |  |  |  |  |  x
-|  |  |  |  |  |  |  |  |  Dimensions
 |  |  FuncDef
 |  |  |  id
 |  |  |  |  main
@@ -87,81 +22,28 @@ Program
 |  |  |  StatBlock
 |  |  |  |  VarDecl
 |  |  |  |  |  id
-|  |  |  |  |  |  a
+|  |  |  |  |  |  countHolder
 |  |  |  |  |  TypeNode
 |  |  |  |  |  |  A
 |  |  |  |  |  Dimensions
-|  |  |  |  AssigStat
+|  |  |  |  ReadStat
 |  |  |  |  |  Dot
 |  |  |  |  |  |  Variable
 |  |  |  |  |  |  |  id
-|  |  |  |  |  |  |  |  a
+|  |  |  |  |  |  |  |  countHolder
 |  |  |  |  |  |  |  Dimensions
 |  |  |  |  |  |  Variable
 |  |  |  |  |  |  |  id
 |  |  |  |  |  |  |  |  x
 |  |  |  |  |  |  |  Dimensions
+|  |  |  |  WriteStat
 |  |  |  |  |  Expr
-|  |  |  |  |  |  Literal
-|  |  |  |  |  |  |  5
-|  |  |  |  |  |  |  TypeNode
-|  |  |  |  |  |  |  |  integer
-|  |  |  |  AssigStat
-|  |  |  |  |  Dot
-|  |  |  |  |  |  Variable
-|  |  |  |  |  |  |  id
-|  |  |  |  |  |  |  |  a
-|  |  |  |  |  |  |  Dimensions
-|  |  |  |  |  |  Variable
-|  |  |  |  |  |  |  id
-|  |  |  |  |  |  |  |  y
-|  |  |  |  |  |  |  Dimensions
-|  |  |  |  |  Expr
-|  |  |  |  |  |  Literal
-|  |  |  |  |  |  |  7
-|  |  |  |  |  |  |  TypeNode
-|  |  |  |  |  |  |  |  integer
-|  |  |  |  AssigStat
-|  |  |  |  |  Dot
-|  |  |  |  |  |  Variable
-|  |  |  |  |  |  |  id
-|  |  |  |  |  |  |  |  a
-|  |  |  |  |  |  |  Dimensions
-|  |  |  |  |  |  Variable
-|  |  |  |  |  |  |  id
-|  |  |  |  |  |  |  |  z
-|  |  |  |  |  |  |  Dimensions
-|  |  |  |  |  Expr
-|  |  |  |  |  |  Literal
-|  |  |  |  |  |  |  12
-|  |  |  |  |  |  |  TypeNode
-|  |  |  |  |  |  |  |  integer
-|  |  |  |  AssigStat
-|  |  |  |  |  Dot
-|  |  |  |  |  |  Variable
-|  |  |  |  |  |  |  id
-|  |  |  |  |  |  |  |  a
-|  |  |  |  |  |  |  Dimensions
 |  |  |  |  |  |  Dot
 |  |  |  |  |  |  |  Variable
 |  |  |  |  |  |  |  |  id
-|  |  |  |  |  |  |  |  |  b
+|  |  |  |  |  |  |  |  |  countHolder
 |  |  |  |  |  |  |  |  Dimensions
 |  |  |  |  |  |  |  Variable
 |  |  |  |  |  |  |  |  id
 |  |  |  |  |  |  |  |  |  x
-|  |  |  |  |  |  |  |  Dimensions
-|  |  |  |  |  Expr
-|  |  |  |  |  |  Literal
-|  |  |  |  |  |  |  12
-|  |  |  |  |  |  |  TypeNode
-|  |  |  |  |  |  |  |  integer
-|  |  |  |  FuncCall
-|  |  |  |  |  id
-|  |  |  |  |  |  f
-|  |  |  |  |  AParams
-|  |  |  |  |  |  Expr
-|  |  |  |  |  |  |  Variable
-|  |  |  |  |  |  |  |  id
-|  |  |  |  |  |  |  |  |  a
 |  |  |  |  |  |  |  |  Dimensions

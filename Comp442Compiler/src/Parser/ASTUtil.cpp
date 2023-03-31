@@ -677,3 +677,17 @@ bool IsParam(SymbolTable* context, const std::string& name)
 {
     return context->FindEntryInScope(name)->GetKind() == SymbolTableEntryKind::Parameter;
 }
+
+bool IsRef(ASTNode* node)
+{
+    if (dynamic_cast<DotNode*>(node) != nullptr)
+    {
+        return IsRef(((DotNode*)node)->GetRight());
+    }
+    else if (dynamic_cast<VariableNode*>(node) != nullptr)
+    {
+        return HasDotForParent(node);
+    }
+
+    return false;
+}

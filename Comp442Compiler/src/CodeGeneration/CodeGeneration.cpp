@@ -624,6 +624,49 @@ void CodeGenerator::Visit(WriteStatNode* element)
 	GetCurrStatBlock(element) += ss.str();
 }
 
+void CodeGenerator::Visit(ReadStatNode* element)
+{
+	std::stringstream ss;
+	RegisterID readRegister = m_registerStack.front();
+	m_registerStack.pop_front();
+
+	size_t frameSize = GetCurrFrameSize(element);
+
+	ss << "\n% read user input\n";
+	ss << IncrementStackFrame(frameSize);
+	// read characters from stream by calling getstr
+	ss << "addi r" << readRegister << ", r" << m_zeroRegister << ", buff\n";
+	ss << "sw " << PlatformSpecifications::GetGetStrArg1Offset() << "(r" 
+		<< m_topOfStackRegister << "), r" << readRegister << "\n";
+	ss << "jl r" << m_jumpReturnRegister << ", getstr\n";
+
+	// convert characters to integers by using strint
+
+	ss << "addi r" << readRegister << ", r" << m_zeroRegister << ", buff\n";
+	ss << "sw " << PlatformSpecifications::GetStrIntArg1Offset() << "(r" << m_topOfStackRegister 
+		<< "), r" << readRegister << "\n";
+	ss << "jl r" << m_jumpReturnRegister << ", strint\n";
+	ss << "add r" << readRegister << ", r" << m_zeroRegister << ", r" << m_returnValRegister << "\n";
+	ss << DecrementStackFrame(frameSize);
+
+	// store value in variable
+	if (IsRef(element->GetVariable()))
+	{
+		ss << "lw r" << readRegister << ", " << GetOffset(element->GetVariable()) 
+			<< "(r" << m_topOfStackRegister << ")\n";
+		ss << CopyDataIntoRef(m_returnValRegister, readRegister);
+	}
+	else
+	{
+		ss << "sw " << GetOffset(element->GetVariable()) << "(r" << m_topOfStackRegister
+			<< "), r" << readRegister << "\n";
+	}
+
+	m_registerStack.push_front(readRegister);
+
+	GetCurrStatBlock(element) += ss.str();
+}
+
 void CodeGenerator::Visit(ReturnStatNode* element)
 {
 	std::stringstream ss;
@@ -1533,6 +1576,27 @@ std::string CodeGenerator::CopyDataAtRef(RegisterID dataAddress, size_t dataSize
 	{
 		ss << "lw r" << reg << ", -" << i << "(r" << dataAddress << ")\n";
 		ss << "sw " << (destOffset - (int)i) << "(r" << m_topOfStackRegister << "), r" << reg << "\n";
+	}
+	return ss.str();
+}
+
+std::string CodeGenerator::CopyDataIntoRef(RegisterID value, RegisterID destAddr)
+{
+	std::stringstream ss;
+	ss << "\n% copy data at reference\n";
+	ss << "sw 0(r" << destAddr << "), r" << value << "\n";
+	return ss.str();
+}
+
+std::string CodeGenerator::CopyDataIntoRef(SymbolTableEntry* data, RegisterID destAddr)
+{
+	std::stringstream ss;
+	RegisterID reg = m_registerStack.front();
+	ss << "\n% copy data at reference\n";
+	for (size_t i = 0; i < data->GetSize(); i += PlatformSpecifications::GetAddressSize())
+	{
+		ss << "lw r" << reg << ", " << data->GetOffset() << "(r" << m_topOfStackRegister << ")\n";
+		ss << "sw -" << (int)i << "(r" << destAddr << "), r" << reg << "\n";
 	}
 	return ss.str();
 }
