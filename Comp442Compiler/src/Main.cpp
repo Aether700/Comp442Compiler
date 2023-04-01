@@ -28,6 +28,18 @@ void DisplaySymbolTable(const std::string& filepath, ProgramNode* prog)
 	symbolTableFile << SymbolTableDisplayManager::TableToStr(prog->GetSymbolTable());
 }
 
+void GenerateBatFile(const std::string& filepath)
+{
+	std::cout << "generating bat file for \"" << filepath << "\"\n";
+	std::string simplifiedFilepath = SimplifyFilename(filepath);
+	std::string filename = simplifiedFilepath.substr(simplifiedFilepath.find_last_of("/\\") + 1);
+	std::ofstream batFile = std::ofstream(simplifiedFilepath + ".bat");
+
+	batFile << "Moon.exe +x " << filename << ".moon lib.m\n";
+	batFile << "pause";
+	batFile.close();
+}
+
 void Compile(const std::string& filepath)
 {
 	ProgramNode* program = Parser::Parse(filepath);
@@ -73,6 +85,10 @@ void Compile(const std::string& filepath)
 	CodeGenerator* generator = new CodeGenerator(program->GetSymbolTable(), filepath);
 	program->AcceptVisit(generator);
 	generator->OutputCode();
+
+#ifdef WINDOWS_BUILD
+	GenerateBatFile(filepath);
+#endif
 
 	SemanticErrorManager::LogData();
 	DisplaySymbolTable(filepath, program);
