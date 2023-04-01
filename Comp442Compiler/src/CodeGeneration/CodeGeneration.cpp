@@ -397,38 +397,25 @@ CodeGenerator::CodeGenerator(SymbolTable* globalTable, const std::string& filepa
 {
 }
 
-void CodeGenerator::Visit(LiteralNode* element)
-{
-	if (element->GetEvaluatedType() == "float")
-	{
-		GetCurrStatBlock(element) += LoadFloatToAddr(GetOffset(element), element);
-	}
-}
-
 void CodeGenerator::Visit(DotNode* element)
 {
 	if (IsRootDot(element))
 	{
-		std::stringstream ss;
-		if (DotIsVar(element))
+		if (!DotIsVar(element))
 		{
-			/*
-			RegisterID ref = m_registerStack.front();
-			ss << "addi r" << ref << ", r" << m_topOfStackRegister << ", " << GetOffsetOfExpr(element) << "\n";
-			ss << "sw " << GetOffset(element) << "(r" << m_topOfStackRegister << "), r" << ref << "\n";
-			*/
-		}
-		else
-		{
+			std::stringstream ss;
+			ss << "\n% calling member function\n";
 			ss << CallMemFunc(element);
+			ss << "% finished calling member function\n\n";
+			GetCurrStatBlock(element) += ss.str();
 		}
-		GetCurrStatBlock(element) += ss.str();
 	}
 }
 
 void CodeGenerator::Visit(ExprNode* element)
 {
 	std::stringstream ss;
+	ss << "\n% storing temporary value of expression\n";
 	if (ComputeSize(element->GetEvaluatedType()) <= PlatformSpecifications::GetAddressSize())
 	{
 		RegisterID exprRoot;
@@ -461,17 +448,14 @@ void CodeGenerator::Visit(ExprNode* element)
 	{
 		DEBUG_BREAK();
 	}
+	ss << "% finished storing temporary value of expression\n";
 	GetCurrStatBlock(element) += ss.str();
-}
-
-void CodeGenerator::Visit(ModifiedExpr* element)
-{
-	GetCurrStatBlock(element) += GenerateModifiedExpr(element);
 }
 
 void CodeGenerator::Visit(BaseBinaryOperator* element)
 {
-	GetCurrStatBlock(element) += GenerateBinaryOp(element);
+	GetCurrStatBlock(element) += "\n% computing binary operator value\n" 
+		+ GenerateBinaryOp(element) + "% finished computing binary operator value\n";
 }
 
 void CodeGenerator::Visit(VarDeclNode* element)
@@ -592,6 +576,7 @@ void CodeGenerator::Visit(IfStatNode* element)
 	ss << startElse << " " << elseBlock << "%end else block\n";
 	ss << endElse << " ";
 
+	ss << "% end of if statement\n";
 	GetCurrStatBlock(element) += ss.str();
 
 	m_registerStack.push_back(relExpr);
@@ -613,6 +598,7 @@ void CodeGenerator::Visit(WhileStatNode* element)
 	ss << "j " << topLoop << "\n";
 	ss << endLoop << " ";
 
+	ss << "% end of while statement\n";
 	GetCurrStatBlock(element) += ss.str();
 
 	m_registerStack.push_back(relExpr);
@@ -675,25 +661,15 @@ void CodeGenerator::Visit(AssignStatNode* element)
 	else if (dynamic_cast<FuncCallNode*>(element->GetRight()->GetRootOfExpr()) != nullptr)
 	{
 		FuncCallNode* function = (FuncCallNode*)element->GetRight()->GetRootOfExpr();
-		SymbolTable* globalTable = GetGlobalTable(element->GetSymbolTable());
-		SymbolTableEntry* dest = nullptr;
-
-		for (SymbolTableEntry* entry : *globalTable)
+		size_t size = ComputeSize(function->GetEvaluatedType());
+		if (size == InvalidSize)
 		{
-			if (entry->GetKind() == SymbolTableEntryKind::FreeFunction)
-			{
-				FunctionDefNode* funcDefNode = (FunctionDefNode*)entry->GetNode();
-				if (HasMatchingParameters(funcDefNode->GetParameters(), function->GetParameters()))
-				{
-					dest = entry;
-					break;
-				}
-			}
+			size = FindSize(GetGlobalTable(element->GetSymbolTable()), function->GetEvaluatedType());
 		}
+		ASSERT(size != InvalidSize);
 
-		ASSERT(dest != nullptr);
 		ss << CallFunc(function);
-		ss << CopyData(GetOffset(function), dest->GetSize(), dest->GetOffset());
+		ss << CopyData(GetOffset(function), size, GetOffset(element));
 	}
 	else if (dynamic_cast<TempVarNodeBase*>(element->GetRight()->GetRootOfExpr()) != nullptr)
 	{
@@ -710,6 +686,8 @@ void CodeGenerator::Visit(AssignStatNode* element)
 		int offset = GetOffset(element);
 		ss << LoadFloatToAddr(offset, floatLiteral);
 	}
+
+	ss << "% assignment statement finished\n\n";
 	GetCurrStatBlock(element) += ss.str();
 }
 
@@ -755,6 +733,7 @@ void CodeGenerator::Visit(WriteStatNode* element)
 	{
 		DEBUG_BREAK(); // type not supported
 	}
+	ss << "% write statement finished\n\n";
 	GetCurrStatBlock(element) += ss.str();
 }
 
@@ -798,6 +777,7 @@ void CodeGenerator::Visit(ReadStatNode* element)
 
 	m_registerStack.push_front(readRegister);
 
+	ss << "% finished reading user input\n";
 	GetCurrStatBlock(element) += ss.str();
 }
 
@@ -834,7 +814,7 @@ void CodeGenerator::Visit(ReturnStatNode* element)
 		exprEntry = table->FindEntryInTable(element->GetExpr()->GetTempVarName());
 		ss << CopyData(exprEntry, returnValEntry);
 	}
-
+	ss << "% finished return statement\n";
 	GetCurrStatBlock(element) += ss.str();
 }
 
@@ -1077,6 +1057,7 @@ std::string CodeGenerator::GenerateNotInt(ModifiedExpr* expr)
 	ss << "j " << endIsFalse << "\n";
 	ss << isFalse << " addi r" << output << ", r" << m_zeroRegister << ", 1\n";
 	ss << endIsFalse << " sw " << GetOffset(expr) << "(r" << m_topOfStackRegister << "), r" << output << "\n";
+	ss << "% finished not\n\n";
 
 	m_registerStack.push_front(exprRegister);
 	return ss.str();
@@ -1518,7 +1499,9 @@ std::string CodeGenerator::ComputeVal(ModifiedExpr* node, RegisterID& outRegiste
 {
 	std::stringstream ss;
 	ss << GenerateModifiedExpr(node);
-	ss << LoadVarInRegister(node, outRegister);
+	outRegister = m_registerStack.front();
+	m_registerStack.pop_front();
+	ss << "lw r" << outRegister << ", " << GetOffset(node) << "(r" << m_topOfStackRegister << ")\n";
 	return ss.str();
 }
 
@@ -1614,7 +1597,7 @@ std::string CodeGenerator::LoadVarInRegister(DotNode* node, RegisterID& outRegis
 			offset += GetOffset(context, var->GetVariable()->GetID().GetLexeme());
 			if (!initializedStartAddr)
 			{
-				ss << "addi r" << startAddr << ", r" << m_topOfStackRegister << ", " << offset << "\n";
+				ss << "lw r" << startAddr << ", " << offset << "(r" << m_topOfStackRegister << ")\n";
 				initializedStartAddr = true;
 			}
 			context = GetContextTable(globalTable, context, currNode->GetLeft());
@@ -1639,7 +1622,7 @@ std::string CodeGenerator::LoadVarInRegister(DotNode* node, RegisterID& outRegis
 		offset += GetOffset(context, var->GetVariable()->GetID().GetLexeme());
 		if (!initializedStartAddr)
 		{
-			ss << "addi r" << startAddr << ", r" << m_topOfStackRegister << ", " << offset << "\n";
+			ss << "lw r" << startAddr << ", " << offset << "(r" << m_topOfStackRegister << ")\n";
 			initializedStartAddr = true;
 		}
 		context = GetContextTable(globalTable, context, currNode->GetLeft());
@@ -1797,12 +1780,13 @@ std::string CodeGenerator::CopyData(int dataOffset, size_t dataSize, int destOff
 {
 	std::stringstream ss;
 	RegisterID reg = m_registerStack.front();
-
+	ss << "\n% copying data\n";
 	for (size_t i = 0; i < dataSize; i += PlatformSpecifications::GetAddressSize())
 	{
 		ss << "lw r" << reg << ", " << (dataOffset - (int)i) << "(r" << m_topOfStackRegister << ")\n";
 		ss << "sw " << (destOffset - (int)i) << "(r" << m_topOfStackRegister << "), r" << reg << "\n";
 	}
+	ss << "% finished copying data\n";
 	return ss.str();
 }
 

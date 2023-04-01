@@ -656,11 +656,13 @@ int GetOffsetOfRight(ASTNode* rightOfDotExpr, SymbolTable* context)
         DotNode* dot = (DotNode*)rightOfDotExpr;
         ASTNode* leftOfDot = dot->GetLeft();
         SymbolTable* newContext = nullptr;
+        int offset = 0;
         if (dynamic_cast<VariableNode*>(leftOfDot) != nullptr)
         {
             VariableNode* var = (VariableNode*)leftOfDot;
             auto temp = var->GetVariable()->GetID().GetLexeme();
             SymbolTable* global = GetGlobalTable(context);
+            offset = GetOffset(context, var->GetVariable()->GetID().GetLexeme());
             newContext = global->FindEntryInTable(var->GetEvaluatedType())->GetSubTable();
         }
         else if (dynamic_cast<FuncCallNode*>(leftOfDot) != nullptr)
@@ -668,7 +670,7 @@ int GetOffsetOfRight(ASTNode* rightOfDotExpr, SymbolTable* context)
             FuncCallNode* var = (FuncCallNode*)leftOfDot;
             newContext = context->FindEntryInScope(var->GetID()->GetID().GetLexeme())->GetParentTable();
         }
-        return GetOffsetOfRight(dot->GetRight(), newContext);
+        return offset + GetOffsetOfRight(dot->GetRight(), newContext);
     }
     else
     {

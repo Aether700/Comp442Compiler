@@ -15,28 +15,6 @@
  - check can read into arrays
 */
 
-/*
-float representation idea:
-1 byte mantissa, 1 byte exponent
-literal = 0.mantissa * 10^exponent
-
-to write
-multiply mantissa by 10, "exponent" times (might overflow double check to be sure, maybe add additional bytes 
-	of storage to be sure) then write (might struggle with dot)
-
-to add/substract
-bring larger exponent to smaller exponent (use more space temporarily) then do computation before 
-bringing it back to 2 bytes
-
-to mult/div
-mult/div mantissa
-add/sub exponent
-
-to compare (rel op)
-compare exponent first then depending on operator check mantissa
-*/
-
-
 void ExitPrompt()
 {
 	std::cout << "\nPress enter to exit\n";

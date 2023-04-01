@@ -1,58 +1,80 @@
 Program
 |  ClassDefList
-|  |  ClassDef
-|  |  |  id
-|  |  |  |  Vec2
-|  |  |  InheritanceList
-|  |  |  MemVar
-|  |  |  |  Visibility
-|  |  |  |  |  public
-|  |  |  |  id
-|  |  |  |  |  x
-|  |  |  |  TypeNode
-|  |  |  |  |  integer
-|  |  |  |  Dimensions
-|  |  |  MemVar
-|  |  |  |  Visibility
-|  |  |  |  |  public
-|  |  |  |  id
-|  |  |  |  |  y
-|  |  |  |  TypeNode
-|  |  |  |  |  integer
-|  |  |  |  Dimensions
-|  |  ClassDef
-|  |  |  id
-|  |  |  |  Vec3
-|  |  |  InheritanceList
-|  |  |  MemVar
-|  |  |  |  Visibility
-|  |  |  |  |  public
-|  |  |  |  id
-|  |  |  |  |  v
-|  |  |  |  TypeNode
-|  |  |  |  |  Vec2
-|  |  |  |  Dimensions
-|  |  |  MemVar
-|  |  |  |  Visibility
-|  |  |  |  |  public
-|  |  |  |  id
-|  |  |  |  |  z
-|  |  |  |  TypeNode
-|  |  |  |  |  integer
-|  |  |  |  Dimensions
-|  |  ClassDef
-|  |  |  id
-|  |  |  |  A
-|  |  |  InheritanceList
-|  |  |  MemVar
-|  |  |  |  Visibility
-|  |  |  |  |  public
-|  |  |  |  id
-|  |  |  |  |  vec
-|  |  |  |  TypeNode
-|  |  |  |  |  Vec3
-|  |  |  |  Dimensions
 |  FuncDefList
+|  |  FuncDef
+|  |  |  id
+|  |  |  |  g
+|  |  |  TypeNode
+|  |  |  |  void
+|  |  |  FParamList
+|  |  |  StatBlock
+|  |  |  |  VarDecl
+|  |  |  |  |  id
+|  |  |  |  |  |  x
+|  |  |  |  |  TypeNode
+|  |  |  |  |  |  integer
+|  |  |  |  |  Dimensions
+|  |  |  |  AssigStat
+|  |  |  |  |  Variable
+|  |  |  |  |  |  id
+|  |  |  |  |  |  |  x
+|  |  |  |  |  |  Dimensions
+|  |  |  |  |  Expr
+|  |  |  |  |  |  Literal
+|  |  |  |  |  |  |  9
+|  |  |  |  |  |  |  TypeNode
+|  |  |  |  |  |  |  |  integer
+|  |  |  |  WriteStat
+|  |  |  |  |  Expr
+|  |  |  |  |  |  MultOp
+|  |  |  |  |  |  |  Variable
+|  |  |  |  |  |  |  |  id
+|  |  |  |  |  |  |  |  |  x
+|  |  |  |  |  |  |  |  Dimensions
+|  |  |  |  |  |  |  /
+|  |  |  |  |  |  |  Literal
+|  |  |  |  |  |  |  |  3
+|  |  |  |  |  |  |  |  TypeNode
+|  |  |  |  |  |  |  |  |  integer
+|  |  FuncDef
+|  |  |  id
+|  |  |  |  f
+|  |  |  TypeNode
+|  |  |  |  void
+|  |  |  FParamList
+|  |  |  StatBlock
+|  |  |  |  VarDecl
+|  |  |  |  |  id
+|  |  |  |  |  |  x
+|  |  |  |  |  TypeNode
+|  |  |  |  |  |  integer
+|  |  |  |  |  Dimensions
+|  |  |  |  AssigStat
+|  |  |  |  |  Variable
+|  |  |  |  |  |  id
+|  |  |  |  |  |  |  x
+|  |  |  |  |  |  Dimensions
+|  |  |  |  |  Expr
+|  |  |  |  |  |  Literal
+|  |  |  |  |  |  |  4
+|  |  |  |  |  |  |  TypeNode
+|  |  |  |  |  |  |  |  integer
+|  |  |  |  FuncCall
+|  |  |  |  |  id
+|  |  |  |  |  |  g
+|  |  |  |  |  AParams
+|  |  |  |  WriteStat
+|  |  |  |  |  Expr
+|  |  |  |  |  |  MultOp
+|  |  |  |  |  |  |  Variable
+|  |  |  |  |  |  |  |  id
+|  |  |  |  |  |  |  |  |  x
+|  |  |  |  |  |  |  |  Dimensions
+|  |  |  |  |  |  |  *
+|  |  |  |  |  |  |  Literal
+|  |  |  |  |  |  |  |  2
+|  |  |  |  |  |  |  |  TypeNode
+|  |  |  |  |  |  |  |  |  integer
 |  |  FuncDef
 |  |  |  id
 |  |  |  |  main
@@ -60,137 +82,7 @@ Program
 |  |  |  |  void
 |  |  |  FParamList
 |  |  |  StatBlock
-|  |  |  |  VarDecl
+|  |  |  |  FuncCall
 |  |  |  |  |  id
-|  |  |  |  |  |  a
-|  |  |  |  |  TypeNode
-|  |  |  |  |  |  A
-|  |  |  |  |  Dimensions
-|  |  |  |  AssigStat
-|  |  |  |  |  Dot
-|  |  |  |  |  |  Variable
-|  |  |  |  |  |  |  id
-|  |  |  |  |  |  |  |  a
-|  |  |  |  |  |  |  Dimensions
-|  |  |  |  |  |  Dot
-|  |  |  |  |  |  |  Variable
-|  |  |  |  |  |  |  |  id
-|  |  |  |  |  |  |  |  |  vec
-|  |  |  |  |  |  |  |  Dimensions
-|  |  |  |  |  |  |  Dot
-|  |  |  |  |  |  |  |  Variable
-|  |  |  |  |  |  |  |  |  id
-|  |  |  |  |  |  |  |  |  |  v
-|  |  |  |  |  |  |  |  |  Dimensions
-|  |  |  |  |  |  |  |  Variable
-|  |  |  |  |  |  |  |  |  id
-|  |  |  |  |  |  |  |  |  |  x
-|  |  |  |  |  |  |  |  |  Dimensions
-|  |  |  |  |  Expr
-|  |  |  |  |  |  Literal
-|  |  |  |  |  |  |  1
-|  |  |  |  |  |  |  TypeNode
-|  |  |  |  |  |  |  |  integer
-|  |  |  |  AssigStat
-|  |  |  |  |  Dot
-|  |  |  |  |  |  Variable
-|  |  |  |  |  |  |  id
-|  |  |  |  |  |  |  |  a
-|  |  |  |  |  |  |  Dimensions
-|  |  |  |  |  |  Dot
-|  |  |  |  |  |  |  Variable
-|  |  |  |  |  |  |  |  id
-|  |  |  |  |  |  |  |  |  vec
-|  |  |  |  |  |  |  |  Dimensions
-|  |  |  |  |  |  |  Dot
-|  |  |  |  |  |  |  |  Variable
-|  |  |  |  |  |  |  |  |  id
-|  |  |  |  |  |  |  |  |  |  v
-|  |  |  |  |  |  |  |  |  Dimensions
-|  |  |  |  |  |  |  |  Variable
-|  |  |  |  |  |  |  |  |  id
-|  |  |  |  |  |  |  |  |  |  y
-|  |  |  |  |  |  |  |  |  Dimensions
-|  |  |  |  |  Expr
-|  |  |  |  |  |  Literal
-|  |  |  |  |  |  |  3
-|  |  |  |  |  |  |  TypeNode
-|  |  |  |  |  |  |  |  integer
-|  |  |  |  AssigStat
-|  |  |  |  |  Dot
-|  |  |  |  |  |  Variable
-|  |  |  |  |  |  |  id
-|  |  |  |  |  |  |  |  a
-|  |  |  |  |  |  |  Dimensions
-|  |  |  |  |  |  Dot
-|  |  |  |  |  |  |  Variable
-|  |  |  |  |  |  |  |  id
-|  |  |  |  |  |  |  |  |  vec
-|  |  |  |  |  |  |  |  Dimensions
-|  |  |  |  |  |  |  Variable
-|  |  |  |  |  |  |  |  id
-|  |  |  |  |  |  |  |  |  z
-|  |  |  |  |  |  |  |  Dimensions
-|  |  |  |  |  Expr
-|  |  |  |  |  |  Literal
-|  |  |  |  |  |  |  2
-|  |  |  |  |  |  |  TypeNode
-|  |  |  |  |  |  |  |  integer
-|  |  |  |  WriteStat
-|  |  |  |  |  Expr
-|  |  |  |  |  |  AddOp
-|  |  |  |  |  |  |  AddOp
-|  |  |  |  |  |  |  |  Dot
-|  |  |  |  |  |  |  |  |  Variable
-|  |  |  |  |  |  |  |  |  |  id
-|  |  |  |  |  |  |  |  |  |  |  a
-|  |  |  |  |  |  |  |  |  |  Dimensions
-|  |  |  |  |  |  |  |  |  Dot
-|  |  |  |  |  |  |  |  |  |  Variable
-|  |  |  |  |  |  |  |  |  |  |  id
-|  |  |  |  |  |  |  |  |  |  |  |  vec
-|  |  |  |  |  |  |  |  |  |  |  Dimensions
-|  |  |  |  |  |  |  |  |  |  Dot
-|  |  |  |  |  |  |  |  |  |  |  Variable
-|  |  |  |  |  |  |  |  |  |  |  |  id
-|  |  |  |  |  |  |  |  |  |  |  |  |  v
-|  |  |  |  |  |  |  |  |  |  |  |  Dimensions
-|  |  |  |  |  |  |  |  |  |  |  Variable
-|  |  |  |  |  |  |  |  |  |  |  |  id
-|  |  |  |  |  |  |  |  |  |  |  |  |  x
-|  |  |  |  |  |  |  |  |  |  |  |  Dimensions
-|  |  |  |  |  |  |  |  +
-|  |  |  |  |  |  |  |  Dot
-|  |  |  |  |  |  |  |  |  Variable
-|  |  |  |  |  |  |  |  |  |  id
-|  |  |  |  |  |  |  |  |  |  |  a
-|  |  |  |  |  |  |  |  |  |  Dimensions
-|  |  |  |  |  |  |  |  |  Dot
-|  |  |  |  |  |  |  |  |  |  Variable
-|  |  |  |  |  |  |  |  |  |  |  id
-|  |  |  |  |  |  |  |  |  |  |  |  vec
-|  |  |  |  |  |  |  |  |  |  |  Dimensions
-|  |  |  |  |  |  |  |  |  |  Dot
-|  |  |  |  |  |  |  |  |  |  |  Variable
-|  |  |  |  |  |  |  |  |  |  |  |  id
-|  |  |  |  |  |  |  |  |  |  |  |  |  v
-|  |  |  |  |  |  |  |  |  |  |  |  Dimensions
-|  |  |  |  |  |  |  |  |  |  |  Variable
-|  |  |  |  |  |  |  |  |  |  |  |  id
-|  |  |  |  |  |  |  |  |  |  |  |  |  y
-|  |  |  |  |  |  |  |  |  |  |  |  Dimensions
-|  |  |  |  |  |  |  +
-|  |  |  |  |  |  |  Dot
-|  |  |  |  |  |  |  |  Variable
-|  |  |  |  |  |  |  |  |  id
-|  |  |  |  |  |  |  |  |  |  a
-|  |  |  |  |  |  |  |  |  Dimensions
-|  |  |  |  |  |  |  |  Dot
-|  |  |  |  |  |  |  |  |  Variable
-|  |  |  |  |  |  |  |  |  |  id
-|  |  |  |  |  |  |  |  |  |  |  vec
-|  |  |  |  |  |  |  |  |  |  Dimensions
-|  |  |  |  |  |  |  |  |  Variable
-|  |  |  |  |  |  |  |  |  |  id
-|  |  |  |  |  |  |  |  |  |  |  z
-|  |  |  |  |  |  |  |  |  |  Dimensions
+|  |  |  |  |  |  f
+|  |  |  |  |  AParams

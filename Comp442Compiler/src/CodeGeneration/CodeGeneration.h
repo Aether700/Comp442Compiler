@@ -100,10 +100,8 @@ class CodeGenerator : public Visitor
 {
 public:
     CodeGenerator(SymbolTable* globalTable, const std::string& filepath);
-    virtual void Visit(LiteralNode* element) override;
     virtual void Visit(DotNode* element) override;
     virtual void Visit(ExprNode* element) override;
-    virtual void Visit(ModifiedExpr* element) override;
     virtual void Visit(BaseBinaryOperator* element) override;
     virtual void Visit(VarDeclNode* element) override;
     virtual void Visit(FuncCallNode* element) override;

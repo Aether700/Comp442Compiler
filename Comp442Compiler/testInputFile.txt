@@ -1,25 +1,21 @@
-class Vec2
-{
-	public attribute x : integer;
-	public attribute y : integer;
-};
 
-class Vec3
+function g()=>void
 {
-	public attribute v : Vec2;
-	public attribute z : integer;
-};
+	localvar x : integer;
+	x = 9;
+	write(x / 3);
+}
 
-class A
+function f()=>void
 {
-	public attribute vec : Vec3;
-};
+	localvar x : integer;
+	x = 4;
+	g();
+	write(x * 2);
+}
 
 function main() => void
 {
-	localvar a : A;
-	a.vec.v.x = 1;
-	a.vec.v.y = 3;
-	a.vec.z = 2;
-	write(a.vec.v.x + a.vec.v.y + a.vec.z);
+	// should write 38
+	f();
 }
