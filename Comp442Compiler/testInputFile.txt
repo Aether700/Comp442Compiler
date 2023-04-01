@@ -1,21 +1,17 @@
-
-function g()=>void
+class ArrObj
 {
-	localvar x : integer;
-	x = 9;
-	write(x / 3);
-}
+	public attribute arr : integer[3];
+};
 
-function f()=>void
+function main()=>void
 {
-	localvar x : integer;
-	x = 4;
-	g();
-	write(x * 2);
-}
+	localvar myArr : ArrObj;
+	myArr.arr[0] = 1;
+	myArr.arr[3*2-5] = 2;
+	myArr.arr[2] = 3;
 
-function main() => void
-{
-	// should write 38
-	f();
+	// should write 123
+	write(myArr.arr[0]);
+	write(myArr.arr[6/3-1]);
+	write(myArr.arr[2]);
 }

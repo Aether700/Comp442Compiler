@@ -608,6 +608,8 @@ std::string VariableNode::GetEvaluatedType()
         return GetSymbolTable()->GetParentTable()->GetName();
     }
     
+
+    std::string typeStr = "";
     if (entry == nullptr)
     {
         if (GetVariable()->GetID().GetLexeme() == "self" 
@@ -638,10 +640,19 @@ std::string VariableNode::GetEvaluatedType()
 
                 if (currVarEntry != nullptr)
                 {
-                    return currVarEntry->GetEvaluatedType();
+                    typeStr = currVarEntry->GetEvaluatedType();
+                    if (!IsArrayType(typeStr))
+                    {
+                        return typeStr;
+                    }
+                    typeStr = BaseTypeOfArr(typeStr);
+                    entry = currVarEntry;
                 }
             }
-            return InvalidType;
+            else
+            {
+                return InvalidType;
+            }
         }
         else
         {
@@ -667,10 +678,13 @@ std::string VariableNode::GetEvaluatedType()
         return entry->GetEvaluatedType();
     }
 
-    TypeNode* type = node->GetType();
+    if (typeStr == "")
+    {
+        TypeNode* type = node->GetType();
+        typeStr = type->GetType().GetLexeme();
+    }
     std::stringstream ss;
-    ss << type->GetType().GetLexeme();
-
+    ss << typeStr;
     size_t dimToSkip = GetDimension()->GetNumChild();
     if (dimToSkip > numDim)
     {

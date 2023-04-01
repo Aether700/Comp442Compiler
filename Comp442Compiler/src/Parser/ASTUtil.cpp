@@ -5,7 +5,19 @@
 
 #include <vector>
 
-// helpers //////////////////////////////////////////////////////////////
+std::string BaseTypeOfArr(const std::string& arrTypeStr)
+{
+    std::string typeStr;
+    for (size_t i = 0; i < arrTypeStr.length(); i++)
+    {
+        if (arrTypeStr[i] == '[' || arrTypeStr[i] == ']')
+        {
+            break;
+        }
+        typeStr += arrTypeStr[i];
+    }
+    return typeStr;
+}
 
 std::string VarDeclToTypeStr(VarDeclNode* var)
 {
@@ -162,7 +174,6 @@ SymbolTable* FindNameInDot(SymbolTable* globalTable, SymbolTable* contextTable,
     return nullptr;
 }
 
-////////////////////////////////////////////////////////////////////////
 DotNode* FindRootDotNodeParent(ASTNode* node)
 {
     ASSERT(HasDotForParent(node));

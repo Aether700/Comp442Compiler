@@ -2,7 +2,7 @@
 #include "AST.h"
 #include "../SemanticChecking/SymbolTable.h"
 
-
+std::string BaseTypeOfArr(const std::string& arrTypeStr);
 std::string VarDeclToTypeStr(VarDeclNode* var);
 std::string FunctionParamTypeToStr(FParamListNode* params);
 

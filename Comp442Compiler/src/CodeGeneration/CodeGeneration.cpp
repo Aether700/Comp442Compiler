@@ -1865,14 +1865,18 @@ std::string CodeGenerator::GetNumDigitsInNum(RegisterID num, RegisterID& outNumD
 }
 
 
-std::string CodeGenerator::ComputeOffsetAtRuntime(VariableNode* var, RegisterID& outRegister)
+std::string CodeGenerator::ComputeOffsetAtRuntime(VariableNode* var, RegisterID& outRegister, SymbolTable* context)
 {
     ASSERT(var->GetDimension()->GetNumChild() > 0);
-	SymbolTableEntry* varEntry = var->GetSymbolTable()->FindEntryInScope(var->
+	if (context == nullptr)
+	{
+		context = var->GetSymbolTable();
+	}
+	SymbolTableEntry* varEntry = context->FindEntryInScope(var->
 		GetVariable()->GetID().GetLexeme());
 
 	VarDeclNode* declNode = (VarDeclNode*)varEntry->GetNode();
-	int varOffset = GetOffset(var->GetSymbolTable(), var->GetVariable()->GetID().GetLexeme());
+	int varOffset = GetOffset(context, var->GetVariable()->GetID().GetLexeme());
 	size_t baseTypeSize = ComputeSize(declNode->GetType(), nullptr);
 	size_t numDimensions = declNode->GetDimension()->GetNumChild();
 
@@ -1920,11 +1924,15 @@ std::string CodeGenerator::ComputeOffsetAtRuntime(VariableNode* var, RegisterID&
 	return ss.str();
 }
 
-std::string CodeGenerator::ComputeOffsetAtRuntime(DotNode* node, RegisterID& outRegister)
+std::string CodeGenerator::ComputeOffsetAtRuntime(DotNode* node, RegisterID& outRegister, SymbolTable* context)
 {
 	std::stringstream ss;
 
-	SymbolTable* context = node->GetSymbolTable();
+	if (context == nullptr)
+	{
+		context = node->GetSymbolTable();
+	}
+
 	SymbolTable* globalTable = GetGlobalTable(context);
 	DotNode* currNode = node;
 	RegisterID offset = m_registerStack.front();
@@ -2018,7 +2026,7 @@ std::string CodeGenerator::ComputeOffsetAtRuntime(DotNode* node, RegisterID& out
 	if (IsArrayType(var))
 	{
 		RegisterID currOffset;
-		ss << ComputeOffsetAtRuntime(var, currOffset);
+		ss << ComputeOffsetAtRuntime(var, currOffset, context);
 		ss << "add r" << offset << ", r" << offset << ", r" << currOffset << "\n";
 		m_registerStack.push_front(currOffset);
 	}

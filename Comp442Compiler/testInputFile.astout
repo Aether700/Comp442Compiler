@@ -1,80 +1,22 @@
 Program
 |  ClassDefList
+|  |  ClassDef
+|  |  |  id
+|  |  |  |  ArrObj
+|  |  |  InheritanceList
+|  |  |  MemVar
+|  |  |  |  Visibility
+|  |  |  |  |  public
+|  |  |  |  id
+|  |  |  |  |  arr
+|  |  |  |  TypeNode
+|  |  |  |  |  integer
+|  |  |  |  Dimensions
+|  |  |  |  |  Literal
+|  |  |  |  |  |  3
+|  |  |  |  |  |  TypeNode
+|  |  |  |  |  |  |  integer
 |  FuncDefList
-|  |  FuncDef
-|  |  |  id
-|  |  |  |  g
-|  |  |  TypeNode
-|  |  |  |  void
-|  |  |  FParamList
-|  |  |  StatBlock
-|  |  |  |  VarDecl
-|  |  |  |  |  id
-|  |  |  |  |  |  x
-|  |  |  |  |  TypeNode
-|  |  |  |  |  |  integer
-|  |  |  |  |  Dimensions
-|  |  |  |  AssigStat
-|  |  |  |  |  Variable
-|  |  |  |  |  |  id
-|  |  |  |  |  |  |  x
-|  |  |  |  |  |  Dimensions
-|  |  |  |  |  Expr
-|  |  |  |  |  |  Literal
-|  |  |  |  |  |  |  9
-|  |  |  |  |  |  |  TypeNode
-|  |  |  |  |  |  |  |  integer
-|  |  |  |  WriteStat
-|  |  |  |  |  Expr
-|  |  |  |  |  |  MultOp
-|  |  |  |  |  |  |  Variable
-|  |  |  |  |  |  |  |  id
-|  |  |  |  |  |  |  |  |  x
-|  |  |  |  |  |  |  |  Dimensions
-|  |  |  |  |  |  |  /
-|  |  |  |  |  |  |  Literal
-|  |  |  |  |  |  |  |  3
-|  |  |  |  |  |  |  |  TypeNode
-|  |  |  |  |  |  |  |  |  integer
-|  |  FuncDef
-|  |  |  id
-|  |  |  |  f
-|  |  |  TypeNode
-|  |  |  |  void
-|  |  |  FParamList
-|  |  |  StatBlock
-|  |  |  |  VarDecl
-|  |  |  |  |  id
-|  |  |  |  |  |  x
-|  |  |  |  |  TypeNode
-|  |  |  |  |  |  integer
-|  |  |  |  |  Dimensions
-|  |  |  |  AssigStat
-|  |  |  |  |  Variable
-|  |  |  |  |  |  id
-|  |  |  |  |  |  |  x
-|  |  |  |  |  |  Dimensions
-|  |  |  |  |  Expr
-|  |  |  |  |  |  Literal
-|  |  |  |  |  |  |  4
-|  |  |  |  |  |  |  TypeNode
-|  |  |  |  |  |  |  |  integer
-|  |  |  |  FuncCall
-|  |  |  |  |  id
-|  |  |  |  |  |  g
-|  |  |  |  |  AParams
-|  |  |  |  WriteStat
-|  |  |  |  |  Expr
-|  |  |  |  |  |  MultOp
-|  |  |  |  |  |  |  Variable
-|  |  |  |  |  |  |  |  id
-|  |  |  |  |  |  |  |  |  x
-|  |  |  |  |  |  |  |  Dimensions
-|  |  |  |  |  |  |  *
-|  |  |  |  |  |  |  Literal
-|  |  |  |  |  |  |  |  2
-|  |  |  |  |  |  |  |  TypeNode
-|  |  |  |  |  |  |  |  |  integer
 |  |  FuncDef
 |  |  |  id
 |  |  |  |  main
@@ -82,7 +24,135 @@ Program
 |  |  |  |  void
 |  |  |  FParamList
 |  |  |  StatBlock
-|  |  |  |  FuncCall
+|  |  |  |  VarDecl
 |  |  |  |  |  id
-|  |  |  |  |  |  f
-|  |  |  |  |  AParams
+|  |  |  |  |  |  myArr
+|  |  |  |  |  TypeNode
+|  |  |  |  |  |  ArrObj
+|  |  |  |  |  Dimensions
+|  |  |  |  AssigStat
+|  |  |  |  |  Dot
+|  |  |  |  |  |  Variable
+|  |  |  |  |  |  |  id
+|  |  |  |  |  |  |  |  myArr
+|  |  |  |  |  |  |  Dimensions
+|  |  |  |  |  |  Variable
+|  |  |  |  |  |  |  id
+|  |  |  |  |  |  |  |  arr
+|  |  |  |  |  |  |  Dimensions
+|  |  |  |  |  |  |  |  Literal
+|  |  |  |  |  |  |  |  |  0
+|  |  |  |  |  |  |  |  |  TypeNode
+|  |  |  |  |  |  |  |  |  |  integer
+|  |  |  |  |  Expr
+|  |  |  |  |  |  Literal
+|  |  |  |  |  |  |  1
+|  |  |  |  |  |  |  TypeNode
+|  |  |  |  |  |  |  |  integer
+|  |  |  |  AssigStat
+|  |  |  |  |  Dot
+|  |  |  |  |  |  Variable
+|  |  |  |  |  |  |  id
+|  |  |  |  |  |  |  |  myArr
+|  |  |  |  |  |  |  Dimensions
+|  |  |  |  |  |  Variable
+|  |  |  |  |  |  |  id
+|  |  |  |  |  |  |  |  arr
+|  |  |  |  |  |  |  Dimensions
+|  |  |  |  |  |  |  |  AddOp
+|  |  |  |  |  |  |  |  |  MultOp
+|  |  |  |  |  |  |  |  |  |  Literal
+|  |  |  |  |  |  |  |  |  |  |  3
+|  |  |  |  |  |  |  |  |  |  |  TypeNode
+|  |  |  |  |  |  |  |  |  |  |  |  integer
+|  |  |  |  |  |  |  |  |  |  *
+|  |  |  |  |  |  |  |  |  |  Literal
+|  |  |  |  |  |  |  |  |  |  |  2
+|  |  |  |  |  |  |  |  |  |  |  TypeNode
+|  |  |  |  |  |  |  |  |  |  |  |  integer
+|  |  |  |  |  |  |  |  |  -
+|  |  |  |  |  |  |  |  |  Literal
+|  |  |  |  |  |  |  |  |  |  5
+|  |  |  |  |  |  |  |  |  |  TypeNode
+|  |  |  |  |  |  |  |  |  |  |  integer
+|  |  |  |  |  Expr
+|  |  |  |  |  |  Literal
+|  |  |  |  |  |  |  2
+|  |  |  |  |  |  |  TypeNode
+|  |  |  |  |  |  |  |  integer
+|  |  |  |  AssigStat
+|  |  |  |  |  Dot
+|  |  |  |  |  |  Variable
+|  |  |  |  |  |  |  id
+|  |  |  |  |  |  |  |  myArr
+|  |  |  |  |  |  |  Dimensions
+|  |  |  |  |  |  Variable
+|  |  |  |  |  |  |  id
+|  |  |  |  |  |  |  |  arr
+|  |  |  |  |  |  |  Dimensions
+|  |  |  |  |  |  |  |  Literal
+|  |  |  |  |  |  |  |  |  2
+|  |  |  |  |  |  |  |  |  TypeNode
+|  |  |  |  |  |  |  |  |  |  integer
+|  |  |  |  |  Expr
+|  |  |  |  |  |  Literal
+|  |  |  |  |  |  |  3
+|  |  |  |  |  |  |  TypeNode
+|  |  |  |  |  |  |  |  integer
+|  |  |  |  WriteStat
+|  |  |  |  |  Expr
+|  |  |  |  |  |  Dot
+|  |  |  |  |  |  |  Variable
+|  |  |  |  |  |  |  |  id
+|  |  |  |  |  |  |  |  |  myArr
+|  |  |  |  |  |  |  |  Dimensions
+|  |  |  |  |  |  |  Variable
+|  |  |  |  |  |  |  |  id
+|  |  |  |  |  |  |  |  |  arr
+|  |  |  |  |  |  |  |  Dimensions
+|  |  |  |  |  |  |  |  |  Literal
+|  |  |  |  |  |  |  |  |  |  0
+|  |  |  |  |  |  |  |  |  |  TypeNode
+|  |  |  |  |  |  |  |  |  |  |  integer
+|  |  |  |  WriteStat
+|  |  |  |  |  Expr
+|  |  |  |  |  |  Dot
+|  |  |  |  |  |  |  Variable
+|  |  |  |  |  |  |  |  id
+|  |  |  |  |  |  |  |  |  myArr
+|  |  |  |  |  |  |  |  Dimensions
+|  |  |  |  |  |  |  Variable
+|  |  |  |  |  |  |  |  id
+|  |  |  |  |  |  |  |  |  arr
+|  |  |  |  |  |  |  |  Dimensions
+|  |  |  |  |  |  |  |  |  AddOp
+|  |  |  |  |  |  |  |  |  |  MultOp
+|  |  |  |  |  |  |  |  |  |  |  Literal
+|  |  |  |  |  |  |  |  |  |  |  |  6
+|  |  |  |  |  |  |  |  |  |  |  |  TypeNode
+|  |  |  |  |  |  |  |  |  |  |  |  |  integer
+|  |  |  |  |  |  |  |  |  |  |  /
+|  |  |  |  |  |  |  |  |  |  |  Literal
+|  |  |  |  |  |  |  |  |  |  |  |  3
+|  |  |  |  |  |  |  |  |  |  |  |  TypeNode
+|  |  |  |  |  |  |  |  |  |  |  |  |  integer
+|  |  |  |  |  |  |  |  |  |  -
+|  |  |  |  |  |  |  |  |  |  Literal
+|  |  |  |  |  |  |  |  |  |  |  1
+|  |  |  |  |  |  |  |  |  |  |  TypeNode
+|  |  |  |  |  |  |  |  |  |  |  |  integer
+|  |  |  |  WriteStat
+|  |  |  |  |  Expr
+|  |  |  |  |  |  Dot
+|  |  |  |  |  |  |  Variable
+|  |  |  |  |  |  |  |  id
+|  |  |  |  |  |  |  |  |  myArr
+|  |  |  |  |  |  |  |  Dimensions
+|  |  |  |  |  |  |  Variable
+|  |  |  |  |  |  |  |  id
+|  |  |  |  |  |  |  |  |  arr
+|  |  |  |  |  |  |  |  Dimensions
+|  |  |  |  |  |  |  |  |  Literal
+|  |  |  |  |  |  |  |  |  |  2
+|  |  |  |  |  |  |  |  |  |  TypeNode
+|  |  |  |  |  |  |  |  |  |  |  integer

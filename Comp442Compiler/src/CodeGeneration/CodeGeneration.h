@@ -192,8 +192,8 @@ private:
 
     std::string GetNumDigitsInNum(RegisterID num, RegisterID& outNumDigits);
 
-    std::string ComputeOffsetAtRuntime(VariableNode* var, RegisterID& outRegister);
-    std::string ComputeOffsetAtRuntime(DotNode* node, RegisterID& outRegister);
+    std::string ComputeOffsetAtRuntime(VariableNode* var, RegisterID& outRegister, SymbolTable* context = nullptr);
+    std::string ComputeOffsetAtRuntime(DotNode* node, RegisterID& outRegister, SymbolTable* context = nullptr);
 
     std::string& GetCurrStatBlock(ASTNode* node);
     size_t GetCurrFrameSize(ASTNode* node);
