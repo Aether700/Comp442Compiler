@@ -1,16 +1,25 @@
-class A
+class Vec2
 {
 	public attribute x : integer;
+	public attribute y : integer;
 };
 
-function main()=>void
+class Vec3
 {
-	localvar arr : A[3];
-	arr[0].x = 1;
-	arr[2 * 3 - 5].x = 2;
-	arr[2].x = 3;
+	public attribute v : Vec2;
+	public attribute z : integer;
+};
 
-	write(arr[0].x);
-	write(arr[6/2-2].x);
-	write(arr[2].x);
+class A
+{
+	public attribute vec : Vec3;
+};
+
+function main() => void
+{
+	localvar a : A;
+	a.vec.v.x = 1;
+	a.vec.v.y = 3;
+	a.vec.z = 2;
+	write(a.vec.v.x + a.vec.v.y + a.vec.z);
 }

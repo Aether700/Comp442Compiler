@@ -650,13 +650,13 @@ void CodeGenerator::Visit(AssignStatNode* element)
 			if (dynamic_cast<VariableNode*>(element->GetLeft()) != nullptr)
 			{
 				ss << ComputeOffsetAtRuntime((VariableNode*)element->GetLeft(), offset);
-				ss << "add r" << offset << ", r" << offset << ", r" << m_topOfStackRegister << "\n";
-				ss << "sw 0(r" << offset << "), r" << right << "\n";
 			}
 			else if (dynamic_cast<DotNode*>(element->GetLeft()) != nullptr)
 			{
-				DEBUG_BREAK();
+				ss << ComputeOffsetAtRuntime((DotNode*)element->GetLeft(), offset);
 			}
+			ss << "add r" << offset << ", r" << offset << ", r" << m_topOfStackRegister << "\n";
+			ss << "sw 0(r" << offset << "), r" << right << "\n";
 			m_registerStack.push_front(offset);
 		}
 		else
@@ -1449,7 +1449,7 @@ std::string CodeGenerator::ComputeVal(ASTNode* node, RegisterID& outRegister)
 	else if (dynamic_cast<VariableNode*>(node) != nullptr)
 	{
 		VariableNode* var = (VariableNode*)node;
-		if (var->GetDimension()->GetNumChild() > 0)
+		if (IsArrayType(var))
 		{
 			std::stringstream ss;
 			outRegister = m_registerStack.front();
@@ -1466,6 +1466,20 @@ std::string CodeGenerator::ComputeVal(ASTNode* node, RegisterID& outRegister)
 	}
 	else if (dynamic_cast<DotNode*>(node) != nullptr)
 	{
+		DotNode* dot = (DotNode*)node;
+		if (IsArrayType(dot))
+		{
+			std::stringstream ss;
+			outRegister = m_registerStack.front();
+			m_registerStack.pop_front();
+			RegisterID offset;
+			ss << ComputeOffsetAtRuntime(dot, offset);
+			ss << "add r" << offset << ", r" << offset << ", r" << m_topOfStackRegister << "\n";
+			ss << "lw r" << outRegister << ", 0(r" << offset << ")\n";
+			m_registerStack.push_front(offset);
+
+			return ss.str();
+		}
 		return LoadVarInRegister((DotNode*)node, outRegister);
 	}
 	else
@@ -1922,7 +1936,124 @@ std::string CodeGenerator::ComputeOffsetAtRuntime(VariableNode* var, RegisterID&
 	return ss.str();
 }
 
+std::string CodeGenerator::ComputeOffsetAtRuntime(DotNode* node, RegisterID& outRegister)
+{
+	std::stringstream ss;
 
+	SymbolTable* context = node->GetSymbolTable();
+	SymbolTable* globalTable = GetGlobalTable(context);
+	DotNode* currNode = node;
+	RegisterID offset = m_registerStack.front();
+	m_registerStack.pop_front();
+
+	ss << "\n% computing offset at runtime of dot expression\n";
+	ss << "addi r" << offset << ", r" << m_zeroRegister << ", 0\n";
+
+	RegisterID startAddr = m_registerStack.front();
+	m_registerStack.pop_front();
+	bool initializedStartAddr = false;
+
+	if (!IsRef(node))
+	{
+		ss << "addi r" << startAddr << ", r" << m_topOfStackRegister << ", 0\n";
+		initializedStartAddr = true;
+	}
+
+	while (dynamic_cast<DotNode*>(currNode->GetRight()) != nullptr)
+	{
+		if (dynamic_cast<VariableNode*>(currNode->GetLeft()) != nullptr)
+		{
+			VariableNode* var = (VariableNode*)currNode->GetLeft();
+			if (IsArrayType(var))
+			{
+				RegisterID currOffset;
+				ss << ComputeOffsetAtRuntime(var, currOffset);
+				ss << "add r" << offset << ", r" << offset << ", r" << currOffset << "\n";
+				m_registerStack.push_front(currOffset);
+			}
+			else
+			{
+				int currOffset = GetOffset(context, var->GetVariable()->GetID().GetLexeme());
+				ss << "addi r" << offset << ", r" << offset << ", " << currOffset << "\n";
+			}
+
+			if (!initializedStartAddr)
+			{
+				ss << "add r" << startAddr << ", r" << m_topOfStackRegister << ", r" << offset << "\n";
+				initializedStartAddr = true;
+			}
+			context = GetContextTable(globalTable, context, currNode->GetLeft());
+		}
+		else if (dynamic_cast<FuncCallNode*>(currNode->GetLeft()) != nullptr)
+		{
+			ss << CallMemFunc((FuncCallNode*)currNode->GetLeft(), context, offset);
+			context = GetContextTable(globalTable, context, currNode->GetLeft());
+			ss << "addi r" << offset << ", r" << m_zeroRegister << ", 0\n";
+			ss << "addi r" << startAddr << ", r" << m_topOfStackRegister << ", "
+				<< GetOffset(currNode->GetLeft()) << "\n";
+			initializedStartAddr = true;
+		}
+
+		currNode = (DotNode*)currNode->GetRight();
+	}
+
+	// handle last left
+	if (dynamic_cast<VariableNode*>(currNode->GetLeft()) != nullptr)
+	{
+		VariableNode* var = (VariableNode*)currNode->GetLeft();
+		if (IsArrayType(var))
+		{
+			RegisterID currOffset;
+			ss << ComputeOffsetAtRuntime(var, currOffset);
+			ss << "add r" << offset << ", r" << offset << ", r" << currOffset << "\n";
+			m_registerStack.push_front(currOffset);
+		}
+		else
+		{
+			int currOffset = GetOffset(context, var->GetVariable()->GetID().GetLexeme());
+			ss << "addi r" << offset << ", r" << offset << ", " << currOffset << "\n";
+		}
+
+		if (!initializedStartAddr)
+		{
+			ss << "add r" << startAddr << ", r" << m_topOfStackRegister << ", r" << offset << "\n";
+			initializedStartAddr = true;
+		}
+		context = GetContextTable(globalTable, context, currNode->GetLeft());
+	}
+	else if (dynamic_cast<FuncCallNode*>(currNode->GetLeft()) != nullptr)
+	{
+		ss << CallMemFunc((FuncCallNode*)currNode->GetLeft(), context, offset);
+		context = GetContextTable(globalTable, context, currNode->GetLeft());
+		ss << "addi r" << offset << ", r" << m_zeroRegister << ", 0\n";
+	}
+
+	// handle right
+	ASSERT(dynamic_cast<VariableNode*>(currNode->GetRight()) != nullptr);
+	VariableNode* var = (VariableNode*)currNode->GetRight();
+	if (IsArrayType(var))
+	{
+		RegisterID currOffset;
+		ss << ComputeOffsetAtRuntime(var, currOffset);
+		ss << "add r" << offset << ", r" << offset << ", r" << currOffset << "\n";
+		m_registerStack.push_front(currOffset);
+	}
+	else
+	{
+		int currOffset = GetOffset(context, var->GetVariable()->GetID().GetLexeme());
+		ss << "addi r" << offset << ", r" << offset << ", " << currOffset << "\n";
+	}
+	m_registerStack.push_front(startAddr);
+	
+	outRegister = m_registerStack.front();
+	m_registerStack.pop_front();
+	ss << "addi r" << outRegister << ", r" << offset << ", 0\n";
+	ss << "% finished computing offset at runtime of dot expression\n\n";
+
+	m_registerStack.push_front(offset);
+
+	return ss.str();
+}
 std::string& CodeGenerator::GetCurrStatBlock(ASTNode* node)
 {
 	StatBlockNode* statBlock = GetParentStatBlock(node);
