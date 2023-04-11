@@ -381,13 +381,13 @@ public:
 
 private:
     static constexpr const char* s_namePrefix = "table: ";
-    static constexpr size_t s_mainTableWidth = 120;
+    static constexpr size_t s_mainTableWidth = 150;
     static constexpr size_t s_mainTableIndent = 1;
     
-    static constexpr size_t s_subTableWidth = 110;
+    static constexpr size_t s_subTableWidth = 140;
     static constexpr size_t s_subTableIndent = 4;
 
-    static constexpr size_t s_subSubTableWidth = 100;
+    static constexpr size_t s_subSubTableWidth = 130;
     static constexpr size_t s_subSubTableIndent = 4;
 
     static std::string MainTableToStr(SymbolTable* table);

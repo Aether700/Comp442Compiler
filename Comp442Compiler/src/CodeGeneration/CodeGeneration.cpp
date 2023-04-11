@@ -194,7 +194,7 @@ void SizeGenerator::TryAddTempVar(TempVarNodeBase* element)
 	{
 		CreateTempVar(element);
 	}
-	else
+	else if (size != 0)
 	{
 		m_toRevisit.push_back(element);
 	}

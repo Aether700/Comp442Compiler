@@ -754,7 +754,10 @@ size_t ComputeSize(const std::string& typeStr)
 size_t FindSize(SymbolTable* globalTable, const std::string& typeStr)
 {
     SymbolTableEntry* classEntry = globalTable->FindEntryInTable(typeStr);
-    ASSERT(classEntry != nullptr);
+    if (classEntry == nullptr)
+    {
+        return 0;
+    }
     return classEntry->GetSize();
 }
 
