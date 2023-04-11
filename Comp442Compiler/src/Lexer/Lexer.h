@@ -121,6 +121,10 @@ private:
 	
 	void InitializeLexicalTable();
 	
+	void WriteToken(const Token& t);
+	void WriteValidToken(const Token& t);
+	void WriteErrorToken(const Token& t);
+
 	static Lexer& GetInstance();
 
 	size_t m_lineCounter;
@@ -128,6 +132,8 @@ private:
 	std::stringstream m_lineBuffer;
 	std::unordered_map<StateID, LexicalTableEntry*> m_lexicalTable;
 	std::ifstream m_inputFile;
+	std::ofstream m_lexOutFile;
+	std::ofstream m_lexErrFile;
 	size_t m_multiLineCommentsOpened;
 	size_t m_startLineOfMultiLineComment;
 	char m_lastChar;

@@ -1,0 +1,1 @@
+Invalid arithmetic expresion provided at line 9: "arr[0.64.45].x = 1;". Unexpected token "]" encountered

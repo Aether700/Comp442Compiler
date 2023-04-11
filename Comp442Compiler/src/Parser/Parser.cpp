@@ -1534,10 +1534,6 @@ Token Parser::GetNextToken()
     Token nextToken = Lexer::GetNextToken();
     while (TokenIsIgnored(nextToken.GetTokenType()) || nextToken.IsError())
     {
-        if (nextToken.IsError())
-        {
-            GetInstance().WriteLexicalErrorToFile(nextToken);
-        }
         nextToken = Lexer::GetNextToken();
     }
     return nextToken;
@@ -2382,11 +2378,4 @@ void Parser::UpdateNextNonTerminalIndex()
             break;
         }
     }
-}
-
-void Parser::WriteLexicalErrorToFile(const Token& t)
-{
-    m_errorFound = true;
-    m_errorFile << "Lexical error: " << t.GetTokenType() << ": \""
-	    << t.GetLexeme() << "\": line  " << t.GetLine() << ".\n";
 }

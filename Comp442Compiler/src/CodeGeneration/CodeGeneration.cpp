@@ -183,6 +183,7 @@ void SizeGenerator::TryAddTempVar(FParamNode* element)
 
 void SizeGenerator::TryAddTempVar(TempVarNodeBase* element)
 {
+	auto t = element->GetEvaluatedType();
 	size_t size = ComputeSize(element->GetEvaluatedType());
 	if (size == InvalidSize)
 	{

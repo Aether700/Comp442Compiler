@@ -1,5 +1,6 @@
 #include "Lexer.h"
 #include "../Core/Core.h"
+#include "../Core/Util.h"
 #include <string.h>
 #include <iostream>
 
@@ -231,6 +232,13 @@ void Lexer::SetInputFile(const std::string& filepath)
 {
 	Lexer& l = GetInstance();
 	l.m_inputFile = std::ifstream(filepath, std::ios_base::in);
+	std::string simplifiedName = SimplifyFilename(filepath);
+	l.m_lexOutFile.close();
+	l.m_lexErrFile.close();
+
+	l.m_lexOutFile = std::ofstream(simplifiedName + ".outlextokens");
+	l.m_lexErrFile = std::ofstream(simplifiedName + ".outlexerrors");
+
 	l.m_lineCounter = 1;
 	l.m_multiLineCommentsOpened = 0;
 	l.m_startLineOfMultiLineComment = 0;
@@ -269,6 +277,7 @@ Token Lexer::GetNextToken()
 			l.m_lineCounter++;
 			l.m_lines.push_back(l.m_lineBuffer.str());
 			l.m_lineBuffer.str("");
+			l.m_lexOutFile << "\n";
 		}
 
 		if (currState != 0 || !(CharData::IsWhitespace(lookup) 
@@ -283,6 +292,7 @@ Token Lexer::GetNextToken()
 		l.m_lastChar = lookup;
 
 	}
+	l.WriteToken(t);
 	return Token(t);
 }
 
@@ -558,6 +568,30 @@ void Lexer::InitializeLexicalTable()
 
 	m_lexicalTable[31] = new LexicalTableEntry({}, true, false, TokenType::InvalidCharacter);
 }
+
+void Lexer::WriteToken(const Token& t)
+{
+	if (t.IsError())
+	{
+		WriteErrorToken(t);
+	}
+	else
+	{
+		WriteValidToken(t);
+	}
+}
+
+void Lexer::WriteValidToken(const Token& t)
+{
+	m_lexOutFile << "[" << t.GetTokenType() << ", " << t.GetLexeme() << ", " << t.GetLine() << "]";
+}
+
+void Lexer::WriteErrorToken(const Token& t)
+{
+	m_lexErrFile << "Lexical error: " << t.GetTokenType() << ": \""
+		<< t.GetLexeme() << "\": line  " << t.GetLine() << ".\n";
+}
+
 
 Lexer& Lexer::GetInstance()
 {

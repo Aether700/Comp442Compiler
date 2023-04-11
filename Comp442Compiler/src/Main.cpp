@@ -45,7 +45,7 @@ void Compile(const std::string& filepath)
 	ProgramNode* program = Parser::Parse(filepath);
 	if (program == nullptr)
 	{
-		std::cout << "Parsing error was found in file \"" << filepath 
+		std::cout << "Parsing or lexical error was found in file \"" << filepath 
 			<< "\", check logs for detail\n";
 		return;
 	}
