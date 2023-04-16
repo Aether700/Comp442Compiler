@@ -13,4 +13,5 @@ function main() => void
 {
 	localvar a : A;
 	a.f();
+	a.x = 4;
 }

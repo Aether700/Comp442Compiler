@@ -11,7 +11,7 @@
 
 
 /* To Do
- - check usage of private members
+ - 
 */
 
 void ExitPrompt()

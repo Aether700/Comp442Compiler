@@ -1277,8 +1277,8 @@ void SemanticChecker::TestDotRemainder(SymbolTable* contextTable,
 
                         if (!ClassMemberIsAccessible(memFuncEntry, dotRemainder->GetSymbolTable()))
                         {
-                            SemanticErrorManager::AddError(new ProhibitedAccessToPrivateMemberError(((MemFuncDefNode*)
-                                ((MemFuncTableEntry*)entry)->GetNode())->GetID()->GetID()));
+                            SemanticErrorManager::AddError(new ProhibitedAccessToPrivateMemberError(
+                                funcCall->GetID()->GetID()));
                         }
                     }
 

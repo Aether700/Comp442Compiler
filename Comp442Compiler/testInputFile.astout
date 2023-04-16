@@ -67,3 +67,18 @@ Program
 |  |  |  |  |  |  id
 |  |  |  |  |  |  |  f
 |  |  |  |  |  |  AParams
+|  |  |  |  AssigStat
+|  |  |  |  |  Dot
+|  |  |  |  |  |  Variable
+|  |  |  |  |  |  |  id
+|  |  |  |  |  |  |  |  a
+|  |  |  |  |  |  |  Dimensions
+|  |  |  |  |  |  Variable
+|  |  |  |  |  |  |  id
+|  |  |  |  |  |  |  |  x
+|  |  |  |  |  |  |  Dimensions
+|  |  |  |  |  Expr
+|  |  |  |  |  |  Literal
+|  |  |  |  |  |  |  4
+|  |  |  |  |  |  |  TypeNode
+|  |  |  |  |  |  |  |  integer

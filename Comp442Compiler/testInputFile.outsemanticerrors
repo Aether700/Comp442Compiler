@@ -1,1 +1,2 @@
-Error: Prohibited access to private member "f" at line 7: "function A::f()=>void"
+Error: Prohibited access to private member "f" at line 15: "a.f();"
+Error: Prohibited access to private member "x" at line 16: "a.x = 4;"
