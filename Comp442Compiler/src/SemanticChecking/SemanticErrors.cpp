@@ -1,5 +1,6 @@
 #include "SemanticErrors.h"
 #include "../Parser/AST.h"
+#include "../Core/MessagePrinter.h"
 
 #include <sstream>
 #include <fstream>
@@ -38,6 +39,11 @@ TokenBasedWarning::TokenBasedWarning(SemanticWarningCode code, const Token& t)
     : SemanticWarning(code), m_token(t) { }
 const Token& TokenBasedWarning::GetToken() const { return m_token; }
 
+void TokenBasedWarning::SendToMessagePrinter()
+{
+    MessagePrinter::AddMessage(GetToken().GetLine(), ToString());
+}
+
 // TokenPairBasedWarning ////////////////////////////////////////////////////////////
 TokenPairBasedWarning::TokenPairBasedWarning(SemanticWarningCode code, const Token& t1, 
     const Token& t2) : SemanticWarning(code), m_t1(t1), m_t2(t2) { }
@@ -72,6 +78,11 @@ std::string OverloadedMemFuncWarn::GetMessage() const
     return ss.str();
 }
 
+void OverloadedMemFuncWarn::SendToMessagePrinter()
+{
+    MessagePrinter::AddMessage(GetToken1().GetLine(), ToString());
+}
+
 // OverloadedConstructorWarn ///////////////////////////////////////////////////
 OverloadedConstructorWarn::OverloadedConstructorWarn(const Token& classID) 
     : TokenBasedWarning(SemanticWarningCode::OverloadedConstructor, classID) { }
@@ -101,6 +112,11 @@ std::string MemOverShadowingMemWarn::GetMessage() const
     return ss.str();
 }
 
+void MemOverShadowingMemWarn::SendToMessagePrinter()
+{
+    MessagePrinter::AddMessage(GetToken2().GetLine(), ToString());
+}
+
 // LocalVarOverShadowingMem ////////////////////////////////////////////////
 LocalVarOverShadowingMem::LocalVarOverShadowingMem(const Token& classID, 
     const Token& localVar) 
@@ -119,6 +135,11 @@ std::string LocalVarOverShadowingMem::GetMessage() const
     return ss.str();
 }
 
+void LocalVarOverShadowingMem::SendToMessagePrinter()
+{
+    MessagePrinter::AddMessage(GetToken2().GetLine(), ToString());
+}
+
 // MainHasParametersWarn /////////////////////////////////////////////////
 MainHasParametersWarn::MainHasParametersWarn() 
     : SemanticWarning(SemanticWarningCode::MainHasParameters) { }
@@ -129,6 +150,12 @@ std::string MainHasParametersWarn::GetMessage() const
     ss << "The definition of the main function takes parameters as input. ";
     ss << "Note that the main function does not provide support for command line arguments";
     return ss.str();
+}
+
+void MainHasParametersWarn::SendToMessagePrinter()
+{
+    // add at the end of all messages
+    MessagePrinter::AddMessage(SIZE_MAX, ToString());
 }
 
 // OverridenFuncWarn /////////////////////////////////////////////////////////
@@ -162,6 +189,11 @@ TokenBasedError::TokenBasedError(SemanticErrorCode errorCode, const Token& token
     : SemanticError(errorCode), m_token(token) { }
     
 const Token& TokenBasedError::GetToken() const { return m_token; }
+
+void TokenBasedError::SendToMessagePrinter()
+{
+    MessagePrinter::AddMessage(GetToken().GetLine(), ToString());
+}
 
 // UndeclaredSymbolError ///////////////////////////////////////////////////////////
 UndeclaredSymbolError::UndeclaredSymbolError(const Token& token) 
@@ -202,6 +234,11 @@ std::string DuplicateSymbolError::GetMessage() const
     return ss.str();
 }
 
+void DuplicateSymbolError::SendToMessagePrinter()
+{
+    MessagePrinter::AddMessage(m_duplicateToken.GetLine(), ToString());
+}
+
 // ConstructorDeclNotFound ////////////////////////////////////////////////////////
 ConstructorDeclNotFound::ConstructorDeclNotFound(const Token& classID) 
     : TokenBasedError(SemanticErrorCode::ConstructorDeclNotFound, classID) { }
@@ -233,6 +270,11 @@ std::string MemberFunctionDeclNotFound::GetMessage() const
     return ss.str();
 }
 
+void MemberFunctionDeclNotFound::SendToMessagePrinter()
+{
+    MessagePrinter::AddMessage(m_funcNameToken.GetLine(), ToString());
+}
+
 // MemFuncDefNotFoundError ////////////////////////////////////////////////////////
 MemFuncDefNotFoundError::MemFuncDefNotFoundError(const Token& classID, const Token& funcName) 
     : SemanticError(SemanticErrorCode::MemFuncDefNotFound), m_classID(classID), 
@@ -247,6 +289,11 @@ std::string MemFuncDefNotFoundError::GetMessage() const
         << ": " << m_funcDecl.GetStrOfLine();
 
     return ss.str();
+}
+
+void MemFuncDefNotFoundError::SendToMessagePrinter()
+{
+    MessagePrinter::AddMessage(m_funcDecl.GetLine(), ToString());
 }
 
 // ConstructorDefNotFoundError ////////////////////////////////////////////////////
@@ -264,6 +311,11 @@ std::string ConstructorDefNotFoundError::GetMessage() const
         << ": " << m_constructor.GetStrOfLine();
 
     return ss.str(); 
+}
+
+void ConstructorDefNotFoundError::SendToMessagePrinter()
+{
+    MessagePrinter::AddMessage(m_constructor.GetLine(), ToString());
 }
 
 // CircularInheritanceDependencyError ////////////////////////////////////////////////
@@ -330,6 +382,11 @@ std::string InvalidOperandForOperatorError::GetMessage() const
     return ss.str(); 
 }
 
+void InvalidOperandForOperatorError::SendToMessagePrinter()
+{
+    MessagePrinter::AddMessage(m_node->GetOperator()->GetOperator().GetLine(), ToString());
+}
+
 // InvalidTypeMatchupForAssignError ////////////////////////////////////////////////
 InvalidTypeMatchupForAssignError::InvalidTypeMatchupForAssignError(
     AssignStatNode* assignNode) 
@@ -361,6 +418,11 @@ std::string InvalidTypeMatchupForAssignError::GetMessage() const
         << "\"";
 
     return ss.str();
+}
+
+void InvalidTypeMatchupForAssignError::SendToMessagePrinter()
+{
+    MessagePrinter::AddMessage(m_node->GetLeft()->GetFirstToken().GetLine(), ToString());
 }
 
 // IncorrectParametersProvidedToFuncCallError /////////////////////////////////
@@ -409,6 +471,20 @@ std::string IncorrectParametersProvidedToFuncCallError::GetMessage() const
     ss << " At Line " << t.GetLine() << ": \"" << t.GetStrOfLine() << "\"";
 
     return ss.str();
+}
+
+void IncorrectParametersProvidedToFuncCallError::SendToMessagePrinter()
+{
+    size_t line;
+    if (m_node == nullptr)
+    {
+        line = m_type->GetType().GetLine();
+    }
+    else
+    {
+        line = m_node->GetID()->GetID().GetLine();
+    }
+    MessagePrinter::AddMessage(line, ToString());
 }
 
 // UnknownMemberError ///////////////////////////////////////////////////////////
@@ -474,6 +550,12 @@ std::string IncorrectNumberOfMainFuncError::GetMessage() const
     return ss.str();
 }
 
+void IncorrectNumberOfMainFuncError::SendToMessagePrinter()
+{
+    // put at the end of the list of messages
+    MessagePrinter::AddMessage(SIZE_MAX, ToString());
+}
+
 // OperationOnArrayError ///////////////////////////////////////////////////////
 OperationOnArrayError::OperationOnArrayError(const Token& t) 
     : TokenBasedError(SemanticErrorCode::OperationOnArray, t) { }
@@ -527,11 +609,13 @@ std::string ProhibitedAccessToPrivateMemberError::GetMessage() const
 // SemanticErrorManager ////////////////////////////////////////////////////////
 void SemanticErrorManager::AddError(SemanticError* error)
 {
+    error->SendToMessagePrinter();
     GetInstance().m_errors.push_back(error);
 }
 
 void SemanticErrorManager::AddWarning(SemanticWarning* warning)
 {
+    warning->SendToMessagePrinter();
     GetInstance().m_warnings.push_back(warning);
 }
 

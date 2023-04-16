@@ -1,6 +1,7 @@
 #include "Parser.h"
 #include "../Lexer/Lexer.h"
 #include "../Core/Util.h"
+#include "../Core/MessagePrinter.h"
 
 std::ostream& operator<<(std::ostream& stream, NonTerminal n)
 {
@@ -1293,98 +1294,142 @@ ParsingErrorManager::~ParsingErrorManager() { }
 void ParsingErrorManager::DefaultError(std::ofstream& file, const ParsingErrorData& error)
 {
     const Token& token = error.GetToken();
-    file << "Unexpected token \"" << token.GetLexeme() << "\". Expected " 
+    std::stringstream ss;
+    ss << "Unexpected token \"" << token.GetLexeme() << "\". Expected " 
         << error.GetTop() << " at line " << token.GetLine() << ": \"" 
         << token.GetStrOfLine() << "\""; 
+
+    file << ss.str();
+    MessagePrinter::AddMessage(token.GetLine(), ss.str());
 }
 
 void ParsingErrorManager::InvalidTypeSpecifierError(std::ofstream& file, 
     const ParsingErrorData& error)
 {
     const Token& token = error.GetToken();
-    file << "Invalid type specifier \"" << token.GetLexeme() << "\" found at line " 
+    std::stringstream ss;
+    ss << "Invalid type specifier \"" << token.GetLexeme() << "\" found at line " 
         << token.GetLine() << ": \"" << token.GetStrOfLine() << "\"" ; 
+
+    file << ss.str();
+    MessagePrinter::AddMessage(token.GetLine(), ss.str());
 }
 
 void ParsingErrorManager::InvalidFunctionHeadError(std::ofstream& file, 
     const ParsingErrorData& error)
 {
     const Token& token = error.GetToken();
-    file << "Invalid function head found at line " << token.GetLine() 
+    std::stringstream ss;
+    ss << "Invalid function head found at line " << token.GetLine() 
         << ": \"" << token.GetStrOfLine() << "\". Unexpected token \"" 
         << token.GetLexeme() << "\" encountered"; 
+
+    file << ss.str();
+    MessagePrinter::AddMessage(token.GetLine(), ss.str());
 }
 
 void ParsingErrorManager::InvalidArgumentDefinitionError(std::ofstream& file, 
         const ParsingErrorData& error)
 {
     const Token& token = error.GetToken();
-    file << "Invalid argument definition encountered at line " << token.GetLine() 
+    std::stringstream ss;
+    ss << "Invalid argument definition encountered at line " << token.GetLine() 
         << ": \"" << token.GetStrOfLine() << "\". Unexpected token \"" 
         << token.GetLexeme() << "\" encountered"; 
+
+    file << ss.str();
+    MessagePrinter::AddMessage(token.GetLine(), ss.str());
 }
 
 void ParsingErrorManager::InvalidArgumentProvidedError(std::ofstream& file, 
     const ParsingErrorData& error)
 {
     const Token& token = error.GetToken();
-    file << "Invalid argument provided at line " << token.GetLine() 
+    std::stringstream ss;
+    ss << "Invalid argument provided at line " << token.GetLine() 
         << ": \"" << token.GetStrOfLine() << "\". Unexpected token \"" 
         << token.GetLexeme() << "\" encountered";
+
+    file << ss.str();
+    MessagePrinter::AddMessage(token.GetLine(), ss.str());
 }
 
 void ParsingErrorManager::InvalidArithExprError(std::ofstream& file, 
         const ParsingErrorData& error)
 {
     const Token& token = error.GetToken();
-    file << "Invalid arithmetic expresion provided at line " << token.GetLine() 
+    std::stringstream ss;
+    ss << "Invalid arithmetic expresion provided at line " << token.GetLine() 
         << ": \"" << token.GetStrOfLine() << "\". Unexpected token \"" 
-        << token.GetLexeme() << "\" encountered"; 
+        << token.GetLexeme() << "\" encountered";
+
+    file << ss.str();
+    MessagePrinter::AddMessage(token.GetLine(), ss.str());
 }
 
 void ParsingErrorManager::ErroneousTokenAtFuncDefError(std::ofstream& file, 
     const ParsingErrorData& error)
 {
     const Token& token = error.GetToken();
-    file << "Erroneous token found at line " << token.GetLine() 
+    std::stringstream ss;
+    ss << "Erroneous token found at line " << token.GetLine() 
         << ": \"" << token.GetStrOfLine() << "\". Expected a function definition but found: \""
         << token.GetLexeme() << "\""; 
+
+    file << ss.str();
+    MessagePrinter::AddMessage(token.GetLine(), ss.str());
 }
 
 void ParsingErrorManager::InvalidStatementError(std::ofstream& file, 
         const ParsingErrorData& error)
 {
     const Token& token = error.GetToken();
-    file << "Invalid statement found at line " << token.GetLine() 
+    std::stringstream ss;
+    ss << "Invalid statement found at line " << token.GetLine() 
         << ": \"" << token.GetStrOfLine() << "\". Unexpected token \"" 
         << token.GetLexeme() << "\" encountered";
+
+    file << ss.str();
+    MessagePrinter::AddMessage(token.GetLine(), ss.str());
 }
 
 void ParsingErrorManager::InvalidArraySizeError(std::ofstream& file, 
     const ParsingErrorData& error)
 {
     const Token& token = error.GetToken();
-    file << "Invalid array size specified at line " << token.GetLine() 
+    std::stringstream ss;
+    ss << "Invalid array size specified at line " << token.GetLine() 
         << ": \"" << token.GetStrOfLine() << "\". Unexpected token \"" 
         << token.GetLexeme() << "\" encountered";
+
+    file << ss.str();
+    MessagePrinter::AddMessage(token.GetLine(), ss.str());
 }
 
 void ParsingErrorManager::InvalidRelExprError(std::ofstream& file, 
     const ParsingErrorData& error)
 {
     const Token& token = error.GetToken();
-    file << "Invalid relation expression provided at line " << token.GetLine() 
+    std::stringstream ss;
+    ss << "Invalid relation expression provided at line " << token.GetLine() 
         << ": \"" << token.GetStrOfLine() << "\". Unexpected token \"" 
         << token.GetLexeme() << "\" encountered";
+
+    file << ss.str();
+    MessagePrinter::AddMessage(token.GetLine(), ss.str());
 }
 
 void ParsingErrorManager::InvalidOperatorError(std::ofstream& file, 
     const ParsingErrorData& error)
 {
     const Token& token = error.GetToken();
-    file << "Invalid operator \"" << token.GetLexeme() << "\" encountered at line " 
+    std::stringstream ss;
+    ss << "Invalid operator \"" << token.GetLexeme() << "\" encountered at line " 
         << token.GetLine() << ": \"" << token.GetStrOfLine() <<"\". The provided operator " 
         << "is either unknown or invalid in this context.";
+
+    file << ss.str();
+    MessagePrinter::AddMessage(token.GetLine(), ss.str());
 }
 
 ParsingErrorManager& ParsingErrorManager::GetInstance()

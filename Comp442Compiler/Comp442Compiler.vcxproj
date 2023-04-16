@@ -130,6 +130,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="src\CodeGeneration\CodeGeneration.cpp" />
+    <ClCompile Include="src\Core\MessagePrinter.cpp" />
     <ClCompile Include="src\Core\Token.cpp" />
     <ClCompile Include="src\Core\Util.cpp" />
     <ClCompile Include="src\Lexer\Lexer.cpp" />
@@ -144,6 +145,7 @@
   <ItemGroup>
     <ClInclude Include="src\CodeGeneration\CodeGeneration.h" />
     <ClInclude Include="src\Core\Core.h" />
+    <ClInclude Include="src\Core\MessagePrinter.h" />
     <ClInclude Include="src\Core\Token.h" />
     <ClInclude Include="src\Core\Util.h" />
     <ClInclude Include="src\Lexer\Lexer.h" />

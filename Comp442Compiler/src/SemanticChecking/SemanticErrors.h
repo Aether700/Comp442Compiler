@@ -45,8 +45,14 @@ enum class SemanticWarningCode
     OverridenFunc,
 };
 
+class SemanticMessage
+{
+public:
+    virtual void SendToMessagePrinter() = 0;
+};
+
 // Warnings ////////////////////////////////////////////////////////////////////////
-class SemanticWarning
+class SemanticWarning : public SemanticMessage
 {
 public:
     SemanticWarning(SemanticWarningCode code);
@@ -63,6 +69,8 @@ class TokenBasedWarning : public SemanticWarning
 public:
     TokenBasedWarning(SemanticWarningCode code, const Token& t);
     const Token& GetToken() const;
+
+    virtual void SendToMessagePrinter() override;
 
 private:
     Token m_token;
@@ -92,6 +100,7 @@ class OverloadedMemFuncWarn : public TokenPairBasedWarning
 public:
     OverloadedMemFuncWarn(const Token& classID, const Token& funcName);
     virtual std::string GetMessage() const override;
+    virtual void SendToMessagePrinter() override;
 };
 
 class OverloadedConstructorWarn : public TokenBasedWarning
@@ -106,6 +115,7 @@ class MemOverShadowingMemWarn : public TokenPairBasedWarning
 public:
     MemOverShadowingMemWarn(const Token& classID, const Token& member);
     virtual std::string GetMessage() const override;
+    virtual void SendToMessagePrinter() override;
 };
 
 class LocalVarOverShadowingMem : public TokenPairBasedWarning
@@ -113,6 +123,7 @@ class LocalVarOverShadowingMem : public TokenPairBasedWarning
 public:
     LocalVarOverShadowingMem(const Token& classID, const Token& localVar);
     virtual std::string GetMessage() const override;
+    virtual void SendToMessagePrinter() override;
 };
 
 class MainHasParametersWarn : public SemanticWarning
@@ -120,6 +131,7 @@ class MainHasParametersWarn : public SemanticWarning
 public:
     MainHasParametersWarn();
     virtual std::string GetMessage() const override;
+    virtual void SendToMessagePrinter() override;
 };
 
 class OverridenFuncWarn : public TokenBasedWarning
@@ -136,7 +148,7 @@ private:
 };
 
 // Errors ////////////////////////////////////////////////////////////////////////
-class SemanticError
+class SemanticError : public SemanticMessage
 {
 public:
     SemanticError(SemanticErrorCode errorCode);
@@ -154,6 +166,7 @@ public:
     TokenBasedError(SemanticErrorCode errorCode, const Token& token);
     
     const Token& GetToken() const;
+    virtual void SendToMessagePrinter() override;
 private:
     Token m_token;
 };
@@ -169,8 +182,8 @@ class DuplicateSymbolError : public SemanticError
 {
 public:
     DuplicateSymbolError(const Token& token1, const Token& token2);
-    virtual std::string GetMessage() const override;
-
+    virtual std::string GetMessage() const override; 
+    virtual void SendToMessagePrinter() override;
 private:
     Token m_originalToken;
     Token m_duplicateToken;
@@ -190,6 +203,8 @@ public:
     MemberFunctionDeclNotFound(const Token& classID, const Token& funcName);
     virtual std::string GetMessage() const override;
 
+    virtual void SendToMessagePrinter() override;
+
 private:
     Token m_classIDToken;
     Token m_funcNameToken;
@@ -200,6 +215,7 @@ class MemFuncDefNotFoundError : public SemanticError
 public:
     MemFuncDefNotFoundError(const Token& classID, const Token& funcName);
     virtual std::string GetMessage() const override;
+    virtual void SendToMessagePrinter() override;
 
 private:
     Token m_classID;
@@ -211,6 +227,7 @@ class ConstructorDefNotFoundError : public SemanticError
 public:
     ConstructorDefNotFoundError(const Token& classID, const Token& constructorToken);
     virtual std::string GetMessage() const override;
+    virtual void SendToMessagePrinter() override;
 
 private:
     Token m_classID;
@@ -241,6 +258,7 @@ class InvalidOperandForOperatorError : public SemanticError
 public:
     InvalidOperandForOperatorError(BaseBinaryOperator* operatorNode);
     virtual std::string GetMessage() const override;
+    virtual void SendToMessagePrinter() override;
 
 private:
     BaseBinaryOperator* m_node;
@@ -251,6 +269,7 @@ class InvalidTypeMatchupForAssignError : public SemanticError
 public:
     InvalidTypeMatchupForAssignError(AssignStatNode* assignNode);
     virtual std::string GetMessage() const override;
+    virtual void SendToMessagePrinter() override;
 
 private:
     AssignStatNode* m_node;
@@ -262,6 +281,7 @@ public:
     IncorrectParametersProvidedToFuncCallError(FuncCallNode* funcCall);
     IncorrectParametersProvidedToFuncCallError(TypeNode* classType, AParamListNode* params);
     virtual std::string GetMessage() const override;
+    virtual void SendToMessagePrinter() override;
 
 private:
     FuncCallNode* m_node;
@@ -312,6 +332,7 @@ class IncorrectNumberOfMainFuncError : public SemanticError
 public:
     IncorrectNumberOfMainFuncError();
     virtual std::string GetMessage() const override;
+    virtual void SendToMessagePrinter() override;
 };
 
 class ArrayIndexingTypeError : public TokenBasedError

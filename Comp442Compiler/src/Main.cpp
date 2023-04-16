@@ -2,6 +2,7 @@
 #include "Core/Core.h"
 #include "Parser/Parser.h"
 #include "Core/Util.h"
+#include "Core/MessagePrinter.h"
 #include "SemanticChecking/SemanticErrors.h"
 #include "CodeGeneration/CodeGeneration.h"
 
@@ -11,13 +12,21 @@
 
 
 /* To Do
- - 
+ - synchronised printing of errors
+ - do tests for main missing/duplicate main functions
 */
 
 void ExitPrompt()
 {
 	std::cout << "\nPress enter to exit\n";
 	std::cin.get();
+}
+
+void PrintMessages(const std::string& filepath)
+{
+	std::cout << "Output from " << filepath << ":\n\n";
+	MessagePrinter::PrintToConsole();
+	MessagePrinter::ClearMessages();
 }
 
 void DisplaySymbolTable(const std::string& filepath, ProgramNode* prog)
@@ -44,8 +53,7 @@ void Compile(const std::string& filepath)
 	ProgramNode* program = Parser::Parse(filepath);
 	if (program == nullptr)
 	{
-		std::cout << "Parsing or lexical error was found in file \"" << filepath 
-			<< "\", check logs for detail\n";
+		PrintMessages(filepath);
 		return;
 	}
 
@@ -60,8 +68,7 @@ void Compile(const std::string& filepath)
 	{
 		SemanticErrorManager::LogData();
 		DisplaySymbolTable(filepath, program);
-		std::cout << "Semantic error was found in file \"" << filepath
-			<< "\", check logs for detail\n";
+		PrintMessages(filepath);
 		return;
 	}
 
@@ -72,8 +79,7 @@ void Compile(const std::string& filepath)
 	{
 		SemanticErrorManager::LogData();
 		DisplaySymbolTable(filepath, program);
-		std::cout << "Semantic error was found in file \"" << filepath
-			<< "\", check logs for detail\n";
+		PrintMessages(filepath);
 		return;
 	}
 
@@ -91,6 +97,7 @@ void Compile(const std::string& filepath)
 
 	SemanticErrorManager::LogData();
 	DisplaySymbolTable(filepath, program);
+	PrintMessages(filepath);
 
 	delete checker;
 	delete assembler;
