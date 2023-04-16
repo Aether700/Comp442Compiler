@@ -1220,6 +1220,20 @@ void SemanticChecker::TestDotRemainder(SymbolTable* contextTable,
                 return;
             }
         }
+        else if (varEntry->GetKind() == SymbolTableEntryKind::MemVar)
+        {
+            MemVarTableEntry* memVarEntry = (MemVarTableEntry*)varEntry;
+            if (memVarEntry->GetVisibility() != "public")
+            {
+                SymbolTable* callingContext = dotRemainder->GetSymbolTable();
+                if (!PrivateMemberIsAccessible(memVarEntry, callingContext))
+                {
+                    SemanticErrorManager::AddError(new ProhibitedAccessToPrivateMemberError(
+                        var->GetVariable()->GetID()));
+                }
+            }
+        }
+
 
         if (right != nullptr)
         {

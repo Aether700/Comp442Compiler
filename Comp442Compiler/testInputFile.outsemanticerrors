@@ -1,0 +1,1 @@
+Error: Prohibited access to private member "x" at line 15: "a.x = 7;"

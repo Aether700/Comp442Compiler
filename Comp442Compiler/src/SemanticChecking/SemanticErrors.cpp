@@ -512,6 +512,18 @@ std::string InvalidDotOperatorUsageError::GetMessage() const
     return ss.str();
 }
 
+// ProhibitedAccessToPrivateMemberError /////////////////////////////////////////////
+ProhibitedAccessToPrivateMemberError::ProhibitedAccessToPrivateMemberError(const Token& t) 
+    : TokenBasedError(SemanticErrorCode::ProhibitedAccessToPrivateMember, t) { }
+
+std::string ProhibitedAccessToPrivateMemberError::GetMessage() const
+{
+    std::stringstream ss;
+    ss << "Prohibited access to private member \"" << GetToken().GetLexeme() << "\" at line " << GetToken().GetLine()
+        << ": \"" << GetToken().GetStrOfLine() << "\"";
+    return ss.str();
+}
+
 // SemanticErrorManager ////////////////////////////////////////////////////////
 void SemanticErrorManager::AddError(SemanticError* error)
 {

@@ -6,6 +6,8 @@ std::string BaseTypeOfArr(const std::string& arrTypeStr);
 std::string VarDeclToTypeStr(VarDeclNode* var);
 std::string FunctionParamTypeToStr(FParamListNode* params);
 
+bool PrivateMemberIsAccessible(MemVarTableEntry* member, SymbolTable* callingContext);
+bool PrivateMemberIsAccessible(MemFuncTableEntry* member, SymbolTable* callingContext);
 bool HasMatchingParameters(FParamListNode* fparam, AParamListNode* aparam);
 
 DotNode* FindRootDotNodeParent(ASTNode* node);

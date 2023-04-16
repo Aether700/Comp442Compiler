@@ -68,6 +68,34 @@ std::string FunctionParamTypeToStr(FParamListNode* params)
     return typeStr.str();
 }
 
+bool PrivateMemberIsAccessible(MemVarTableEntry* member, SymbolTable* callingContext)
+{
+    SymbolTableEntry* callingEntry = callingContext->GetParentEntry();
+    if (callingEntry == nullptr)
+    {
+        return false;
+    }
+
+    switch(callingEntry->GetKind())
+    {
+    case SymbolTableEntryKind::MemFuncDecl:
+        {
+            MemFuncTableEntry* memFuncEntry = (MemFuncTableEntry*)callingEntry;
+            SymbolTableEntry* classEntry = memFuncEntry->GetParentTable()->GetParentEntry();
+            return member->GetClassID() == classEntry->GetName();
+        }
+    
+    default:
+        return false;
+    }
+}
+
+bool PrivateMemberIsAccessible(MemFuncTableEntry* member, SymbolTable* callingContext)
+{
+    DEBUG_BREAK(); // not implemented
+    return false;
+}
+
 bool HasMatchingParameters(FParamListNode* fparam, AParamListNode* aparam)
 {
     if (fparam->GetNumChild() != aparam->GetNumChild())
@@ -564,10 +592,13 @@ int GetOffset(VariableNode* var)
         return varEntry->GetOffset();
     }
 
+    int selfOffset = 0;
+
     VarDeclNode* declNode = (VarDeclNode*)varEntry->GetNode();
+    
     if (!IsArrayType(declNode->GetEvaluatedType()))
     {
-        return GetOffset(var->GetSymbolTable(), var->GetVariable()->GetID().GetLexeme());
+        return selfOffset + GetOffset(var->GetSymbolTable(), var->GetVariable()->GetID().GetLexeme());
     }
     int varOffset = GetOffset(var->GetSymbolTable(), var->GetVariable()->GetID().GetLexeme());
     size_t baseTypeSize = ComputeSize(declNode->GetType(), nullptr);
@@ -608,7 +639,7 @@ int GetOffset(VariableNode* var)
         }
     }
 
-    return varOffset + internalOffset;
+    return selfOffset + varOffset + internalOffset;
 }
 
 int GetOffset(AssignStatNode* assign)

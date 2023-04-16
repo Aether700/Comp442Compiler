@@ -31,6 +31,7 @@ enum class SemanticErrorCode
     OperationOnArray,
     ArrayIndexingType,
     InvalidDotOperatorUsage,
+    ProhibitedAccessToPrivateMember,
 };
 
 enum class SemanticWarningCode
@@ -324,6 +325,14 @@ class InvalidDotOperatorUsageError : public TokenBasedError
 {
 public:
     InvalidDotOperatorUsageError(const Token& t);
+    virtual std::string GetMessage() const override;
+};
+
+
+class ProhibitedAccessToPrivateMemberError : public TokenBasedError
+{
+public:
+    ProhibitedAccessToPrivateMemberError(const Token& t);
     virtual std::string GetMessage() const override;
 };
 

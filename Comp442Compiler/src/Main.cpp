@@ -11,8 +11,7 @@
 
 
 /* To Do
- - implement parameters being passed by reference for arrays
- - check can read into arrays
+ - check usage of private members
 */
 
 void ExitPrompt()
