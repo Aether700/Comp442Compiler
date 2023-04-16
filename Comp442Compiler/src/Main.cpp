@@ -19,7 +19,7 @@ void ExitPrompt()
 void PrintMessages(const std::string& filepath)
 {
 	std::cout << "Output from " << filepath << ":\n\n";
-	MessagePrinter::PrintToConsole();
+	MessagePrinter::PrintToConsole(filepath);
 	MessagePrinter::ClearMessages();
 }
 

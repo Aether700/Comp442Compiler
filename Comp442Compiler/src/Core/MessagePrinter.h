@@ -9,7 +9,7 @@ class MessagePrinter
 public:
 	static void AddMessage(size_t line, const std::string& message);
 
-	static void PrintToConsole();
+	static void PrintToConsole(const std::string& filepathOfOutput);
 	static void ClearMessages();
 
 private:

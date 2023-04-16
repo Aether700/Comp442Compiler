@@ -1,5 +1,7 @@
 #include "MessagePrinter.h"
+#include "Util.h"
 #include <iostream>
+#include <fstream>
 
 
 void MessagePrinter::AddMessage(size_t line, const std::string& message)
@@ -16,12 +18,14 @@ void MessagePrinter::AddMessage(size_t line, const std::string& message)
 	printer.m_sortedMessageList.insert(it, std::make_pair(line, message));
 }
 
-void MessagePrinter::PrintToConsole()
+void MessagePrinter::PrintToConsole(const std::string& filepathOfOutput)
 {
 	MessagePrinter& printer = GetInstance();
+	std::ofstream outFile = std::ofstream(SimplifyFilename(filepathOfOutput) + ".log");
 
 	for (auto& pair : printer.m_sortedMessageList)
 	{
+		outFile << pair.second << "\n";
 		std::cout << pair.second << "\n";
 	}
 
