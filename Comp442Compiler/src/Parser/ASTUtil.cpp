@@ -68,34 +68,6 @@ std::string FunctionParamTypeToStr(FParamListNode* params)
     return typeStr.str();
 }
 
-bool PrivateMemberIsAccessible(MemVarTableEntry* member, SymbolTable* callingContext)
-{
-    SymbolTableEntry* callingEntry = callingContext->GetParentEntry();
-    if (callingEntry == nullptr)
-    {
-        return false;
-    }
-
-    switch(callingEntry->GetKind())
-    {
-    case SymbolTableEntryKind::MemFuncDecl:
-        {
-            MemFuncTableEntry* memFuncEntry = (MemFuncTableEntry*)callingEntry;
-            SymbolTableEntry* classEntry = memFuncEntry->GetParentTable()->GetParentEntry();
-            return member->GetClassID() == classEntry->GetName();
-        }
-    
-    default:
-        return false;
-    }
-}
-
-bool PrivateMemberIsAccessible(MemFuncTableEntry* member, SymbolTable* callingContext)
-{
-    DEBUG_BREAK(); // not implemented
-    return false;
-}
-
 bool HasMatchingParameters(FParamListNode* fparam, AParamListNode* aparam)
 {
     if (fparam->GetNumChild() != aparam->GetNumChild())

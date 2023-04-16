@@ -14,7 +14,7 @@ Program
 |  |  |  |  Dimensions
 |  |  |  MemFuncDecl
 |  |  |  |  Visibility
-|  |  |  |  |  public
+|  |  |  |  |  private
 |  |  |  |  id
 |  |  |  |  |  f
 |  |  |  |  FParamList
@@ -58,18 +58,12 @@ Program
 |  |  |  |  |  TypeNode
 |  |  |  |  |  |  A
 |  |  |  |  |  Dimensions
-|  |  |  |  AssigStat
-|  |  |  |  |  Dot
-|  |  |  |  |  |  Variable
-|  |  |  |  |  |  |  id
-|  |  |  |  |  |  |  |  a
-|  |  |  |  |  |  |  Dimensions
-|  |  |  |  |  |  Variable
-|  |  |  |  |  |  |  id
-|  |  |  |  |  |  |  |  x
-|  |  |  |  |  |  |  Dimensions
-|  |  |  |  |  Expr
-|  |  |  |  |  |  Literal
-|  |  |  |  |  |  |  7
-|  |  |  |  |  |  |  TypeNode
-|  |  |  |  |  |  |  |  integer
+|  |  |  |  Dot
+|  |  |  |  |  Variable
+|  |  |  |  |  |  id
+|  |  |  |  |  |  |  a
+|  |  |  |  |  |  Dimensions
+|  |  |  |  |  FuncCall
+|  |  |  |  |  |  id
+|  |  |  |  |  |  |  f
+|  |  |  |  |  |  AParams

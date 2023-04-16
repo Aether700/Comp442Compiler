@@ -1223,14 +1223,11 @@ void SemanticChecker::TestDotRemainder(SymbolTable* contextTable,
         else if (varEntry->GetKind() == SymbolTableEntryKind::MemVar)
         {
             MemVarTableEntry* memVarEntry = (MemVarTableEntry*)varEntry;
-            if (memVarEntry->GetVisibility() != "public")
+            SymbolTable* callingContext = dotRemainder->GetSymbolTable();
+            if (!ClassMemberIsAccessible(memVarEntry, callingContext))
             {
-                SymbolTable* callingContext = dotRemainder->GetSymbolTable();
-                if (!PrivateMemberIsAccessible(memVarEntry, callingContext))
-                {
-                    SemanticErrorManager::AddError(new ProhibitedAccessToPrivateMemberError(
-                        var->GetVariable()->GetID()));
-                }
+                SemanticErrorManager::AddError(new ProhibitedAccessToPrivateMemberError(
+                    var->GetVariable()->GetID()));
             }
         }
 
@@ -1273,6 +1270,18 @@ void SemanticChecker::TestDotRemainder(SymbolTable* contextTable,
                     || (entry->GetKind() == SymbolTableEntryKind::ConstructorDecl 
                     && contextTable->GetName() == funcName))
                 {
+
+                    if (entry->GetKind() == SymbolTableEntryKind::MemFuncDecl)
+                    {
+                        MemFuncTableEntry* memFuncEntry = (MemFuncTableEntry*)entry;
+
+                        if (!ClassMemberIsAccessible(memFuncEntry, dotRemainder->GetSymbolTable()))
+                        {
+                            SemanticErrorManager::AddError(new ProhibitedAccessToPrivateMemberError(((MemFuncDefNode*)
+                                ((MemFuncTableEntry*)entry)->GetNode())->GetID()->GetID()));
+                        }
+                    }
+
                     foundSameName = true;
                     FParamListNode* fparams;
                     if (entry->GetKind() == SymbolTableEntryKind::MemFuncDecl)

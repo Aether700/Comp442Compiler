@@ -1,7 +1,7 @@
 class A
 {
 	private attribute x : integer;
-	public function f:()=>void;
+	private function f:()=>void;
 };
 
 function A::f()=>void
@@ -12,5 +12,5 @@ function A::f()=>void
 function main() => void
 {
 	localvar a : A;
-	a.x = 7;
+	a.f();
 }
