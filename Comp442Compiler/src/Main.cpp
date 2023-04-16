@@ -10,12 +10,6 @@
 #include <sstream>
 #include <filesystem>
 
-
-/* To Do
- - synchronised printing of errors
- - do tests for main missing/duplicate main functions
-*/
-
 void ExitPrompt()
 {
 	std::cout << "\nPress enter to exit\n";
