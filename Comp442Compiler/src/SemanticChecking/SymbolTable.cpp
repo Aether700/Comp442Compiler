@@ -325,7 +325,6 @@ SymbolTable* MemFuncTableEntry::GetSubTable() { return m_definitionSubTable; }
 
 std::string MemFuncTableEntry::ToString()
 {
-    ASSERT(HasDefinition());
     std::stringstream ss;
     ss << GetKind() << s_seperator << GetName() << s_seperator 
         << "(" << GetParamTypes() << "):" << GetReturnType() 
@@ -684,6 +683,7 @@ SymbolTableEntry* SymbolTable::FindExistingEntry(SymbolTableEntry* entry)
         {
             return originalEntry;
         }
+        originalEntry = nullptr;
     }
     else if (entry->GetKind() == SymbolTableEntryKind::FreeFunction 
         && originalEntry->GetKind() == SymbolTableEntryKind::FreeFunction)
@@ -708,6 +708,7 @@ SymbolTableEntry* SymbolTable::FindExistingEntry(SymbolTableEntry* entry)
         {
             return originalEntry;
         }
+        originalEntry = nullptr;
     }
 
     return originalEntry;

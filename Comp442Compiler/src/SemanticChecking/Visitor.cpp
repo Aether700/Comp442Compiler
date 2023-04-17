@@ -13,7 +13,12 @@ void CheckForLocalVarOverShadowing(NodeType* element)
 {
     const std::string& varName = element->GetID()->GetID().GetLexeme();
     SymbolTableEntry* elementEntry = element->GetSymbolTable()->FindEntryInTable(varName);
-    ASSERT(elementEntry != nullptr);
+
+    if (elementEntry == nullptr)
+    {
+        return;
+    }
+
     if (elementEntry->GetKind() == SymbolTableEntryKind::LocalVariable 
         || elementEntry->GetKind() == SymbolTableEntryKind::Parameter)
     {

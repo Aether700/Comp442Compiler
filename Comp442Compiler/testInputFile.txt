@@ -1,17 +1,62 @@
 class A
 {
-	private attribute x : integer;
-	private function f:()=>void;
+	public attribute x : integer;
+	public attribute y : float;
+	public function f:()=>void;
+	public function f:(x : integer)=>void;
+	public function g:()=>void;
 };
 
-function A::f()=>void
+class B isa A
 {
-	self.x = 5;
+	public attribute x : float;
+	public function f:()=>void;
+};
+
+function B::f()=>void 
+{
+	write(y + x);
+	g();
 }
 
-function main() => void
+function A::g()=>void 
+{ 
+	f();
+}
+
+function A::f(y : integer)=>void { }
+function A::f()=>void
+{
+	localvar x : float; // shadows A::x
+}
+
+function OverloadedFreeFunc() => integer
+{
+	localvar x : integer;
+	localvar y : float;
+	x = 3.5;
+	y = 2.0 * x;
+	x = z + 2; // z does not exist
+
+	return (3.5);
+}
+
+function OverloadedFreeFunc(x : integer) => void 
+{
+	localvar y : integer[3];
+	write(y[2.5]);
+	read(y[2][3]);
+}
+
+function ValidFunc() =>void { }
+function ValidFunc2(x : integer) =>void { }
+
+function main()=>void
 {
 	localvar a : A;
-	a.f();
-	a.x = 4;
+	localvar x : ClassThatDoesNotExist;
+	a.someFunctionThatDoesNotExist();
+	FreeFuncThatDoesNotExist();
+	ValidFunc(5);
+	ValidFunc2(5.2);
 }
