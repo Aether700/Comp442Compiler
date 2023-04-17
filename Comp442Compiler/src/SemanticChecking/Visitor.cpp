@@ -847,6 +847,29 @@ void SemanticChecker::Visit(FuncCallNode* element)
     }
 }
 
+void SemanticChecker::Visit(VariableNode* element)
+{
+    const std::string& varName = element->GetVariable()->GetID().GetLexeme();
+    SymbolTable* table = element->GetSymbolTable();
+    SymbolTableEntry* entry = table->FindEntryInScope(varName);
+    if (entry != nullptr)
+    {
+        VarDeclNode* varDecl = dynamic_cast<VarDeclNode*>(entry->GetNode());
+        ASSERT(varDecl != nullptr);
+        if (varDecl->GetDimension() == nullptr)
+        {
+            if (element->GetDimension()->GetNumChild() != 0)
+            {
+                SemanticErrorManager::AddError(new IncorrectArrayDimensionUsedError(element->GetVariable()->GetID()));
+            }
+        }
+        else if (varDecl->GetDimension()->GetNumChild() < element->GetDimension()->GetNumChild())
+        {
+            SemanticErrorManager::AddError(new IncorrectArrayDimensionUsedError(element->GetVariable()->GetID()));
+        }
+    }
+}
+
 void SemanticChecker::Visit(FunctionDefNode* element)
 {
     // check if a return statement is provided

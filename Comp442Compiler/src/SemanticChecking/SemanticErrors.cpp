@@ -606,6 +606,19 @@ std::string ProhibitedAccessToPrivateMemberError::GetMessage() const
     return ss.str();
 }
 
+// IncorrectArrayDimensionUsedError ////////////////////////////////////////
+
+IncorrectArrayDimensionUsedError::IncorrectArrayDimensionUsedError(const Token& t) 
+    : TokenBasedError(SemanticErrorCode::IncorrectArrayDimensionUsed, t) { }
+
+std::string IncorrectArrayDimensionUsedError::GetMessage() const
+{
+    std::stringstream ss;
+    ss << "Incorrect number of dimensions used for array at line " << GetToken().GetLine()
+        << ": \"" << GetToken().GetStrOfLine() << "\"";
+    return ss.str();
+}
+
 // SemanticErrorManager ////////////////////////////////////////////////////////
 void SemanticErrorManager::AddError(SemanticError* error)
 {

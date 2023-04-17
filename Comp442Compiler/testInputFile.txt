@@ -1,62 +1,31 @@
 class A
 {
+	
 	public attribute x : integer;
-	public attribute y : float;
-	public function f:()=>void;
-	public function f:(x : integer)=>void;
-	public function g:()=>void;
+	public attribute y : integer;
+
+	public constructor:(x_ : integer, y_ : integer);
+	public constructor:(n : integer);
 };
 
-class B isa A
+function A::constructor(n : integer)
 {
-	public attribute x : float;
-	public function f:()=>void;
-};
-
-function B::f()=>void 
-{
-	write(y + x);
-	g();
+	self.x = n;
+	self.y = n;
 }
 
-function A::g()=>void 
-{ 
-	f();
-}
-
-function A::f(y : integer)=>void { }
-function A::f()=>void
+function A::constructor(x_ : integer, y_ : integer)
 {
-	localvar x : float; // shadows A::x
+	self.x = x_;
+	self.y = y_;
 }
-
-function OverloadedFreeFunc() => integer
-{
-	localvar x : integer;
-	localvar y : float;
-	x = 3.5;
-	y = 2.0 * x;
-	x = z + 2; // z does not exist
-
-	return (3.5);
-}
-
-function OverloadedFreeFunc(x : integer) => void 
-{
-	localvar y : integer[3];
-	write(y[2.5]);
-	read(y[2][3]);
-}
-
-function ValidFunc() =>void { }
-function ValidFunc2(x : integer) =>void { }
 
 function main()=>void
 {
-	localvar a : A;
-	localvar x : ClassThatDoesNotExist;
-	a.someFunctionThatDoesNotExist();
-	FreeFuncThatDoesNotExist();
-	ValidFunc(5);
-	ValidFunc2(5.2);
+	localvar a : A(15);
+	localvar b : A(5, 3);
+	
+	// should write 153
+	write(a.y);
+	write(b.y);
 }

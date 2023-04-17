@@ -25,6 +25,7 @@ class FParamNode;
 class FParamListNode;
 class AParamListNode;
 class FuncCallNode;
+class VariableNode;
 class MemVarNode;
 class MemFuncDeclNode;
 class MemFuncDefNode;
@@ -53,6 +54,7 @@ public:
     virtual void Visit(VarDeclNode* element) { }
     virtual void Visit(FParamNode* element) { }
     virtual void Visit(FuncCallNode* element) { }
+    virtual void Visit(VariableNode* element) { }
     virtual void Visit(StatBlockNode* element) { }
     virtual void Visit(FunctionDefNode* element) { }
     virtual void Visit(MemVarNode* element) { }
@@ -116,6 +118,7 @@ public:
     virtual void Visit(VarDeclNode* element) override;
     virtual void Visit(FParamNode* element) override;
     virtual void Visit(FuncCallNode* element) override;
+    virtual void Visit(VariableNode* element) override;
     virtual void Visit(FunctionDefNode* element) override;
     virtual void Visit(MemFuncDeclNode* element) override;
     virtual void Visit(MemFuncDefNode* element) override;
