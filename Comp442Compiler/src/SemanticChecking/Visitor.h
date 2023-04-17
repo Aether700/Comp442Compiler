@@ -7,11 +7,20 @@
 
 class IVisitableElement;
 class IDNode;
+class LiteralNode;
 class DimensionNode;
 class DotNode;
+class ExprNode;
+class SignNode;
+class ModifiedExpr;
 class BaseBinaryOperator;
+class IfStatNode;
+class WhileStatNode;
+class WriteStatNode;
+class ReadStatNode;
 class ReturnStatNode;
 class AssignStatNode;
+class StatBlockNode;
 class FParamNode;
 class FParamListNode;
 class AParamListNode;
@@ -28,14 +37,23 @@ class Visitor
 public:
     virtual void Visit(IVisitableElement* element) { }
     virtual void Visit(IDNode* element) { }
+    virtual void Visit(LiteralNode* element) { }
     virtual void Visit(DimensionNode* element) { }
     virtual void Visit(DotNode* element) { }
+    virtual void Visit(ExprNode* element) { }
+    virtual void Visit(SignNode* element) { }
+    virtual void Visit(ModifiedExpr* element) { }
     virtual void Visit(BaseBinaryOperator* element) { }
+    virtual void Visit(IfStatNode* element) { }
+    virtual void Visit(WhileStatNode* element) { }
+    virtual void Visit(WriteStatNode* element) { }
+    virtual void Visit(ReadStatNode* element) { }
     virtual void Visit(ReturnStatNode* element) { }
     virtual void Visit(AssignStatNode* element) { }
     virtual void Visit(VarDeclNode* element) { }
     virtual void Visit(FParamNode* element) { }
     virtual void Visit(FuncCallNode* element) { }
+    virtual void Visit(StatBlockNode* element) { }
     virtual void Visit(FunctionDefNode* element) { }
     virtual void Visit(MemVarNode* element) { }
     virtual void Visit(MemFuncDeclNode* element) { }
@@ -110,8 +128,6 @@ public:
 private:
     bool HasFoundOverLoadedFunc(const std::list<std::string>& funcList, 
         const std::string& name);
-
-    bool HasMatchingParameters(FParamListNode* fparam, AParamListNode* aparam);
 
     // recursively go down the dot chain to try and find the type of the dot expression
     void TestDotRemainder(SymbolTable* contextTable, ASTNode* dotRemainder);

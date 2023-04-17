@@ -1,0 +1,187 @@
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[MultiLineComment, /*
+1.1  Allocate memory for basic types (integer, float).
+1.2  Allocate memory for arrays of basic types.
+1.3  Allocate memory for objects.
+1.4  Allocate memory for arrays of objects.
+2.1  Branch to a function’s code block, execute the code block, branch back to the calling function.
+2.2  Pass parameters as local values to the function’s code block.
+2.3  Upon execution of a return statement, pass the return value back to the calling function.
+2.4  Call to member functions that can use their object’s data members.
+3.1 Assignment statement: assignment of the resulting value of an expression to a variable, independently of what is the expression to the right of the assignment operator.
+3.2 Conditional statement: implementation of a branching mechanism.
+3.3 Loop statement: implementation of a branching mechanism.
+3.4 Input/output statement: Moon machine keyboard input/console output
+4.1. For arrays of basic types (integer and float), access to an array’s elements.
+4.2. For arrays of objects, access to an array’s element’s data members.
+4.3. For objects, access to members of basic types.
+4.4. For objects, access to members of array or object types.
+5.1. Computing the value of an entire complex expression.
+5.2. Expression involving an array factor whose indexes are themselves expressions.
+5.3. Expression involving an object factor referring to object members.
+*/, 1]
+
+
+[InlineComment, // Assignment 5 coverage:, 23]
+
+[InlineComment, //      -------------, 24]
+
+[InlineComment, //      | YES | NO  |, 25]
+
+[InlineComment, //      ------------- , 26]
+
+[InlineComment, // 1.1: |  X  |     |, 27]
+
+[InlineComment, // 1.2: |  X  |     |, 28]
+
+[InlineComment, // 1.3: |     |  X  |, 29]
+
+[InlineComment, // 1.4: |     |  X  |, 30]
+
+[InlineComment, // 2.1: |  X  |     |, 31]
+
+[InlineComment, // 2.2: |  X  |     |, 32]
+
+[InlineComment, // 2.3: |     |  X  |, 33]
+
+[InlineComment, // 2.4: |     |  X  |, 34]
+
+[InlineComment, // 3.1: |  X  |     |, 35]
+
+[InlineComment, // 3.2: |  X  |     |, 36]
+
+[InlineComment, // 3.3: |  X  |     |, 37]
+
+[InlineComment, // 3.4: |  X  |     |, 38]
+
+[InlineComment, // 4.1: |  X  |     |, 39]
+
+[InlineComment, // 4.2: |     |  X  |, 40]
+
+[InlineComment, // 4.3: |     |  X  |, 41]
+
+[InlineComment, // 4.4: |     |  X  |, 42]
+
+[InlineComment, // 5.1: |  X  |     |, 43]
+
+[InlineComment, // 5.2: |  X  |     |, 44]
+
+[InlineComment, // 5.3: |     |  X  |, 45]
+
+[InlineComment, //      -------------, 46]
+
+[MultiLineComment, /* sort the array */, 48]
+[Function, function, 49][ID, bubbleSort, 49][OpenParanthese, (, 49][ID, arr, 49][Colon, :, 49][IntegerKeyword, integer, 49][OpenSquareBracket, [, 49][IntegerLiteral, 7, 49][CloseSquareBracket, ], 49][Comma, ,, 49][ID, size, 49][Colon, :, 49][IntegerKeyword, integer, 49][CloseParanthese, ), 49][Arrow, =>, 49][Void, void, 49]
+[InlineComment, // 2.1, 2.2, 49]
+[OpenCurlyBracket, {, 50]
+[LocalVar, localvar, 51][ID, n, 51][Colon, :, 51][IntegerKeyword, integer, 51][SemiColon, ;, 51]
+[InlineComment, // 1.1, 51]
+[LocalVar, localvar, 52][ID, i, 52][Colon, :, 52][IntegerKeyword, integer, 52][SemiColon, ;, 52]
+[InlineComment, // 1.1, 52]
+[LocalVar, localvar, 53][ID, j, 53][Colon, :, 53][IntegerKeyword, integer, 53][SemiColon, ;, 53]
+[InlineComment, // 1.1, 53]
+[LocalVar, localvar, 54][ID, temp, 54][Colon, :, 54][IntegerKeyword, integer, 54][SemiColon, ;, 54]
+[InlineComment, // 1.1, 54]
+[ID, n, 55][Assign, =, 55][ID, size, 55][SemiColon, ;, 55]
+[InlineComment, // 3.1, 55]
+[ID, i, 56][Assign, =, 56][IntegerLiteral, 0, 56][SemiColon, ;, 56]
+[InlineComment, // 3.1  , 56]
+[ID, j, 57][Assign, =, 57][IntegerLiteral, 0, 57][SemiColon, ;, 57]
+[InlineComment, // 3.1, 57]
+[ID, temp, 58][Assign, =, 58][IntegerLiteral, 0, 58][SemiColon, ;, 58]
+[InlineComment, // 3.1, 58]
+[While, while, 59][OpenParanthese, (, 59][ID, i, 59][LessThan, <, 59][ID, n, 59][Minus, -, 59][IntegerLiteral, 1, 59][CloseParanthese, ), 59][OpenCurlyBracket, {, 59]
+[InlineComment, // 3.3, 5.1, 59]
+[ID, j, 60][Assign, =, 60][IntegerLiteral, 0, 60][SemiColon, ;, 60]
+[InlineComment, // 3.1, 60]
+[While, while, 61][OpenParanthese, (, 61][ID, j, 61][LessThan, <, 61][ID, n, 61][Minus, -, 61][ID, i, 61][Minus, -, 61][IntegerLiteral, 1, 61][CloseParanthese, ), 61][OpenCurlyBracket, {, 61]
+[InlineComment, // 3.3, 61]
+[If, if, 62][OpenParanthese, (, 62][ID, arr, 62][OpenSquareBracket, [, 62][ID, j, 62][CloseSquareBracket, ], 62][GreaterThan, >, 62][ID, arr, 62][OpenSquareBracket, [, 62][ID, j, 62][Plus, +, 62][IntegerLiteral, 1, 62][CloseSquareBracket, ], 62][CloseParanthese, ), 62]
+[InlineComment, // 3.2, 4.1, 5.1, 5.2, 62]
+[Then, then, 63][OpenCurlyBracket, {, 63]
+
+[InlineComment, // swap temp and arr[i], 64]
+[ID, temp, 65][Assign, =, 65][ID, arr, 65][OpenSquareBracket, [, 65][ID, j, 65][CloseSquareBracket, ], 65][SemiColon, ;, 65]
+[InlineComment, // 3.1, 4.1, 5.2, 65]
+[ID, arr, 66][OpenSquareBracket, [, 66][ID, j, 66][CloseSquareBracket, ], 66][Assign, =, 66][ID, arr, 66][OpenSquareBracket, [, 66][ID, j, 66][Plus, +, 66][IntegerLiteral, 1, 66][CloseSquareBracket, ], 66][SemiColon, ;, 66]
+[InlineComment, // 3.1, 4.1, 5.2, 66]
+[ID, arr, 67][OpenSquareBracket, [, 67][ID, j, 67][Plus, +, 67][IntegerLiteral, 1, 67][CloseSquareBracket, ], 67][Assign, =, 67][ID, temp, 67][SemiColon, ;, 67]
+[InlineComment, // 3.1, 4.1, 5.2, 67]
+[CloseCurlyBracket, }, 68][Else, else, 68][SemiColon, ;, 68]
+[ID, j, 69][Assign, =, 69][ID, j, 69][Plus, +, 69][IntegerLiteral, 1, 69][SemiColon, ;, 69]
+[InlineComment, // 3.1, 5.1, 69]
+[CloseCurlyBracket, }, 70][SemiColon, ;, 70]
+[ID, i, 71][Assign, =, 71][ID, i, 71][Plus, +, 71][IntegerLiteral, 1, 71][SemiColon, ;, 71]
+[InlineComment, // 3.1, 5.1, 71]
+[CloseCurlyBracket, }, 72][SemiColon, ;, 72]
+[CloseCurlyBracket, }, 73]
+
+[MultiLineComment, /* print the array */, 75]
+[Function, function, 76][ID, printArray, 76][OpenParanthese, (, 76][ID, arr, 76][Colon, :, 76][IntegerKeyword, integer, 76][OpenSquareBracket, [, 76][IntegerLiteral, 7, 76][CloseSquareBracket, ], 76][Comma, ,, 76][ID, size, 76][Colon, :, 76][IntegerKeyword, integer, 76][CloseParanthese, ), 76][Arrow, =>, 76][Void, void, 76]
+[InlineComment, // 2.1, 2.2, 76]
+[OpenCurlyBracket, {, 77]
+[LocalVar, localvar, 78][ID, n, 78][Colon, :, 78][IntegerKeyword, integer, 78][SemiColon, ;, 78]
+[InlineComment, // 1.1, 78]
+[LocalVar, localvar, 79][ID, i, 79][Colon, :, 79][IntegerKeyword, integer, 79][SemiColon, ;, 79]
+[InlineComment, // 1.1, 79]
+[ID, n, 80][Assign, =, 80][ID, size, 80][SemiColon, ;, 80]
+[InlineComment, // 3.1, 80]
+[ID, i, 81][Assign, =, 81][IntegerLiteral, 0, 81][SemiColon, ;, 81]
+[InlineComment, // 3.1, 81]
+[While, while, 82][OpenParanthese, (, 82][ID, i, 82][LessThan, <, 82][ID, n, 82][CloseParanthese, ), 82][OpenCurlyBracket, {, 82]
+[InlineComment, // 3.3, 5.1, 82]
+[Write, write, 83][OpenParanthese, (, 83][ID, arr, 83][OpenSquareBracket, [, 83][ID, i, 83][CloseSquareBracket, ], 83][CloseParanthese, ), 83][SemiColon, ;, 83]
+[InlineComment, // 3.4, 4.1, 5.2, 83]
+[ID, i, 84][Assign, =, 84][ID, i, 84][Plus, +, 84][IntegerLiteral, 1, 84][SemiColon, ;, 84]
+[InlineComment, // 3.1, 5.1, 84]
+[CloseCurlyBracket, }, 85][SemiColon, ;, 85]
+[CloseCurlyBracket, }, 86]
+
+
+[InlineComment, // main funtion to test above, 88]
+[Function, function, 89][ID, main, 89][OpenParanthese, (, 89][CloseParanthese, ), 89][Arrow, =>, 89]
+[Void, void, 89]
+[OpenCurlyBracket, {, 90]
+[LocalVar, localvar, 91][ID, arr, 91][Colon, :, 91][IntegerKeyword, integer, 91][OpenSquareBracket, [, 91][IntegerLiteral, 7, 91][CloseSquareBracket, ], 91][SemiColon, ;, 91]
+[InlineComment, // 1.1, 91]
+[ID, arr, 92][OpenSquareBracket, [, 92][IntegerLiteral, 0, 92][CloseSquareBracket, ], 92][Assign, =, 92][IntegerLiteral, 64, 92][SemiColon, ;, 92]
+[InlineComment, // 3.1 , 92]
+[ID, arr, 93][OpenSquareBracket, [, 93][IntegerLiteral, 1, 93][CloseSquareBracket, ], 93][Assign, =, 93][IntegerLiteral, 34, 93][SemiColon, ;, 93]
+[InlineComment, // 3.1, 93]
+[ID, arr, 94][OpenSquareBracket, [, 94][IntegerLiteral, 2, 94][CloseSquareBracket, ], 94][Assign, =, 94][IntegerLiteral, 25, 94][SemiColon, ;, 94]
+[InlineComment, // 3.1, 94]
+[ID, arr, 95][OpenSquareBracket, [, 95][IntegerLiteral, 3, 95][CloseSquareBracket, ], 95][Assign, =, 95][IntegerLiteral, 12, 95][SemiColon, ;, 95]
+[InlineComment, // 3.1, 95]
+[ID, arr, 96][OpenSquareBracket, [, 96][IntegerLiteral, 4, 96][CloseSquareBracket, ], 96][Assign, =, 96][IntegerLiteral, 22, 96][SemiColon, ;, 96]
+[InlineComment, // 3.1, 96]
+[ID, arr, 97][OpenSquareBracket, [, 97][IntegerLiteral, 5, 97][CloseSquareBracket, ], 97][Assign, =, 97][IntegerLiteral, 11, 97][SemiColon, ;, 97]
+[InlineComment, // 3.1, 97]
+[ID, arr, 98][OpenSquareBracket, [, 98][IntegerLiteral, 6, 98][CloseSquareBracket, ], 98][Assign, =, 98][IntegerLiteral, 90, 98][SemiColon, ;, 98]
+[InlineComment, // 3.1, 98]
+[ID, printArray, 99][OpenParanthese, (, 99][ID, arr, 99][Comma, ,, 99][IntegerLiteral, 7, 99][CloseParanthese, ), 99][SemiColon, ;, 99]
+[InlineComment, // 2.1, 2.2, 99]
+[MultiLineComment, /* assumes that the array is passed as a reference */, 100]
+[ID, bubbleSort, 101][OpenParanthese, (, 101][ID, arr, 101][Comma, ,, 101][IntegerLiteral, 7, 101][CloseParanthese, ), 101][SemiColon, ;, 101]
+[InlineComment, // 2.1, 2.2 , 101]
+[ID, printArray, 102][OpenParanthese, (, 102][ID, arr, 102][Comma, ,, 102][IntegerLiteral, 7, 102][CloseParanthese, ), 102][SemiColon, ;, 102]
+[InlineComment, // 2.1, 2.2, 102]
+[CloseCurlyBracket, }, 103][EOF,  , 103]

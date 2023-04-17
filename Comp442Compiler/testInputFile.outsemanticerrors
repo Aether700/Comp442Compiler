@@ -1,6 +1,0 @@
-Warning: The local variable "x" is overshadowing a member from a the class "A". At line 4: "function f:(x : float)=>void;"
-Warning: The member "f" of the "B" is overshadowing a member from a parent class. At line 11: "function f:(x : float)=>void;"
-Warning: The local variable "x" is overshadowing a member from a the class "A". At line 11: "function f:(x : float)=>void;"
-Warning: The function "B::f(float)" overrides the function "A::f(float)". At line 11: "function f:(x : float)=>void;"
-Warning: The local variable "x" is overshadowing a member from a the class "A". At line 7: "function A::f(x : float)=>void { }"
-Warning: The local variable "x" is overshadowing a member from a the class "A". At line 14: "function B::f(x : float)=>void { }"

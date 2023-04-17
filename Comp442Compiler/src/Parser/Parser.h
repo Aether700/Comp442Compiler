@@ -416,7 +416,6 @@ private:
 
     // returns index of first nonterminal or -1 if none was found
     void UpdateNextNonTerminalIndex();
-    void WriteLexicalErrorToFile(const Token& t);
 
     std::unordered_map<NonTerminal, ParsingTableEntry*> m_parsingTable;
 

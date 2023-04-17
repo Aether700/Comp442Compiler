@@ -33,6 +33,14 @@ public:
     static constexpr const char* InvalidType = "";
 };
 
+// node that generates a temp variable
+class ITempVarNode
+{
+public:
+    virtual const std::string& GetTempVarName() const = 0;
+    virtual void SetTempVarName(const std::string& name) = 0;
+};
+
 class ASTNodeBase : public ASTNode
 {
 public:
@@ -60,6 +68,26 @@ protected:
 private:
     ASTNode* m_parent;
     std::list<ASTNode*> m_children;
+};
+
+class TempVarNodeBase : public ASTNodeBase, public ITempVarNode
+{
+public:
+    virtual const std::string& GetTempVarName() const override;
+    virtual void SetTempVarName(const std::string& name) override;
+
+private:
+    std::string m_tempVarName;
+};
+
+class RefVarNode : public ASTNodeBase
+{
+public:
+    const std::string& GetRefVarName() const;
+    void SetRefVarName(const std::string& name);
+
+private:
+    std::string m_varName;
 };
 
 class IterableNode : public ASTNodeBase
@@ -99,7 +127,6 @@ public:
 
     virtual void AcceptVisit(Visitor* visitor) override;
 };
-
 // serves as stop point when looping
 class StopNode : public EmptyNodeBase { };
 
@@ -164,7 +191,7 @@ private:
     Token m_operator;
 };
 
-class BaseBinaryOperator : public ASTNodeBase
+class BaseBinaryOperator : public TempVarNodeBase
 {
 public:
     BaseBinaryOperator(const std::string& name, ASTNode* left, 
@@ -206,7 +233,7 @@ public:
     virtual void AcceptVisit(Visitor* visitor) override;
 };
 
-class LiteralNode : public ASTNodeBase
+class LiteralNode : public TempVarNodeBase
 {
 public:
     LiteralNode(IDNode* lexeme, TypeNode* type);
@@ -239,11 +266,12 @@ public:
     DimensionNode* GetDimension();
     AParamListNode* GetParamList();
 
+    virtual std::string GetEvaluatedType() override;
     virtual std::string ToString(size_t indent = 0) override;
     virtual void AcceptVisit(Visitor* visitor) override;
 };
 
-class DotNode : public ASTNodeBase
+class DotNode : public RefVarNode
 {
 public:
     DotNode(ASTNode* leftSide, ASTNode* rightSide);
@@ -256,11 +284,12 @@ public:
     virtual void AcceptVisit(Visitor* visitor) override;
 };
 
-class ExprNode : public ASTNodeBase
+class ExprNode : public TempVarNodeBase
 {
 public:
     ExprNode(ASTNode* exprRoot);
 
+    virtual ASTNode* GetRootOfExpr();
     virtual std::string GetEvaluatedType() override;
     virtual std::string ToString(size_t indent = 0) override;
     virtual void AcceptVisit(Visitor* visitor) override;
@@ -305,11 +334,16 @@ class ModifiedExpr : public ExprNode
 public:
     ModifiedExpr(ASTNode* modifier, ASTNode* expr);
 
+    virtual ASTNode* GetRootOfExpr() override;
     ASTNode* GetModifier();
     ASTNode* GetExpr();
 
+    virtual std::string GetEvaluatedType() override;
     virtual std::string ToString(size_t indent = 0) override;
     virtual void AcceptVisit(Visitor* visitor) override;
+
+private:
+    std::string m_tempVarName;
 };
 
 // base node of simple statements provided by the language such as return or write
@@ -410,7 +444,7 @@ public:
 
 };
 
-class FuncCallNode : public ASTNodeBase
+class FuncCallNode : public TempVarNodeBase
 {
 public:
     FuncCallNode(IDNode* id, AParamListNode* parameters);

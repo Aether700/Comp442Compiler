@@ -81,6 +81,15 @@ void ASTNodeBase::ChildrenAcceptVisit(Visitor* visitor)
     }
 }
 
+// TempVarNodeBase ///////////////////////////////////////////////////////////
+const std::string& TempVarNodeBase::GetTempVarName() const { return m_tempVarName; }
+void TempVarNodeBase::SetTempVarName(const std::string& name) { m_tempVarName = name; }
+
+// RefVarNode //////////////////////////////////////////////////////////////
+const std::string& RefVarNode::GetRefVarName() const { return m_varName; }
+void RefVarNode::SetRefVarName(const std::string& name) { m_varName = name; }
+
+
 // IterableNode ///////////////////////////////////////////////////////////
 std::list<ASTNode*>::iterator IterableNode::begin() { return GetChildren().begin(); }
 std::list<ASTNode*>::iterator IterableNode::end() { return GetChildren().end(); }
@@ -300,7 +309,7 @@ std::string RelOpNode::GetEvaluatedType()
 {
     if (GetLeft()->GetEvaluatedType() == GetRight()->GetEvaluatedType())
     {
-        return "boolean";
+        return "integer";
     }
     return InvalidType;
 }
@@ -402,6 +411,15 @@ AParamListNode* VarDeclNode::GetParamList()
     return dynamic_cast<AParamListNode*>(GetChild(2));
 }
 
+std::string VarDeclNode::GetEvaluatedType()
+{
+    SymbolTableEntry* entry = GetSymbolTable()
+        ->FindEntryInScope(GetID()->GetID().GetLexeme());
+    ASSERT(entry != nullptr);
+
+    return entry->GetEvaluatedType();
+}
+
 std::string VarDeclNode::ToString(size_t indent)
 {
     std::stringstream ss;
@@ -455,6 +473,8 @@ void DotNode::AcceptVisit(Visitor* visitor)
 
 // ExprNode ////////////////////////////////////////
 ExprNode::ExprNode(ASTNode* exprRoot) { AddChild(exprRoot); }
+
+ASTNode* ExprNode::GetRootOfExpr() { return GetChild(0); }
 
 std::string ExprNode::GetEvaluatedType() { return GetChild(0)->GetEvaluatedType(); }
 
@@ -517,8 +537,11 @@ ModifiedExpr::ModifiedExpr(ASTNode* modifier, ASTNode* expr)
     AddChild(expr);
 }
 
+ASTNode* ModifiedExpr::GetRootOfExpr() { return GetExpr(); }
 ASTNode* ModifiedExpr::GetModifier() { return GetChild(0); }
 ASTNode* ModifiedExpr::GetExpr() { return GetChild(1); }
+
+std::string ModifiedExpr::GetEvaluatedType() { return GetExpr()->GetEvaluatedType(); }
 
 std::string ModifiedExpr::ToString(size_t indent)
 {
@@ -576,6 +599,17 @@ std::string VariableNode::GetEvaluatedType()
     SymbolTableEntry* entry = GetSymbolTable()
         ->FindEntryInScope(GetVariable()->GetID().GetLexeme());
 
+    if (GetVariable()->GetID().GetLexeme() == "self"
+        && (GetSymbolTable()->GetParentEntry()->GetKind()
+            == SymbolTableEntryKind::MemFuncDecl
+            || GetSymbolTable()->GetParentEntry()->GetKind()
+            == SymbolTableEntryKind::ConstructorDecl))
+    {
+        return GetSymbolTable()->GetParentTable()->GetName();
+    }
+    
+
+    std::string typeStr = "";
     if (entry == nullptr)
     {
         if (GetVariable()->GetID().GetLexeme() == "self" 
@@ -590,8 +624,13 @@ std::string VariableNode::GetEvaluatedType()
         {
             DotNode* dotParent = (DotNode*) GetParent();
             SymbolTable* globalTable = GetGlobalTable(GetSymbolTable());
+            ASTNode* prevTerm = dotParent->GetLeft();
+            if (prevTerm == this)
+            {
+                prevTerm = ((DotNode*)dotParent->GetParent())->GetLeft();
+            }
             SymbolTableEntry* leftScopeTableEntry 
-                = globalTable->FindEntryInScope(dotParent->GetLeft()->GetEvaluatedType());
+                = globalTable->FindEntryInScope(prevTerm->GetEvaluatedType());
             if (leftScopeTableEntry != nullptr 
                 && leftScopeTableEntry->GetKind() == SymbolTableEntryKind::Class)
             {
@@ -601,10 +640,19 @@ std::string VariableNode::GetEvaluatedType()
 
                 if (currVarEntry != nullptr)
                 {
-                    return currVarEntry->GetEvaluatedType();
+                    typeStr = currVarEntry->GetEvaluatedType();
+                    if (!IsArrayType(typeStr))
+                    {
+                        return typeStr;
+                    }
+                    typeStr = BaseTypeOfArr(typeStr);
+                    entry = currVarEntry;
                 }
             }
-            return InvalidType;
+            else
+            {
+                return InvalidType;
+            }
         }
         else
         {
@@ -630,10 +678,13 @@ std::string VariableNode::GetEvaluatedType()
         return entry->GetEvaluatedType();
     }
 
-    TypeNode* type = node->GetType();
+    if (typeStr == "")
+    {
+        TypeNode* type = node->GetType();
+        typeStr = type->GetType().GetLexeme();
+    }
     std::stringstream ss;
-    ss << type->GetType().GetLexeme();
-
+    ss << typeStr;
     size_t dimToSkip = GetDimension()->GetNumChild();
     if (dimToSkip > numDim)
     {

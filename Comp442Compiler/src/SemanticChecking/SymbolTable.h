@@ -1,4 +1,6 @@
 #pragma once
+#include "../Core/Util.h"
+
 #include <string>
 #include <list>
 #include <iostream>
@@ -18,6 +20,8 @@ class SymbolTable;
 class MemFuncDefEntry;
 class ConstructorDefEntry;
 
+constexpr size_t InvalidSize = SIZE_MAX;
+
 enum class SymbolTableEntryKind
 {
     LocalVariable,
@@ -29,7 +33,10 @@ enum class SymbolTableEntryKind
     ConstructorDef,
     MemFuncDecl,
     MemFuncDef,
-    Parameter
+    Parameter,
+    TempVar,
+    ReturnAddress,
+    ReturnValue
 };
 
 std::ostream& operator<<(std::ostream& stream, SymbolTableEntryKind kind);
@@ -47,7 +54,11 @@ public:
     SymbolTable* GetParentTable();
     virtual ASTNode* GetNode() = 0;
     virtual SymbolTable* GetSubTable() = 0;
-    
+    size_t GetSize() const;
+    void SetSize(size_t size);
+    int GetOffset() const;
+    void SetOffset(int offset);
+
     virtual std::string ToString() = 0;
 
 protected:
@@ -58,6 +69,8 @@ private:
     std::string m_name;
     SymbolTableEntryKind m_kind;
     SymbolTable* m_parentTable;
+    size_t m_size;
+    int m_offset;
 };
 
 class VarSymbolTableEntry : public SymbolTableEntry
@@ -78,7 +91,27 @@ private:
     std::string m_typeStr;
 };
 
-class FreeFuncTableEntry : public SymbolTableEntry
+class ScopeTableEntry : public SymbolTableEntry
+{
+public:
+    ScopeTableEntry(SymbolTableEntryKind kind);
+    virtual ~ScopeTableEntry();
+};
+
+class TagTableEntry : public ScopeTableEntry
+{
+public:
+    TagTableEntry(SymbolTableEntryKind kind);
+    virtual ~TagTableEntry();
+
+    const std::string& GetTag() const;
+    void SetTag(const std::string& tag);
+
+private:
+    std::string m_tag;
+};
+
+class FreeFuncTableEntry : public TagTableEntry
 {
 public:
     FreeFuncTableEntry(FunctionDefNode* node, const std::string& parametersType, 
@@ -147,7 +180,7 @@ private:
     MemVarNode* GetMemVarNode() const;
 };
 
-class MemFuncTableEntry : public SymbolTableEntry
+class MemFuncTableEntry : public TagTableEntry
 {
 public:
     MemFuncTableEntry(MemFuncDeclNode* node, const std::string& parameterTypes);
@@ -198,7 +231,7 @@ private:
     std::string m_parameterTypes;
 };
 
-class ConstructorTableEntry : public SymbolTableEntry
+class ConstructorTableEntry : public TagTableEntry
 {
 public:
     ConstructorTableEntry(ConstructorDeclNode* node, const std::string& parameterTypes);
@@ -249,6 +282,53 @@ private:
     std::string m_parameterTypes;  
 };
 
+class TempVarEntry : public SymbolTableEntry
+{
+public:
+    TempVarEntry(const std::string& typeStr, size_t size);
+    virtual ASTNode* GetNode() override;
+    virtual SymbolTable* GetSubTable() override;
+
+    void SetName(const std::string& name);
+
+    virtual std::string ToString() override;
+
+private:
+    std::string m_type;
+};
+
+class RefEntry : public TempVarEntry
+{
+public:
+    RefEntry(size_t size);
+    virtual std::string GetEvaluatedType() const override;
+};
+
+class ReturnAddressEntry : public SymbolTableEntry
+{
+public:
+    ReturnAddressEntry();
+    virtual std::string GetEvaluatedType() const;
+    virtual ASTNode* GetNode() override;
+    virtual SymbolTable* GetSubTable() override;
+
+    virtual std::string ToString() override;
+};
+
+class ReturnValueEntry : public SymbolTableEntry
+{
+public:
+    ReturnValueEntry(TagTableEntry* funcEntry);
+    virtual std::string GetEvaluatedType() const;
+    virtual ASTNode* GetNode() override;
+    virtual SymbolTable* GetSubTable() override;
+
+    virtual std::string ToString() override;
+
+private:
+    TagTableEntry* m_funcEntry;
+};
+
 class SymbolTable
 {
 public:
@@ -286,9 +366,12 @@ private:
 
     SymbolTableEntry* FindInInheritanceScope(const std::string& name);
 
+    std::string GenerateName();
+
     std::string m_name;
     TableList m_entries;
     SymbolTableEntry* m_parentEntry;
+    TagGenerator* m_nameGen;
 };
 
 class SymbolTableDisplayManager
@@ -298,13 +381,13 @@ public:
 
 private:
     static constexpr const char* s_namePrefix = "table: ";
-    static constexpr size_t s_mainTableWidth = 120;
+    static constexpr size_t s_mainTableWidth = 150;
     static constexpr size_t s_mainTableIndent = 1;
     
-    static constexpr size_t s_subTableWidth = 110;
+    static constexpr size_t s_subTableWidth = 140;
     static constexpr size_t s_subTableIndent = 4;
 
-    static constexpr size_t s_subSubTableWidth = 100;
+    static constexpr size_t s_subSubTableWidth = 130;
     static constexpr size_t s_subSubTableIndent = 4;
 
     static std::string MainTableToStr(SymbolTable* table);

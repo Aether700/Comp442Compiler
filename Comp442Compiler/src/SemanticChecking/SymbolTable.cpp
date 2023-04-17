@@ -1,6 +1,8 @@
 #include "SymbolTable.h"
 #include "../Parser/AST.h"
+#include "../Parser/ASTUtil.h"
 #include "../Core/Core.h"
+#include "../CodeGeneration/CodeGeneration.h"
 
 // SymbolTableEntryKind ////////////////////////////////////////////////////////
 
@@ -40,6 +42,18 @@ std::ostream& operator<<(std::ostream& stream, SymbolTableEntryKind kind)
         stream << "inherites";
         break;
 
+    case SymbolTableEntryKind::TempVar:
+        stream << "temp var";
+        break;
+
+    case SymbolTableEntryKind::ReturnAddress:
+        stream << "return address";
+        break;
+
+    case SymbolTableEntryKind::ReturnValue:
+        stream << "return value";
+        break;
+
     default:
         DEBUG_BREAK();
         break;
@@ -50,7 +64,7 @@ std::ostream& operator<<(std::ostream& stream, SymbolTableEntryKind kind)
 // SymbolTableEntry //////////////////////////////////////////
 
 SymbolTableEntry::SymbolTableEntry(SymbolTableEntryKind kind) 
-    : m_kind(kind), m_parentTable(nullptr) { }
+    : m_kind(kind), m_parentTable(nullptr), m_size(InvalidSize) { }
 
 SymbolTableEntry::~SymbolTableEntry() { }
 
@@ -63,6 +77,13 @@ std::string SymbolTableEntry::GetEvaluatedType() const
 
 SymbolTableEntryKind SymbolTableEntry::GetKind() const { return m_kind; }
 SymbolTable* SymbolTableEntry::GetParentTable() { return m_parentTable; }
+
+
+size_t SymbolTableEntry::GetSize() const { return m_size; }
+void SymbolTableEntry::SetSize(size_t size) { m_size = size; }
+int SymbolTableEntry::GetOffset() const { return m_offset; }
+void SymbolTableEntry::SetOffset(int offset) { m_offset = offset; }
+
 void SymbolTableEntry::SetName(const std::string& name) { m_name = name; }
 
 // VarSymbolTableEntry /////////////////////////////////////////////////////////////////
@@ -87,14 +108,26 @@ ASTNode* VarSymbolTableEntry::GetNode() { return m_node; }
 std::string VarSymbolTableEntry::ToString()
 {
     std::stringstream ss;
-    ss << GetKind() << s_seperator << GetName() << s_seperator << GetType();
+    ss << GetKind() << s_seperator << GetName() << s_seperator << GetType() << s_seperator 
+        << GetSize() << s_seperator << GetOffset();
     return ss.str();
 }
+
+// ScopeTableEntry ///////////////////////////////////////////////////////////////
+ScopeTableEntry::ScopeTableEntry(SymbolTableEntryKind kind) : SymbolTableEntry(kind) { }
+ScopeTableEntry::~ScopeTableEntry() { }
+
+// TagTableEntry ////////////////////////////////////////////////////////////////
+TagTableEntry::TagTableEntry(SymbolTableEntryKind kind) : ScopeTableEntry(kind) { }
+TagTableEntry::~TagTableEntry() { }
+
+const std::string& TagTableEntry::GetTag() const { return m_tag; }
+void TagTableEntry::SetTag(const std::string& tag) { m_tag = tag; }
 
 // FreeFuncTableEntry /////////////////////////////////////////////////////////////
 FreeFuncTableEntry::FreeFuncTableEntry(FunctionDefNode* node, 
     const std::string& parametersType, SymbolTable* subTable) 
-    : SymbolTableEntry(SymbolTableEntryKind::FreeFunction), m_subTable(subTable), 
+    : TagTableEntry(SymbolTableEntryKind::FreeFunction), m_subTable(subTable),
     m_paramTypes(parametersType), m_funcNode(node)
 {
     SetName(node->GetID()->GetID().GetLexeme());
@@ -120,7 +153,8 @@ std::string FreeFuncTableEntry::ToString()
 {
     std::stringstream ss;
     ss << GetKind() << s_seperator << GetName() << s_seperator << 
-        "(" << GetParamTypes() << "):" << GetReturnType();
+        "(" << GetParamTypes() << "):" << GetReturnType() << s_seperator 
+        << GetSize() << s_seperator << GetOffset();
     return ss.str();
 }
 
@@ -149,7 +183,7 @@ ASTNode* ClassTableEntry::GetNode() { return m_classNode; }
 std::string ClassTableEntry::ToString()
 {
     std::stringstream ss;
-    ss << GetKind() << s_seperator << GetName();
+    ss << GetKind() << s_seperator << GetName() << s_seperator << GetSize();
     return ss.str();
 }
 
@@ -226,7 +260,8 @@ std::string MemVarTableEntry::ToString()
 {
     std::stringstream ss;
     ss << GetKind() << s_seperator << GetName() << s_seperator 
-        << GetType() << s_seperator << GetVisibility();
+        << GetType() << s_seperator << GetVisibility() << s_seperator 
+        << GetSize() << s_seperator << GetOffset();
     return ss.str();
 }
 
@@ -238,7 +273,7 @@ MemVarNode* MemVarTableEntry::GetMemVarNode() const
 // MemFuncTableEntry /////////////////////////////////////////////////////////
 
 MemFuncTableEntry::MemFuncTableEntry(MemFuncDeclNode* node, 
-    const std::string& parameterTypes) : SymbolTableEntry(SymbolTableEntryKind::MemFuncDecl), 
+    const std::string& parameterTypes) : TagTableEntry(SymbolTableEntryKind::MemFuncDecl),
     m_declaration(node), m_definition(nullptr), 
     m_definitionSubTable(nullptr), m_parameterTypes(parameterTypes)
 {
@@ -294,7 +329,7 @@ std::string MemFuncTableEntry::ToString()
     std::stringstream ss;
     ss << GetKind() << s_seperator << GetName() << s_seperator 
         << "(" << GetParamTypes() << "):" << GetReturnType() 
-        << s_seperator << GetVisibility();
+        << s_seperator << GetVisibility() << s_seperator << GetSize();
 
     return ss.str();
 }
@@ -337,7 +372,7 @@ std::string MemFuncDefEntry::ToString()
 // ConstructorTableEntry ///////////////////////////////////////////////////////////////
 ConstructorTableEntry::ConstructorTableEntry(ConstructorDeclNode* node, 
     const std::string& parameterTypes) 
-    : SymbolTableEntry(SymbolTableEntryKind::ConstructorDecl), m_declaration(node), 
+    : TagTableEntry(SymbolTableEntryKind::ConstructorDecl), m_declaration(node),
     m_definition(nullptr), m_definitionSubTable(nullptr), 
     m_parameterTypes(parameterTypes) 
 {
@@ -395,7 +430,7 @@ std::string ConstructorTableEntry::ToString()
     std::stringstream ss;
     ss << GetKind() << s_seperator << GetName() << s_seperator 
         << "(" << GetParamTypes() << "):" << GetReturnType() 
-        << s_seperator << GetVisibility();
+        << s_seperator << GetVisibility() << s_seperator << GetSize();
 
     return ss.str();
 }
@@ -433,13 +468,83 @@ std::string ConstructorDefEntry::ToString()
     return "";
 }
 
+// TempVarEntry /////////////////////////////////////////////////////////////////
+TempVarEntry::TempVarEntry(const std::string& typeStr, size_t size) 
+    : SymbolTableEntry(SymbolTableEntryKind::TempVar), m_type(typeStr)
+{
+    SetSize(size);
+}
+
+ASTNode* TempVarEntry::GetNode() { return nullptr; }
+SymbolTable* TempVarEntry::GetSubTable() { return nullptr; }
+
+void TempVarEntry::SetName(const std::string& name)
+{
+    SymbolTableEntry::SetName(name);
+}
+
+std::string TempVarEntry::ToString()
+{
+    std::stringstream ss;
+    ss << GetKind() << s_seperator << GetName() << s_seperator << m_type << s_seperator 
+        << GetSize() << s_seperator << GetOffset();
+    return ss.str();
+}
+
+// RefEntry ///////////////////////////////////////////////////////////////
+RefEntry::RefEntry(size_t size) : TempVarEntry("reference", size) { }
+
+std::string RefEntry::GetEvaluatedType() const
+{
+    return "reference";
+}
+
+// ReturnAddressEntry ///////////////////////////////////////////////////////
+ReturnAddressEntry::ReturnAddressEntry() : SymbolTableEntry(SymbolTableEntryKind::ReturnAddress) 
+{
+    SetName("returnAddress");
+    SetSize(PlatformSpecifications::GetAddressSize());
+}
+
+std::string ReturnAddressEntry::GetEvaluatedType() const { return "integer"; }
+ASTNode* ReturnAddressEntry::GetNode() { return nullptr; }
+SymbolTable* ReturnAddressEntry::GetSubTable() { return nullptr; }
+
+std::string ReturnAddressEntry::ToString()
+{
+    std::stringstream ss;
+    ss << GetKind() << s_seperator << GetName() << s_seperator << GetEvaluatedType() << s_seperator
+        << GetSize() << s_seperator << GetOffset();
+    return ss.str();
+}
+
+// ReturnValueEntry ///////////////////////////////////////////////////////
+
+ReturnValueEntry::ReturnValueEntry(TagTableEntry* funcEntry) : SymbolTableEntry(SymbolTableEntryKind::ReturnValue), 
+    m_funcEntry(funcEntry) 
+{
+    SetName("returnValue");
+}
+
+std::string ReturnValueEntry::GetEvaluatedType() const { return m_funcEntry->GetEvaluatedType(); }
+ASTNode* ReturnValueEntry::GetNode() { return nullptr;  }
+SymbolTable* ReturnValueEntry::GetSubTable() { return nullptr; }
+
+std::string ReturnValueEntry::ToString()
+{
+    std::stringstream ss;
+    ss << GetKind() << s_seperator << GetName() << s_seperator << GetEvaluatedType() << s_seperator
+        << GetSize() << s_seperator << GetOffset();
+    return ss.str();
+}
 
 // SymbolTable ////////////////////////////////////////////////////////////////////
 
-SymbolTable::SymbolTable(const std::string& name) : m_name(name), m_parentEntry(nullptr) { }
+SymbolTable::SymbolTable(const std::string& name) : m_name(name), m_parentEntry(nullptr), m_nameGen(nullptr) { }
 
 SymbolTable::~SymbolTable()
 {
+    delete m_nameGen;
     for (SymbolTableEntry* entry : m_entries)
     {
         delete entry;
@@ -450,6 +555,8 @@ const std::string& SymbolTable::GetName() const { return m_name; }
 
 SymbolTableEntry* SymbolTable::AddEntry(SymbolTableEntry* entry) 
 {
+    if (entry->GetKind() != SymbolTableEntryKind::ConstructorDef 
+        && entry->GetKind() != SymbolTableEntryKind::ConstructorDecl)
     {
         SymbolTableEntry* originalEntry = FindExistingEntry(entry);
         if (originalEntry != nullptr)
@@ -460,6 +567,12 @@ SymbolTableEntry* SymbolTable::AddEntry(SymbolTableEntry* entry)
 
     m_entries.push_back(entry);
     entry->m_parentTable = this;
+
+    if (dynamic_cast<TempVarEntry*>(entry) != nullptr)
+    {
+        entry->SetName(GenerateName());
+    }
+
     return nullptr;
 }
 
@@ -515,12 +628,19 @@ SymbolTableEntry* SymbolTable::FindEntryInScope(const std::string& name)
     }
 
     SymbolTableEntry* parentEntry = GetParentEntry();
-    if (parentEntry != nullptr && parentEntry->GetKind() == SymbolTableEntryKind::Class)
+    if (parentEntry != nullptr)
     {
-        SymbolTableEntry* entry = FindInInheritanceScope(name);
-        if (entry != nullptr)
+        if (parentEntry->GetKind() == SymbolTableEntryKind::Class)
         {
-            return entry;
+            SymbolTableEntry* entry = FindInInheritanceScope(name);
+            if (entry != nullptr)
+            {
+                return entry;
+            }
+        }
+        else if (parentEntry->GetName() == name)
+        {
+            return parentEntry;
         }
     }
 
@@ -575,6 +695,7 @@ SymbolTableEntry* SymbolTable::FindExistingEntry(SymbolTableEntry* entry)
         {
             return originalEntry;
         }
+        originalEntry = nullptr;
     }
     else if (entry->GetKind() == SymbolTableEntryKind::MemFuncDecl 
         && originalEntry->GetKind() == SymbolTableEntryKind::MemFuncDecl)
@@ -643,6 +764,15 @@ SymbolTableEntry* SymbolTable::FindInInheritanceScope(const std::string& name)
     }
 
     return nullptr;
+}
+
+std::string SymbolTable::GenerateName()
+{
+    if (m_nameGen == nullptr)
+    {
+        m_nameGen = new TagGenerator("T");
+    }
+    return m_nameGen->GetNextTag();
 }
 
 // SymbolTableDisplayManager //////////////////////////////////////////////////////////////
