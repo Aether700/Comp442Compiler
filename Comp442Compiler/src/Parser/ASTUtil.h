@@ -6,6 +6,34 @@ std::string BaseTypeOfArr(const std::string& arrTypeStr);
 std::string VarDeclToTypeStr(VarDeclNode* var);
 std::string FunctionParamTypeToStr(FParamListNode* params);
 
+template<typename MemType>
+bool ClassMemberIsAccessible(MemType* member, SymbolTable* callingContext)
+{
+    if (member->GetVisibility() == "public")
+    {
+        return true;
+    }
+
+    SymbolTableEntry* callingEntry = callingContext->GetParentEntry();
+    if (callingEntry == nullptr)
+    {
+        return false;
+    }
+
+    switch (callingEntry->GetKind())
+    {
+    case SymbolTableEntryKind::MemFuncDecl:
+    case SymbolTableEntryKind::ConstructorDecl:
+    {
+        SymbolTableEntry* classEntry = callingEntry->GetParentTable()->GetParentEntry();
+        return member->GetClassID() == classEntry->GetName();
+    }
+
+    default:
+        return false;
+    }
+}
+
 bool HasMatchingParameters(FParamListNode* fparam, AParamListNode* aparam);
 
 DotNode* FindRootDotNodeParent(ASTNode* node);

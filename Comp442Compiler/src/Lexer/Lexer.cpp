@@ -1,6 +1,7 @@
 #include "Lexer.h"
 #include "../Core/Core.h"
 #include "../Core/Util.h"
+#include "../Core/MessagePrinter.h"
 #include <string.h>
 #include <iostream>
 
@@ -588,8 +589,12 @@ void Lexer::WriteValidToken(const Token& t)
 
 void Lexer::WriteErrorToken(const Token& t)
 {
-	m_lexErrFile << "Lexical error: " << t.GetTokenType() << ": \""
+	std::stringstream ss;
+	ss << "Lexical error: " << t.GetTokenType() << ": \""
 		<< t.GetLexeme() << "\": line  " << t.GetLine() << ".\n";
+
+	m_lexErrFile << ss.str();
+	MessagePrinter::AddMessage(t.GetLine(), ss.str());
 }
 
 

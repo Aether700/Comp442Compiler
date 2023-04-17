@@ -564,10 +564,13 @@ int GetOffset(VariableNode* var)
         return varEntry->GetOffset();
     }
 
+    int selfOffset = 0;
+
     VarDeclNode* declNode = (VarDeclNode*)varEntry->GetNode();
+    
     if (!IsArrayType(declNode->GetEvaluatedType()))
     {
-        return GetOffset(var->GetSymbolTable(), var->GetVariable()->GetID().GetLexeme());
+        return selfOffset + GetOffset(var->GetSymbolTable(), var->GetVariable()->GetID().GetLexeme());
     }
     int varOffset = GetOffset(var->GetSymbolTable(), var->GetVariable()->GetID().GetLexeme());
     size_t baseTypeSize = ComputeSize(declNode->GetType(), nullptr);
@@ -608,7 +611,7 @@ int GetOffset(VariableNode* var)
         }
     }
 
-    return varOffset + internalOffset;
+    return selfOffset + varOffset + internalOffset;
 }
 
 int GetOffset(AssignStatNode* assign)

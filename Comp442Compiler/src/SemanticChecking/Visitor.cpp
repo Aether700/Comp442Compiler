@@ -13,7 +13,12 @@ void CheckForLocalVarOverShadowing(NodeType* element)
 {
     const std::string& varName = element->GetID()->GetID().GetLexeme();
     SymbolTableEntry* elementEntry = element->GetSymbolTable()->FindEntryInTable(varName);
-    ASSERT(elementEntry != nullptr);
+
+    if (elementEntry == nullptr)
+    {
+        return;
+    }
+
     if (elementEntry->GetKind() == SymbolTableEntryKind::LocalVariable 
         || elementEntry->GetKind() == SymbolTableEntryKind::Parameter)
     {
@@ -842,6 +847,29 @@ void SemanticChecker::Visit(FuncCallNode* element)
     }
 }
 
+void SemanticChecker::Visit(VariableNode* element)
+{
+    const std::string& varName = element->GetVariable()->GetID().GetLexeme();
+    SymbolTable* table = element->GetSymbolTable();
+    SymbolTableEntry* entry = table->FindEntryInScope(varName);
+    if (entry != nullptr)
+    {
+        VarDeclNode* varDecl = dynamic_cast<VarDeclNode*>(entry->GetNode());
+        ASSERT(varDecl != nullptr);
+        if (varDecl->GetDimension() == nullptr)
+        {
+            if (element->GetDimension()->GetNumChild() != 0)
+            {
+                SemanticErrorManager::AddError(new IncorrectArrayDimensionUsedError(element->GetVariable()->GetID()));
+            }
+        }
+        else if (varDecl->GetDimension()->GetNumChild() < element->GetDimension()->GetNumChild())
+        {
+            SemanticErrorManager::AddError(new IncorrectArrayDimensionUsedError(element->GetVariable()->GetID()));
+        }
+    }
+}
+
 void SemanticChecker::Visit(FunctionDefNode* element)
 {
     // check if a return statement is provided
@@ -1220,6 +1248,17 @@ void SemanticChecker::TestDotRemainder(SymbolTable* contextTable,
                 return;
             }
         }
+        else if (varEntry->GetKind() == SymbolTableEntryKind::MemVar)
+        {
+            MemVarTableEntry* memVarEntry = (MemVarTableEntry*)varEntry;
+            SymbolTable* callingContext = dotRemainder->GetSymbolTable();
+            if (!ClassMemberIsAccessible(memVarEntry, callingContext))
+            {
+                SemanticErrorManager::AddError(new ProhibitedAccessToPrivateMemberError(
+                    var->GetVariable()->GetID()));
+            }
+        }
+
 
         if (right != nullptr)
         {
@@ -1259,6 +1298,18 @@ void SemanticChecker::TestDotRemainder(SymbolTable* contextTable,
                     || (entry->GetKind() == SymbolTableEntryKind::ConstructorDecl 
                     && contextTable->GetName() == funcName))
                 {
+
+                    if (entry->GetKind() == SymbolTableEntryKind::MemFuncDecl)
+                    {
+                        MemFuncTableEntry* memFuncEntry = (MemFuncTableEntry*)entry;
+
+                        if (!ClassMemberIsAccessible(memFuncEntry, dotRemainder->GetSymbolTable()))
+                        {
+                            SemanticErrorManager::AddError(new ProhibitedAccessToPrivateMemberError(
+                                funcCall->GetID()->GetID()));
+                        }
+                    }
+
                     foundSameName = true;
                     FParamListNode* fparams;
                     if (entry->GetKind() == SymbolTableEntryKind::MemFuncDecl)

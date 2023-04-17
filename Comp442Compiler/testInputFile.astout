@@ -1,359 +1,140 @@
 Program
 |  ClassDefList
+|  |  ClassDef
+|  |  |  id
+|  |  |  |  A
+|  |  |  InheritanceList
+|  |  |  MemVar
+|  |  |  |  Visibility
+|  |  |  |  |  public
+|  |  |  |  id
+|  |  |  |  |  x
+|  |  |  |  TypeNode
+|  |  |  |  |  integer
+|  |  |  |  Dimensions
+|  |  |  MemVar
+|  |  |  |  Visibility
+|  |  |  |  |  public
+|  |  |  |  id
+|  |  |  |  |  y
+|  |  |  |  TypeNode
+|  |  |  |  |  integer
+|  |  |  |  Dimensions
+|  |  |  ConstructorDecl
+|  |  |  |  Visibility
+|  |  |  |  |  public
+|  |  |  |  FParamList
+|  |  |  |  |  FParam
+|  |  |  |  |  |  id
+|  |  |  |  |  |  |  x_
+|  |  |  |  |  |  TypeNode
+|  |  |  |  |  |  |  integer
+|  |  |  |  |  |  Dimensions
+|  |  |  |  |  FParam
+|  |  |  |  |  |  id
+|  |  |  |  |  |  |  y_
+|  |  |  |  |  |  TypeNode
+|  |  |  |  |  |  |  integer
+|  |  |  |  |  |  Dimensions
+|  |  |  ConstructorDecl
+|  |  |  |  Visibility
+|  |  |  |  |  public
+|  |  |  |  FParamList
+|  |  |  |  |  FParam
+|  |  |  |  |  |  id
+|  |  |  |  |  |  |  n
+|  |  |  |  |  |  TypeNode
+|  |  |  |  |  |  |  integer
+|  |  |  |  |  |  Dimensions
 |  FuncDefList
-|  |  FuncDef
-|  |  |  id
-|  |  |  |  bubbleSort
+|  |  ConstructorDef
 |  |  |  TypeNode
-|  |  |  |  void
+|  |  |  |  A
 |  |  |  FParamList
 |  |  |  |  FParam
-|  |  |  |  |  id
-|  |  |  |  |  |  arr
-|  |  |  |  |  TypeNode
-|  |  |  |  |  |  integer
-|  |  |  |  |  Dimensions
-|  |  |  |  |  |  Literal
-|  |  |  |  |  |  |  7
-|  |  |  |  |  |  |  TypeNode
-|  |  |  |  |  |  |  |  integer
-|  |  |  |  FParam
-|  |  |  |  |  id
-|  |  |  |  |  |  size
-|  |  |  |  |  TypeNode
-|  |  |  |  |  |  integer
-|  |  |  |  |  Dimensions
-|  |  |  StatBlock
-|  |  |  |  VarDecl
 |  |  |  |  |  id
 |  |  |  |  |  |  n
 |  |  |  |  |  TypeNode
 |  |  |  |  |  |  integer
 |  |  |  |  |  Dimensions
-|  |  |  |  VarDecl
-|  |  |  |  |  id
-|  |  |  |  |  |  i
-|  |  |  |  |  TypeNode
-|  |  |  |  |  |  integer
-|  |  |  |  |  Dimensions
-|  |  |  |  VarDecl
-|  |  |  |  |  id
-|  |  |  |  |  |  j
-|  |  |  |  |  TypeNode
-|  |  |  |  |  |  integer
-|  |  |  |  |  Dimensions
-|  |  |  |  VarDecl
-|  |  |  |  |  id
-|  |  |  |  |  |  temp
-|  |  |  |  |  TypeNode
-|  |  |  |  |  |  integer
-|  |  |  |  |  Dimensions
+|  |  |  StatBlock
 |  |  |  |  AssigStat
-|  |  |  |  |  Variable
-|  |  |  |  |  |  id
-|  |  |  |  |  |  |  n
-|  |  |  |  |  |  Dimensions
+|  |  |  |  |  Dot
+|  |  |  |  |  |  Variable
+|  |  |  |  |  |  |  id
+|  |  |  |  |  |  |  |  self
+|  |  |  |  |  |  |  Dimensions
+|  |  |  |  |  |  Variable
+|  |  |  |  |  |  |  id
+|  |  |  |  |  |  |  |  x
+|  |  |  |  |  |  |  Dimensions
 |  |  |  |  |  Expr
 |  |  |  |  |  |  Variable
 |  |  |  |  |  |  |  id
-|  |  |  |  |  |  |  |  size
+|  |  |  |  |  |  |  |  n
 |  |  |  |  |  |  |  Dimensions
 |  |  |  |  AssigStat
-|  |  |  |  |  Variable
-|  |  |  |  |  |  id
-|  |  |  |  |  |  |  i
-|  |  |  |  |  |  Dimensions
+|  |  |  |  |  Dot
+|  |  |  |  |  |  Variable
+|  |  |  |  |  |  |  id
+|  |  |  |  |  |  |  |  self
+|  |  |  |  |  |  |  Dimensions
+|  |  |  |  |  |  Variable
+|  |  |  |  |  |  |  id
+|  |  |  |  |  |  |  |  y
+|  |  |  |  |  |  |  Dimensions
 |  |  |  |  |  Expr
-|  |  |  |  |  |  Literal
-|  |  |  |  |  |  |  0
-|  |  |  |  |  |  |  TypeNode
-|  |  |  |  |  |  |  |  integer
-|  |  |  |  AssigStat
-|  |  |  |  |  Variable
-|  |  |  |  |  |  id
-|  |  |  |  |  |  |  j
-|  |  |  |  |  |  Dimensions
-|  |  |  |  |  Expr
-|  |  |  |  |  |  Literal
-|  |  |  |  |  |  |  0
-|  |  |  |  |  |  |  TypeNode
-|  |  |  |  |  |  |  |  integer
-|  |  |  |  AssigStat
-|  |  |  |  |  Variable
-|  |  |  |  |  |  id
-|  |  |  |  |  |  |  temp
-|  |  |  |  |  |  Dimensions
-|  |  |  |  |  Expr
-|  |  |  |  |  |  Literal
-|  |  |  |  |  |  |  0
-|  |  |  |  |  |  |  TypeNode
-|  |  |  |  |  |  |  |  integer
-|  |  |  |  WhileStat
-|  |  |  |  |  Expr
-|  |  |  |  |  |  RelOp
-|  |  |  |  |  |  |  Variable
-|  |  |  |  |  |  |  |  id
-|  |  |  |  |  |  |  |  |  i
-|  |  |  |  |  |  |  |  Dimensions
-|  |  |  |  |  |  |  <
-|  |  |  |  |  |  |  AddOp
-|  |  |  |  |  |  |  |  Variable
-|  |  |  |  |  |  |  |  |  id
-|  |  |  |  |  |  |  |  |  |  n
-|  |  |  |  |  |  |  |  |  Dimensions
-|  |  |  |  |  |  |  |  -
-|  |  |  |  |  |  |  |  Literal
-|  |  |  |  |  |  |  |  |  1
-|  |  |  |  |  |  |  |  |  TypeNode
-|  |  |  |  |  |  |  |  |  |  integer
-|  |  |  |  |  StatBlock
-|  |  |  |  |  |  AssigStat
-|  |  |  |  |  |  |  Variable
-|  |  |  |  |  |  |  |  id
-|  |  |  |  |  |  |  |  |  j
-|  |  |  |  |  |  |  |  Dimensions
-|  |  |  |  |  |  |  Expr
-|  |  |  |  |  |  |  |  Literal
-|  |  |  |  |  |  |  |  |  0
-|  |  |  |  |  |  |  |  |  TypeNode
-|  |  |  |  |  |  |  |  |  |  integer
-|  |  |  |  |  |  WhileStat
-|  |  |  |  |  |  |  Expr
-|  |  |  |  |  |  |  |  RelOp
-|  |  |  |  |  |  |  |  |  Variable
-|  |  |  |  |  |  |  |  |  |  id
-|  |  |  |  |  |  |  |  |  |  |  j
-|  |  |  |  |  |  |  |  |  |  Dimensions
-|  |  |  |  |  |  |  |  |  <
-|  |  |  |  |  |  |  |  |  AddOp
-|  |  |  |  |  |  |  |  |  |  AddOp
-|  |  |  |  |  |  |  |  |  |  |  Variable
-|  |  |  |  |  |  |  |  |  |  |  |  id
-|  |  |  |  |  |  |  |  |  |  |  |  |  n
-|  |  |  |  |  |  |  |  |  |  |  |  Dimensions
-|  |  |  |  |  |  |  |  |  |  |  -
-|  |  |  |  |  |  |  |  |  |  |  Variable
-|  |  |  |  |  |  |  |  |  |  |  |  id
-|  |  |  |  |  |  |  |  |  |  |  |  |  i
-|  |  |  |  |  |  |  |  |  |  |  |  Dimensions
-|  |  |  |  |  |  |  |  |  |  -
-|  |  |  |  |  |  |  |  |  |  Literal
-|  |  |  |  |  |  |  |  |  |  |  1
-|  |  |  |  |  |  |  |  |  |  |  TypeNode
-|  |  |  |  |  |  |  |  |  |  |  |  integer
-|  |  |  |  |  |  |  StatBlock
-|  |  |  |  |  |  |  |  IfStat
-|  |  |  |  |  |  |  |  |  Expr
-|  |  |  |  |  |  |  |  |  |  RelOp
-|  |  |  |  |  |  |  |  |  |  |  Variable
-|  |  |  |  |  |  |  |  |  |  |  |  id
-|  |  |  |  |  |  |  |  |  |  |  |  |  arr
-|  |  |  |  |  |  |  |  |  |  |  |  Dimensions
-|  |  |  |  |  |  |  |  |  |  |  |  |  Variable
-|  |  |  |  |  |  |  |  |  |  |  |  |  |  id
-|  |  |  |  |  |  |  |  |  |  |  |  |  |  |  j
-|  |  |  |  |  |  |  |  |  |  |  |  |  |  Dimensions
-|  |  |  |  |  |  |  |  |  |  |  >
-|  |  |  |  |  |  |  |  |  |  |  Variable
-|  |  |  |  |  |  |  |  |  |  |  |  id
-|  |  |  |  |  |  |  |  |  |  |  |  |  arr
-|  |  |  |  |  |  |  |  |  |  |  |  Dimensions
-|  |  |  |  |  |  |  |  |  |  |  |  |  AddOp
-|  |  |  |  |  |  |  |  |  |  |  |  |  |  Variable
-|  |  |  |  |  |  |  |  |  |  |  |  |  |  |  id
-|  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  j
-|  |  |  |  |  |  |  |  |  |  |  |  |  |  |  Dimensions
-|  |  |  |  |  |  |  |  |  |  |  |  |  |  +
-|  |  |  |  |  |  |  |  |  |  |  |  |  |  Literal
-|  |  |  |  |  |  |  |  |  |  |  |  |  |  |  1
-|  |  |  |  |  |  |  |  |  |  |  |  |  |  |  TypeNode
-|  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  integer
-|  |  |  |  |  |  |  |  |  StatBlock
-|  |  |  |  |  |  |  |  |  |  AssigStat
-|  |  |  |  |  |  |  |  |  |  |  Variable
-|  |  |  |  |  |  |  |  |  |  |  |  id
-|  |  |  |  |  |  |  |  |  |  |  |  |  temp
-|  |  |  |  |  |  |  |  |  |  |  |  Dimensions
-|  |  |  |  |  |  |  |  |  |  |  Expr
-|  |  |  |  |  |  |  |  |  |  |  |  Variable
-|  |  |  |  |  |  |  |  |  |  |  |  |  id
-|  |  |  |  |  |  |  |  |  |  |  |  |  |  arr
-|  |  |  |  |  |  |  |  |  |  |  |  |  Dimensions
-|  |  |  |  |  |  |  |  |  |  |  |  |  |  Variable
-|  |  |  |  |  |  |  |  |  |  |  |  |  |  |  id
-|  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  j
-|  |  |  |  |  |  |  |  |  |  |  |  |  |  |  Dimensions
-|  |  |  |  |  |  |  |  |  |  AssigStat
-|  |  |  |  |  |  |  |  |  |  |  Variable
-|  |  |  |  |  |  |  |  |  |  |  |  id
-|  |  |  |  |  |  |  |  |  |  |  |  |  arr
-|  |  |  |  |  |  |  |  |  |  |  |  Dimensions
-|  |  |  |  |  |  |  |  |  |  |  |  |  Variable
-|  |  |  |  |  |  |  |  |  |  |  |  |  |  id
-|  |  |  |  |  |  |  |  |  |  |  |  |  |  |  j
-|  |  |  |  |  |  |  |  |  |  |  |  |  |  Dimensions
-|  |  |  |  |  |  |  |  |  |  |  Expr
-|  |  |  |  |  |  |  |  |  |  |  |  Variable
-|  |  |  |  |  |  |  |  |  |  |  |  |  id
-|  |  |  |  |  |  |  |  |  |  |  |  |  |  arr
-|  |  |  |  |  |  |  |  |  |  |  |  |  Dimensions
-|  |  |  |  |  |  |  |  |  |  |  |  |  |  AddOp
-|  |  |  |  |  |  |  |  |  |  |  |  |  |  |  Variable
-|  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  id
-|  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  j
-|  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  Dimensions
-|  |  |  |  |  |  |  |  |  |  |  |  |  |  |  +
-|  |  |  |  |  |  |  |  |  |  |  |  |  |  |  Literal
-|  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  1
-|  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  TypeNode
-|  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  integer
-|  |  |  |  |  |  |  |  |  |  AssigStat
-|  |  |  |  |  |  |  |  |  |  |  Variable
-|  |  |  |  |  |  |  |  |  |  |  |  id
-|  |  |  |  |  |  |  |  |  |  |  |  |  arr
-|  |  |  |  |  |  |  |  |  |  |  |  Dimensions
-|  |  |  |  |  |  |  |  |  |  |  |  |  AddOp
-|  |  |  |  |  |  |  |  |  |  |  |  |  |  Variable
-|  |  |  |  |  |  |  |  |  |  |  |  |  |  |  id
-|  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  j
-|  |  |  |  |  |  |  |  |  |  |  |  |  |  |  Dimensions
-|  |  |  |  |  |  |  |  |  |  |  |  |  |  +
-|  |  |  |  |  |  |  |  |  |  |  |  |  |  Literal
-|  |  |  |  |  |  |  |  |  |  |  |  |  |  |  1
-|  |  |  |  |  |  |  |  |  |  |  |  |  |  |  TypeNode
-|  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  integer
-|  |  |  |  |  |  |  |  |  |  |  Expr
-|  |  |  |  |  |  |  |  |  |  |  |  Variable
-|  |  |  |  |  |  |  |  |  |  |  |  |  id
-|  |  |  |  |  |  |  |  |  |  |  |  |  |  temp
-|  |  |  |  |  |  |  |  |  |  |  |  |  Dimensions
-|  |  |  |  |  |  |  |  |  StatBlock
-|  |  |  |  |  |  |  |  AssigStat
-|  |  |  |  |  |  |  |  |  Variable
-|  |  |  |  |  |  |  |  |  |  id
-|  |  |  |  |  |  |  |  |  |  |  j
-|  |  |  |  |  |  |  |  |  |  Dimensions
-|  |  |  |  |  |  |  |  |  Expr
-|  |  |  |  |  |  |  |  |  |  AddOp
-|  |  |  |  |  |  |  |  |  |  |  Variable
-|  |  |  |  |  |  |  |  |  |  |  |  id
-|  |  |  |  |  |  |  |  |  |  |  |  |  j
-|  |  |  |  |  |  |  |  |  |  |  |  Dimensions
-|  |  |  |  |  |  |  |  |  |  |  +
-|  |  |  |  |  |  |  |  |  |  |  Literal
-|  |  |  |  |  |  |  |  |  |  |  |  1
-|  |  |  |  |  |  |  |  |  |  |  |  TypeNode
-|  |  |  |  |  |  |  |  |  |  |  |  |  integer
-|  |  |  |  |  |  AssigStat
-|  |  |  |  |  |  |  Variable
-|  |  |  |  |  |  |  |  id
-|  |  |  |  |  |  |  |  |  i
-|  |  |  |  |  |  |  |  Dimensions
-|  |  |  |  |  |  |  Expr
-|  |  |  |  |  |  |  |  AddOp
-|  |  |  |  |  |  |  |  |  Variable
-|  |  |  |  |  |  |  |  |  |  id
-|  |  |  |  |  |  |  |  |  |  |  i
-|  |  |  |  |  |  |  |  |  |  Dimensions
-|  |  |  |  |  |  |  |  |  +
-|  |  |  |  |  |  |  |  |  Literal
-|  |  |  |  |  |  |  |  |  |  1
-|  |  |  |  |  |  |  |  |  |  TypeNode
-|  |  |  |  |  |  |  |  |  |  |  integer
-|  |  FuncDef
-|  |  |  id
-|  |  |  |  printArray
+|  |  |  |  |  |  Variable
+|  |  |  |  |  |  |  id
+|  |  |  |  |  |  |  |  n
+|  |  |  |  |  |  |  Dimensions
+|  |  ConstructorDef
 |  |  |  TypeNode
-|  |  |  |  void
+|  |  |  |  A
 |  |  |  FParamList
 |  |  |  |  FParam
 |  |  |  |  |  id
-|  |  |  |  |  |  arr
+|  |  |  |  |  |  x_
 |  |  |  |  |  TypeNode
 |  |  |  |  |  |  integer
 |  |  |  |  |  Dimensions
-|  |  |  |  |  |  Literal
-|  |  |  |  |  |  |  7
-|  |  |  |  |  |  |  TypeNode
-|  |  |  |  |  |  |  |  integer
 |  |  |  |  FParam
 |  |  |  |  |  id
-|  |  |  |  |  |  size
+|  |  |  |  |  |  y_
 |  |  |  |  |  TypeNode
 |  |  |  |  |  |  integer
 |  |  |  |  |  Dimensions
 |  |  |  StatBlock
-|  |  |  |  VarDecl
-|  |  |  |  |  id
-|  |  |  |  |  |  n
-|  |  |  |  |  TypeNode
-|  |  |  |  |  |  integer
-|  |  |  |  |  Dimensions
-|  |  |  |  VarDecl
-|  |  |  |  |  id
-|  |  |  |  |  |  i
-|  |  |  |  |  TypeNode
-|  |  |  |  |  |  integer
-|  |  |  |  |  Dimensions
 |  |  |  |  AssigStat
-|  |  |  |  |  Variable
-|  |  |  |  |  |  id
-|  |  |  |  |  |  |  n
-|  |  |  |  |  |  Dimensions
+|  |  |  |  |  Dot
+|  |  |  |  |  |  Variable
+|  |  |  |  |  |  |  id
+|  |  |  |  |  |  |  |  self
+|  |  |  |  |  |  |  Dimensions
+|  |  |  |  |  |  Variable
+|  |  |  |  |  |  |  id
+|  |  |  |  |  |  |  |  x
+|  |  |  |  |  |  |  Dimensions
 |  |  |  |  |  Expr
 |  |  |  |  |  |  Variable
 |  |  |  |  |  |  |  id
-|  |  |  |  |  |  |  |  size
+|  |  |  |  |  |  |  |  x_
 |  |  |  |  |  |  |  Dimensions
 |  |  |  |  AssigStat
-|  |  |  |  |  Variable
-|  |  |  |  |  |  id
-|  |  |  |  |  |  |  i
-|  |  |  |  |  |  Dimensions
+|  |  |  |  |  Dot
+|  |  |  |  |  |  Variable
+|  |  |  |  |  |  |  id
+|  |  |  |  |  |  |  |  self
+|  |  |  |  |  |  |  Dimensions
+|  |  |  |  |  |  Variable
+|  |  |  |  |  |  |  id
+|  |  |  |  |  |  |  |  y
+|  |  |  |  |  |  |  Dimensions
 |  |  |  |  |  Expr
-|  |  |  |  |  |  Literal
-|  |  |  |  |  |  |  0
-|  |  |  |  |  |  |  TypeNode
-|  |  |  |  |  |  |  |  integer
-|  |  |  |  WhileStat
-|  |  |  |  |  Expr
-|  |  |  |  |  |  RelOp
-|  |  |  |  |  |  |  Variable
-|  |  |  |  |  |  |  |  id
-|  |  |  |  |  |  |  |  |  i
-|  |  |  |  |  |  |  |  Dimensions
-|  |  |  |  |  |  |  <
-|  |  |  |  |  |  |  Variable
-|  |  |  |  |  |  |  |  id
-|  |  |  |  |  |  |  |  |  n
-|  |  |  |  |  |  |  |  Dimensions
-|  |  |  |  |  StatBlock
-|  |  |  |  |  |  WriteStat
-|  |  |  |  |  |  |  Expr
-|  |  |  |  |  |  |  |  Variable
-|  |  |  |  |  |  |  |  |  id
-|  |  |  |  |  |  |  |  |  |  arr
-|  |  |  |  |  |  |  |  |  Dimensions
-|  |  |  |  |  |  |  |  |  |  Variable
-|  |  |  |  |  |  |  |  |  |  |  id
-|  |  |  |  |  |  |  |  |  |  |  |  i
-|  |  |  |  |  |  |  |  |  |  |  Dimensions
-|  |  |  |  |  |  AssigStat
-|  |  |  |  |  |  |  Variable
-|  |  |  |  |  |  |  |  id
-|  |  |  |  |  |  |  |  |  i
-|  |  |  |  |  |  |  |  Dimensions
-|  |  |  |  |  |  |  Expr
-|  |  |  |  |  |  |  |  AddOp
-|  |  |  |  |  |  |  |  |  Variable
-|  |  |  |  |  |  |  |  |  |  id
-|  |  |  |  |  |  |  |  |  |  |  i
-|  |  |  |  |  |  |  |  |  |  Dimensions
-|  |  |  |  |  |  |  |  |  +
-|  |  |  |  |  |  |  |  |  Literal
-|  |  |  |  |  |  |  |  |  |  1
-|  |  |  |  |  |  |  |  |  |  TypeNode
-|  |  |  |  |  |  |  |  |  |  |  integer
+|  |  |  |  |  |  Variable
+|  |  |  |  |  |  |  id
+|  |  |  |  |  |  |  |  y_
+|  |  |  |  |  |  |  Dimensions
 |  |  FuncDef
 |  |  |  id
 |  |  |  |  main
@@ -363,151 +144,50 @@ Program
 |  |  |  StatBlock
 |  |  |  |  VarDecl
 |  |  |  |  |  id
-|  |  |  |  |  |  arr
+|  |  |  |  |  |  a
 |  |  |  |  |  TypeNode
-|  |  |  |  |  |  integer
-|  |  |  |  |  Dimensions
-|  |  |  |  |  |  Literal
-|  |  |  |  |  |  |  7
-|  |  |  |  |  |  |  TypeNode
-|  |  |  |  |  |  |  |  integer
-|  |  |  |  AssigStat
-|  |  |  |  |  Variable
-|  |  |  |  |  |  id
-|  |  |  |  |  |  |  arr
-|  |  |  |  |  |  Dimensions
+|  |  |  |  |  |  A
+|  |  |  |  |  AParams
+|  |  |  |  |  |  Expr
 |  |  |  |  |  |  |  Literal
-|  |  |  |  |  |  |  |  0
+|  |  |  |  |  |  |  |  15
 |  |  |  |  |  |  |  |  TypeNode
 |  |  |  |  |  |  |  |  |  integer
-|  |  |  |  |  Expr
-|  |  |  |  |  |  Literal
-|  |  |  |  |  |  |  64
-|  |  |  |  |  |  |  TypeNode
-|  |  |  |  |  |  |  |  integer
-|  |  |  |  AssigStat
-|  |  |  |  |  Variable
-|  |  |  |  |  |  id
-|  |  |  |  |  |  |  arr
-|  |  |  |  |  |  Dimensions
-|  |  |  |  |  |  |  Literal
-|  |  |  |  |  |  |  |  1
-|  |  |  |  |  |  |  |  TypeNode
-|  |  |  |  |  |  |  |  |  integer
-|  |  |  |  |  Expr
-|  |  |  |  |  |  Literal
-|  |  |  |  |  |  |  34
-|  |  |  |  |  |  |  TypeNode
-|  |  |  |  |  |  |  |  integer
-|  |  |  |  AssigStat
-|  |  |  |  |  Variable
-|  |  |  |  |  |  id
-|  |  |  |  |  |  |  arr
-|  |  |  |  |  |  Dimensions
-|  |  |  |  |  |  |  Literal
-|  |  |  |  |  |  |  |  2
-|  |  |  |  |  |  |  |  TypeNode
-|  |  |  |  |  |  |  |  |  integer
-|  |  |  |  |  Expr
-|  |  |  |  |  |  Literal
-|  |  |  |  |  |  |  25
-|  |  |  |  |  |  |  TypeNode
-|  |  |  |  |  |  |  |  integer
-|  |  |  |  AssigStat
-|  |  |  |  |  Variable
-|  |  |  |  |  |  id
-|  |  |  |  |  |  |  arr
-|  |  |  |  |  |  Dimensions
-|  |  |  |  |  |  |  Literal
-|  |  |  |  |  |  |  |  3
-|  |  |  |  |  |  |  |  TypeNode
-|  |  |  |  |  |  |  |  |  integer
-|  |  |  |  |  Expr
-|  |  |  |  |  |  Literal
-|  |  |  |  |  |  |  12
-|  |  |  |  |  |  |  TypeNode
-|  |  |  |  |  |  |  |  integer
-|  |  |  |  AssigStat
-|  |  |  |  |  Variable
-|  |  |  |  |  |  id
-|  |  |  |  |  |  |  arr
-|  |  |  |  |  |  Dimensions
-|  |  |  |  |  |  |  Literal
-|  |  |  |  |  |  |  |  4
-|  |  |  |  |  |  |  |  TypeNode
-|  |  |  |  |  |  |  |  |  integer
-|  |  |  |  |  Expr
-|  |  |  |  |  |  Literal
-|  |  |  |  |  |  |  22
-|  |  |  |  |  |  |  TypeNode
-|  |  |  |  |  |  |  |  integer
-|  |  |  |  AssigStat
-|  |  |  |  |  Variable
-|  |  |  |  |  |  id
-|  |  |  |  |  |  |  arr
-|  |  |  |  |  |  Dimensions
+|  |  |  |  VarDecl
+|  |  |  |  |  id
+|  |  |  |  |  |  b
+|  |  |  |  |  TypeNode
+|  |  |  |  |  |  A
+|  |  |  |  |  AParams
+|  |  |  |  |  |  Expr
 |  |  |  |  |  |  |  Literal
 |  |  |  |  |  |  |  |  5
 |  |  |  |  |  |  |  |  TypeNode
 |  |  |  |  |  |  |  |  |  integer
+|  |  |  |  |  |  Expr
+|  |  |  |  |  |  |  Literal
+|  |  |  |  |  |  |  |  3
+|  |  |  |  |  |  |  |  TypeNode
+|  |  |  |  |  |  |  |  |  integer
+|  |  |  |  WriteStat
 |  |  |  |  |  Expr
-|  |  |  |  |  |  Literal
-|  |  |  |  |  |  |  11
-|  |  |  |  |  |  |  TypeNode
-|  |  |  |  |  |  |  |  integer
-|  |  |  |  AssigStat
-|  |  |  |  |  Variable
-|  |  |  |  |  |  id
-|  |  |  |  |  |  |  arr
-|  |  |  |  |  |  Dimensions
-|  |  |  |  |  |  |  Literal
-|  |  |  |  |  |  |  |  6
-|  |  |  |  |  |  |  |  TypeNode
-|  |  |  |  |  |  |  |  |  integer
+|  |  |  |  |  |  Dot
+|  |  |  |  |  |  |  Variable
+|  |  |  |  |  |  |  |  id
+|  |  |  |  |  |  |  |  |  a
+|  |  |  |  |  |  |  |  Dimensions
+|  |  |  |  |  |  |  Variable
+|  |  |  |  |  |  |  |  id
+|  |  |  |  |  |  |  |  |  y
+|  |  |  |  |  |  |  |  Dimensions
+|  |  |  |  WriteStat
 |  |  |  |  |  Expr
-|  |  |  |  |  |  Literal
-|  |  |  |  |  |  |  90
-|  |  |  |  |  |  |  TypeNode
-|  |  |  |  |  |  |  |  integer
-|  |  |  |  FuncCall
-|  |  |  |  |  id
-|  |  |  |  |  |  printArray
-|  |  |  |  |  AParams
-|  |  |  |  |  |  Expr
+|  |  |  |  |  |  Dot
 |  |  |  |  |  |  |  Variable
 |  |  |  |  |  |  |  |  id
-|  |  |  |  |  |  |  |  |  arr
+|  |  |  |  |  |  |  |  |  b
 |  |  |  |  |  |  |  |  Dimensions
-|  |  |  |  |  |  Expr
-|  |  |  |  |  |  |  Literal
-|  |  |  |  |  |  |  |  7
-|  |  |  |  |  |  |  |  TypeNode
-|  |  |  |  |  |  |  |  |  integer
-|  |  |  |  FuncCall
-|  |  |  |  |  id
-|  |  |  |  |  |  bubbleSort
-|  |  |  |  |  AParams
-|  |  |  |  |  |  Expr
 |  |  |  |  |  |  |  Variable
 |  |  |  |  |  |  |  |  id
-|  |  |  |  |  |  |  |  |  arr
+|  |  |  |  |  |  |  |  |  y
 |  |  |  |  |  |  |  |  Dimensions
-|  |  |  |  |  |  Expr
-|  |  |  |  |  |  |  Literal
-|  |  |  |  |  |  |  |  7
-|  |  |  |  |  |  |  |  TypeNode
-|  |  |  |  |  |  |  |  |  integer
-|  |  |  |  FuncCall
-|  |  |  |  |  id
-|  |  |  |  |  |  printArray
-|  |  |  |  |  AParams
-|  |  |  |  |  |  Expr
-|  |  |  |  |  |  |  Variable
-|  |  |  |  |  |  |  |  id
-|  |  |  |  |  |  |  |  |  arr
-|  |  |  |  |  |  |  |  Dimensions
-|  |  |  |  |  |  Expr
-|  |  |  |  |  |  |  Literal
-|  |  |  |  |  |  |  |  7
-|  |  |  |  |  |  |  |  TypeNode
-|  |  |  |  |  |  |  |  |  integer

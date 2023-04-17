@@ -1,76 +1,53 @@
 ======================================================================================================================================================
 | table: Global                                                                                                                                      |
 ======================================================================================================================================================
-| free function    | main    | ():void    | 68    | 0                                                                                                |
+| free function    | main    | ():void    | 44    | 0                                                                                                |
 |    ============================================================================================================================================    |
 |    | table: main                                                                                                                              |    |
 |    ============================================================================================================================================    |
-|    | local variable    | arr    | integer[7]    | 28    | 0                                                                                   |    |
-|    | temp var    | T0    | integer    | 4    | -28                                                                                            |    |
-|    | temp var    | T1    | integer    | 4    | -32                                                                                            |    |
-|    | temp var    | T2    | integer    | 4    | -36                                                                                            |    |
-|    | temp var    | T3    | integer    | 4    | -40                                                                                            |    |
-|    | temp var    | T4    | integer    | 4    | -44                                                                                            |    |
-|    | temp var    | T5    | integer    | 4    | -48                                                                                            |    |
-|    | temp var    | T6    | integer    | 4    | -52                                                                                            |    |
-|    | temp var    | T7    | integer[7]    | 0    | -56                                                                                         |    |
-|    | temp var    | T8    | integer    | 4    | -56                                                                                            |    |
-|    | temp var    | T9    | integer[7]    | 0    | -60                                                                                         |    |
-|    | temp var    | T10    | integer    | 4    | -60                                                                                           |    |
-|    | temp var    | T11    | integer[7]    | 0    | -64                                                                                        |    |
-|    | temp var    | T12    | integer    | 4    | -64                                                                                           |    |
-|    ============================================================================================================================================    |
-| free function    | printArray    | (integer[7], integer):void    | 48    | 0                                                                       |
-|    ============================================================================================================================================    |
-|    | table: printArray                                                                                                                        |    |
-|    ============================================================================================================================================    |
-|    | parameter    | arr    | integer[7]    | 4    | 0                                                                                         |    |
-|    | parameter    | size    | integer    | 4    | -4                                                                                          |    |
-|    | local variable    | n    | integer    | 4    | -8                                                                                        |    |
-|    | local variable    | i    | integer    | 4    | -12                                                                                       |    |
+|    | local variable    | a    | A    | 8    | 0                                                                                               |    |
+|    | local variable    | b    | A    | 8    | -8                                                                                              |    |
 |    | temp var    | T0    | integer    | 4    | -16                                                                                            |    |
 |    | temp var    | T1    | integer    | 4    | -20                                                                                            |    |
 |    | temp var    | T2    | integer    | 4    | -24                                                                                            |    |
-|    | temp var    | T3    | integer    | 4    | -28                                                                                            |    |
+|    | temp var    | T3    | reference    | 4    | -28                                                                                          |    |
 |    | temp var    | T4    | integer    | 4    | -32                                                                                            |    |
-|    | temp var    | T5    | integer    | 4    | -36                                                                                            |    |
+|    | temp var    | T5    | reference    | 4    | -36                                                                                          |    |
 |    | temp var    | T6    | integer    | 4    | -40                                                                                            |    |
-|    | return address    | returnAddress    | integer    | 4    | -44                                                                           |    |
 |    ============================================================================================================================================    |
-| free function    | bubbleSort    | (integer[7], integer):void    | 124    | 0                                                                      |
+| class    | A    | 8                                                                                                                                |
 |    ============================================================================================================================================    |
-|    | table: bubbleSort                                                                                                                        |    |
+|    | table: A                                                                                                                                 |    |
 |    ============================================================================================================================================    |
-|    | parameter    | arr    | integer[7]    | 4    | 0                                                                                         |    |
-|    | parameter    | size    | integer    | 4    | -4                                                                                          |    |
-|    | local variable    | n    | integer    | 4    | -8                                                                                        |    |
-|    | local variable    | i    | integer    | 4    | -12                                                                                       |    |
-|    | local variable    | j    | integer    | 4    | -16                                                                                       |    |
-|    | local variable    | temp    | integer    | 4    | -20                                                                                    |    |
-|    | temp var    | T0    | integer    | 4    | -24                                                                                            |    |
-|    | temp var    | T1    | integer    | 4    | -28                                                                                            |    |
-|    | temp var    | T2    | integer    | 4    | -32                                                                                            |    |
-|    | temp var    | T3    | integer    | 4    | -36                                                                                            |    |
-|    | temp var    | T4    | integer    | 4    | -40                                                                                            |    |
-|    | temp var    | T5    | integer    | 4    | -44                                                                                            |    |
-|    | temp var    | T6    | integer    | 4    | -48                                                                                            |    |
-|    | temp var    | T7    | integer    | 4    | -52                                                                                            |    |
-|    | temp var    | T8    | integer    | 4    | -56                                                                                            |    |
-|    | temp var    | T9    | integer    | 4    | -60                                                                                            |    |
-|    | temp var    | T10    | integer    | 4    | -64                                                                                           |    |
-|    | temp var    | T11    | integer    | 4    | -68                                                                                           |    |
-|    | temp var    | T12    | integer    | 4    | -72                                                                                           |    |
-|    | temp var    | T13    | integer    | 4    | -76                                                                                           |    |
-|    | temp var    | T14    | integer    | 4    | -80                                                                                           |    |
-|    | temp var    | T15    | integer    | 4    | -84                                                                                           |    |
-|    | temp var    | T16    | integer    | 4    | -88                                                                                           |    |
-|    | temp var    | T17    | integer    | 4    | -92                                                                                           |    |
-|    | temp var    | T18    | integer    | 4    | -96                                                                                           |    |
-|    | temp var    | T19    | integer    | 4    | -100                                                                                          |    |
-|    | temp var    | T20    | integer    | 4    | -104                                                                                          |    |
-|    | temp var    | T21    | integer    | 4    | -108                                                                                          |    |
-|    | temp var    | T22    | integer    | 4    | -112                                                                                          |    |
-|    | temp var    | T23    | integer    | 4    | -116                                                                                          |    |
-|    | return address    | returnAddress    | integer    | 4    | -120                                                                          |    |
+|    | inherites    | None                                                                                                                      |    |
+|    | member variable    | x    | integer    | public    | 4    | 0                                                                            |    |
+|    | member variable    | y    | integer    | public    | 4    | -4                                                                           |    |
+|    | constructor    | A::constructor    | (integer, integer):A    | public    | 44                                                            |    |
+|    |    ==================================================================================================================================    |    |
+|    |    | table: A::constructor                                                                                                          |    |    |
+|    |    ==================================================================================================================================    |    |
+|    |    | parameter    | x_    | integer    | 4    | 0                                                                                   |    |    |
+|    |    | parameter    | y_    | integer    | 4    | -4                                                                                  |    |    |
+|    |    | return address    | returnAddress    | integer    | 4    | -8                                                                  |    |    |
+|    |    | return value    | returnValue    | A    | 8    | -12                                                                           |    |    |
+|    |    | temp var    | T0    | reference    | 4    | -20                                                                                |    |    |
+|    |    | temp var    | T1    | integer    | 4    | -24                                                                                  |    |    |
+|    |    | temp var    | T2    | reference    | 4    | -28                                                                                |    |    |
+|    |    | temp var    | T3    | integer    | 4    | -32                                                                                  |    |    |
+|    |    | temp var    | self    | A    | 8    | -36                                                                                      |    |    |
+|    |    ==================================================================================================================================    |    |
+|    | constructor    | A::constructor    | (integer):A    | public    | 40                                                                     |    |
+|    |    ==================================================================================================================================    |    |
+|    |    | table: A::constructor                                                                                                          |    |    |
+|    |    ==================================================================================================================================    |    |
+|    |    | parameter    | n    | integer    | 4    | 0                                                                                    |    |    |
+|    |    | return address    | returnAddress    | integer    | 4    | -4                                                                  |    |    |
+|    |    | return value    | returnValue    | A    | 8    | -8                                                                            |    |    |
+|    |    | temp var    | T0    | reference    | 4    | -16                                                                                |    |    |
+|    |    | temp var    | T1    | integer    | 4    | -20                                                                                  |    |    |
+|    |    | temp var    | T2    | reference    | 4    | -24                                                                                |    |    |
+|    |    | temp var    | T3    | integer    | 4    | -28                                                                                  |    |    |
+|    |    | temp var    | self    | A    | 8    | -32                                                                                      |    |    |
+|    |    ==================================================================================================================================    |    |
 |    ============================================================================================================================================    |
 ======================================================================================================================================================
